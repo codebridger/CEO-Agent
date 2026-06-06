@@ -7,9 +7,19 @@
 
 import { MODEL, SUBTURTLE_APP_LIST_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
+import { renderPrompt } from "../prompts/load.js";
 import { commitHistory } from "../history/commit.js";
 import { drainTo, readInbox, type InboxEvent } from "../memory/inbox.js";
 import { setLastPmCheck } from "./state.js";
+
+/** Built-in fallback if prompts/pm-check.md is missing (the contract carries the real rules). */
+const PM_CHECK_FALLBACK = [
+  "This is your scheduled PM check — the project-management sweep in your contract.",
+  "",
+  "{{activity}}",
+  "",
+  "Work over each group per your contract, then sweep the active tasks in the Subturtle.app list (list id {{listId}}). Comment where it helps; if nothing is active, propose the next batch in the public channel. Report a short summary of what you did.",
+].join("\n");
 
 function groupByTask(events: InboxEvent[]): string {
   const groups = new Map<string, InboxEvent[]>();
@@ -33,15 +43,11 @@ export async function runPmCheck(): Promise<{ ok: boolean; text: string }> {
     ? `Activity since your last check, grouped by task:\n${groupByTask(events)}`
     : "No new activity arrived since your last check.";
 
-  const task = [
-    "This is your scheduled PM check — the project-management sweep in your contract.",
-    "",
-    activity,
-    "",
-    `Work over each group per your contract: chase stuck work, answer open comments, encourage finished work. Then sweep the active tasks in the Subturtle.app list (list id ${SUBTURTLE_APP_LIST_ID}) — for each, is it moving, stuck, or waiting on someone? Comment where it helps. If nothing is active, propose the next batch in the public channel.`,
-    "When a comment is meant for someone, assign it to them (and notify) so they actually get it — per your contract. Keep it light: one good question beats three reminders.",
-    "Report a short summary of what you did.",
-  ].join("\n");
+  const task = await renderPrompt(
+    "pm-check",
+    { activity, listId: SUBTURTLE_APP_LIST_ID },
+    PM_CHECK_FALLBACK,
+  );
 
   const res = await runAgent({ task, model: MODEL.pm });
   if (res.ok) {

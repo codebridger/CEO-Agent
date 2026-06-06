@@ -217,3 +217,17 @@ export const SCHEDULE_STATE_PATH = resolve(DATA_DIR, "schedule.json");
 
 /** Git author email for the agent's history commits (name = AGENT_NAME). */
 export const AGENT_GIT_EMAIL = optionalEnv("AGENT_GIT_EMAIL", "info@codebridger.co.uk");
+
+// --- M4 round 2: self-improvement (editable instructions + PR flow) ------
+
+/**
+ * The agent's editable instruction files (playbooks/checklists) — version-controlled
+ * in this repo, loaded at runtime so the agent can improve them by PR (PRD §4.3).
+ */
+export const PROMPTS_DIR = resolve(REPO_ROOT, "prompts");
+
+/** GitHub login tagged on self-improvement PRs (assignee + @mention; reviews go to Navid). */
+export const GITHUB_REVIEWER = optionalEnv("GITHUB_REVIEWER", "navidshad");
+
+/** Throwaway git worktrees used to build self-improvement PRs (git-ignored). */
+export const SELFIMPROVE_DIR = resolve(DATA_DIR, "selfimprove");

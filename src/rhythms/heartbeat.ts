@@ -18,11 +18,27 @@ import {
   PUBLIC_CHANNEL_ID,
 } from "../config.js";
 import { runAgent } from "../agent/runner.js";
+import { renderPrompt } from "../prompts/load.js";
 import { sendChatMessage } from "../clickup/rest.js";
 import { cloneOrUpdate } from "../council/repo.js";
 import { commitHistory } from "../history/commit.js";
 import { localParts } from "./time.js";
 import { setLastHeartbeat } from "./state.js";
+
+/** Built-in fallback if prompts/heartbeat.md is missing (the contract carries the real routine). */
+const HEARTBEAT_FALLBACK = [
+  "This is your heartbeat — the recurring CEO routine in your contract. Run it now, in full.",
+  "",
+  "{{council}}",
+  "",
+  "Your own beat-log history lives in:\n  {{beatHistoryDir}}\nRead the most recent file there for the last beat.",
+  "",
+  'Pull the current state: Stripe, ClickUp, the repos, and Mixpanel — read BOTH projects separately: PROD "{{mixpanelProd}}" (live) and DEV "{{mixpanelDev}}" (staging). Never guess a number.',
+  "Assess what changed and what it means for revenue. Draft 2–4 next moves ranked by revenue impact.",
+  "Post the drafts in the public group chat (channel id {{publicChannelId}}).",
+  "",
+  "Finally, WRITE your beat log to this exact path:\n  {{beatPath}}\nFollow the council beat-log template. Do NOT commit or push — the system commits it. Reply with a one-line summary.",
+].join("\n");
 
 export async function runHeartbeat(): Promise<{ ok: boolean; text: string }> {
   await mkdir(HEARTBEATS_DIR, { recursive: true });
@@ -36,23 +52,22 @@ export async function runHeartbeat(): Promise<{ ok: boolean; text: string }> {
     console.error("[heartbeat] council clone failed:", (err as Error).message);
   }
 
-  const task = [
-    "This is your heartbeat — the recurring CEO routine in your contract. Run it now, in full.",
-    "",
-    councilDir
-      ? `The council repo (READ-ONLY context) is freshly cloned at:\n  ${councilDir}\nRead its README/CLAUDE.md, ops/cto-heartbeat.md (the playbook), docs/metrics/framework.md, and the latest in decisions/. Follow the playbook. Do not write to this clone.`
-      : "The council repo could not be cloned this beat — work from what you can read via the connectors, and note the gap in the beat log.",
-    "",
-    `Your own beat-log history lives in:\n  ${HEARTBEATS_DIR}\nRead the most recent file there for the last beat (treat this as the first beat if it's empty).`,
-    "",
-    `Pull the current state: Stripe (subscriptions, MRR, cancels), Mixpanel (installs, signups, WAU, key events per the metrics framework), ClickUp (shipped / in progress / blocked), and the repos. For Mixpanel, read BOTH projects and report them separately: PROD = "${MIXPANEL_PROD_PROJECT_ID}" (the live app, your primary signal) and DEV = "${MIXPANEL_DEV_PROJECT_ID}" (staging, for context). If any source can't be read, say so in the beat — never guess a number.`,
-    "Assess what changed since the last beat and what it means for revenue. Use known context before raising alarms.",
-    "Draft 2 to 4 concrete next moves, ranked by revenue impact, each typed Execute / PR-FAQ / ADR / Council.",
-    `Post the drafts for discussion in the public group chat (channel id ${PUBLIC_CHANNEL_ID}).`,
-    "",
-    `Finally, WRITE your beat log to this exact path:\n  ${beatPath}\nFollow the council ops/heartbeat-log/TEMPLATE.md format (snapshot table, drafts, outcomes; note any data you could not read). Do NOT git commit or push — the system commits it for you.`,
-    "When done, reply with a one-line summary of the beat.",
-  ].join("\n");
+  const council = councilDir
+    ? `The council repo (READ-ONLY context) is freshly cloned at:\n  ${councilDir}\nRead its README/CLAUDE.md, ops/cto-heartbeat.md (the playbook), docs/metrics/framework.md, and the latest in decisions/. Follow the playbook. Do not write to this clone.`
+    : "The council repo could not be cloned this beat — work from what you can read via the connectors, and note the gap in the beat log.";
+
+  const task = await renderPrompt(
+    "heartbeat",
+    {
+      council,
+      beatHistoryDir: HEARTBEATS_DIR,
+      beatPath,
+      publicChannelId: PUBLIC_CHANNEL_ID,
+      mixpanelProd: MIXPANEL_PROD_PROJECT_ID,
+      mixpanelDev: MIXPANEL_DEV_PROJECT_ID,
+    },
+    HEARTBEAT_FALLBACK,
+  );
 
   const res = await runAgent({ task, model: MODEL.heartbeat, timeoutMs: 600_000 });
   if (res.ok) {
