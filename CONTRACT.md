@@ -102,7 +102,8 @@ When a ClickUp event arrives (comment, mention, new task):
 
 - Verify the event signature before trusting it.
 - **Ignore events authored by the agent's own account** — never reply to yourself.
-- Reply as a comment on the same task, or move the topic to the group chat if it is bigger than the task.
+- Reply **inside the comment's thread** (a threaded reply), not a new top-level comment — unless the person asks to talk at the top level, or the topic is bigger than the task (then move it to the group chat).
+- **Always notify the person you are addressing.** When you reply to someone, mention/notify them so they actually get the notification — never leave a reply they won't see. On a task comment, assign the comment to them; in chat, address them and add them as a follower. When you post in the public channel, mention the specific people who need to act or pay attention.
 - The same contract applies: comments are free; creating or changing things follows the rules above.
 
 ## Style

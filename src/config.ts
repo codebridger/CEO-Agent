@@ -37,6 +37,16 @@ function optionalEnv(key: string, fallback: string): string {
   return v && v.trim() !== "" ? v.trim() : fallback;
 }
 
+function optionalIntEnv(key: string, fallback: number): number {
+  const v = process.env[key];
+  if (!v || v.trim() === "") return fallback;
+  const n = Number(v);
+  if (!Number.isInteger(n)) {
+    throw new Error(`Env var ${key} must be an integer, got "${v}".`);
+  }
+  return n;
+}
+
 // --- configuration (sourced from .env) -----------------------------------
 
 /** ClickUp workspace ("team") id. */
@@ -69,3 +79,70 @@ export const MODEL = {
   pm: optionalEnv("MODEL_PM", "sonnet"),
   heartbeat: optionalEnv("MODEL_HEARTBEAT", "opus"),
 } as const;
+
+// --- M2: webhook listener + chat poller ----------------------------------
+
+/**
+ * ClickUp personal API token (Aso's account). The claude.ai connector has NO
+ * webhook tool, so registering/listing webhooks and the cheap chat poll go
+ * through the REST API with this token. Acting (comments/chat replies) still
+ * happens via the claude.ai connector inside agent runs — this token is for
+ * the plumbing only. Optional at import time so the M1 manual triggers still
+ * load without it; the REST client throws a clear error if it's actually used.
+ */
+export const CLICKUP_API_TOKEN = optionalEnv("CLICKUP_API_TOKEN", "");
+
+/** The public HTTPS URL ClickUp POSTs events to (used by `webhook register`). */
+export const WEBHOOK_PUBLIC_URL = optionalEnv("WEBHOOK_PUBLIC_URL", "");
+
+/** Path the listener serves; ClickUp posts here. Must match WEBHOOK_PUBLIC_URL's path. */
+export const WEBHOOK_PATH = optionalEnv("WEBHOOK_PATH", "/clickup/webhook");
+
+/** Port the HTTPS listener binds. 443 in prod (needs cap_net_bind_service). */
+export const PORT = optionalIntEnv("PORT", 443);
+
+/**
+ * Whether the origin serves TLS itself. True for direct-to-origin (Cloudflare
+ * "Full" → self-signed cert on :443). False behind a Cloudflare Tunnel, where
+ * cloudflared terminates public TLS and reaches a plain-HTTP loopback listener
+ * (no cert, no privileged port).
+ */
+export const SERVER_TLS = optionalEnv("SERVER_TLS", "true") !== "false";
+
+/** Self-signed origin cert (only used when SERVER_TLS is true). */
+export const TLS_CERT_PATH = resolve(REPO_ROOT, optionalEnv("TLS_CERT_PATH", "data/tls/origin.crt"));
+export const TLS_KEY_PATH = resolve(REPO_ROOT, optionalEnv("TLS_KEY_PATH", "data/tls/origin.key"));
+
+/** Chat poll cadence — ClickUp has no chat webhook, so DMs are polled (PRD §4.1). */
+export const POLL_INTERVAL_MS = optionalIntEnv("POLL_INTERVAL_MS", 90_000);
+
+/** Compact a thread file once it grows past this many bytes (PRD §4.2.4). */
+export const THREAD_COMPACT_BYTES = optionalIntEnv("THREAD_COMPACT_BYTES", 24_000);
+
+/**
+ * Task events we subscribe to. Comments are classified A (mention of Aso, wake
+ * now) vs B (activity, inbox) at dispatch time; the rest are Category-B activity.
+ * Scoped to the Subturtle.app list on registration (PRD §6.3 — minimal default).
+ */
+export const WEBHOOK_EVENTS = [
+  "taskCommentPosted",
+  "taskCreated",
+  "taskUpdated",
+  "taskStatusUpdated",
+  "taskMoved",
+  "taskAssigneeUpdated",
+] as const;
+
+// --- runtime data paths (all under the git-ignored data/ dir) ------------
+
+export const THREADS_DIR = resolve(DATA_DIR, "threads");
+export const THREAD_INDEX_PATH = resolve(THREADS_DIR, "INDEX.md");
+export const EVENTS_DIR = resolve(DATA_DIR, "events");
+export const INBOX_PATH = resolve(EVENTS_DIR, "inbox.jsonl");
+export const PROCESSED_PATH = resolve(EVENTS_DIR, "processed.jsonl");
+export const POLLER_DIR = resolve(DATA_DIR, "poller");
+export const POLLER_CURSORS_PATH = resolve(POLLER_DIR, "cursors.json");
+export const TLS_DIR = resolve(DATA_DIR, "tls");
+
+/** Webhook registration state (id + signing secret) written by `webhook register`. */
+export const WEBHOOKS_STATE_PATH = resolve(DATA_DIR, "webhooks.json");
