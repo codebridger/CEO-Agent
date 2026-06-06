@@ -14,14 +14,15 @@ import { IDENTITY, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { registerWebhook, unregisterWebhook } from "../webhooks/manage.js";
 import { readWebhookState } from "../state/webhooks.js";
 import { requestRestart } from "../ops/restart.js";
+import { sendChatMessage } from "../clickup/rest.js";
+import { proposeImprovement, type ProposeFile } from "../selfimprove/propose.js";
 import type { Inbound } from "../wake/handle.js";
 
 export type Action =
   | { type: "webhook.register" }
   | { type: "webhook.unregister"; id?: string }
-  | { type: "restart"; at?: number; reason?: string };
-
-const KNOWN_TYPES = new Set(["webhook.register", "webhook.unregister", "restart"]);
+  | { type: "restart"; at?: number; reason?: string }
+  | { type: "self-improve"; topic: string; summary: string; files: ProposeFile[] };
 
 /** Validate a loosely-typed array from the directive into Actions; drop junk. */
 export function coerceActions(raw: unknown): Action[] {
@@ -34,7 +35,13 @@ export function coerceActions(raw: unknown): Action[] {
     else if (type === "webhook.unregister") out.push({ type, id: o["id"] ? String(o["id"]) : undefined });
     else if (type === "restart")
       out.push({ type, at: typeof o["at"] === "number" ? o["at"] : undefined, reason: o["reason"] ? String(o["reason"]) : undefined });
-    else if (type) out.push({ type } as Action); // unknown — executeActions rejects it explicitly
+    else if (type === "self-improve") {
+      const files = (Array.isArray(o["files"]) ? o["files"] : [])
+        .map((f) => f as { path?: unknown; content?: unknown })
+        .filter((f) => typeof f.path === "string" && typeof f.content === "string")
+        .map((f) => ({ path: String(f.path), content: String(f.content) }));
+      out.push({ type, topic: String(o["topic"] ?? "update"), summary: String(o["summary"] ?? ""), files });
+    } else if (type) out.push({ type } as Action); // unknown — executeActions rejects it explicitly
   }
   return out;
 }
@@ -86,6 +93,17 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
             ? `restart scheduled for ${new Date(action.at).toISOString()}`
             : "restart queued — will happen at the next idle moment",
         );
+        continue;
+      }
+
+      if (action.type === "self-improve") {
+        // Additive: it only opens a PR for Navid to review/merge — allowed from any chat.
+        const { prUrl } = await proposeImprovement(action);
+        await sendChatMessage(
+          NAVID_DM_CHANNEL_ID,
+          `I opened a self-improvement PR for "${action.topic}": ${prUrl}\nPlease review — it takes effect after you merge and I restart.`,
+        ).catch((e) => console.error("[actions] could not DM Navid the PR link:", (e as Error).message));
+        outcomes.push(`self-improve: opened PR ${prUrl}`);
         continue;
       }
 
