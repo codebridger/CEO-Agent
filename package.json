@@ -1,0 +1,21 @@
+{
+  "name": "ceo-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "App body for Aso Dara, Subturtle's CEO agent. Wakes a headless Claude Code run with the contract loaded and lets it act.",
+  "scripts": {
+    "trigger": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
