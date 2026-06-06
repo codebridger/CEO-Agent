@@ -90,6 +90,15 @@ export const PUBLIC_CHANNEL_ID = requireEnv("PUBLIC_CHANNEL_ID");
 export const SUBTURTLE_APP_LIST_ID = requireEnv("SUBTURTLE_APP_LIST_ID");
 
 /**
+ * Mixpanel projects the heartbeat reads (PRD §8 action item — pinned so the agent
+ * never guesses). Prod = the live app with real users; dev = staging. The
+ * heartbeat reads both and reports them separately. MCP access is enabled at the
+ * Mixpanel org level (Settings → Organization → Overview).
+ */
+export const MIXPANEL_PROD_PROJECT_ID = optionalEnv("MIXPANEL_PROD_PROJECT_ID", "2795069");
+export const MIXPANEL_DEV_PROJECT_ID = optionalEnv("MIXPANEL_DEV_PROJECT_ID", "3785672");
+
+/**
  * Model per run kind. Sonnet for frequent PM/manual work; Opus reserved for
  * heartbeats and self-improvement (PRD §3). Overridable via env.
  */
