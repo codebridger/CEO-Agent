@@ -11,6 +11,8 @@ import { join } from "node:path";
 import {
   HEARTBEAT_TZ,
   HEARTBEATS_DIR,
+  MIXPANEL_DEV_PROJECT_ID,
+  MIXPANEL_PROD_PROJECT_ID,
   MODEL,
   NAVID_DM_CHANNEL_ID,
   PUBLIC_CHANNEL_ID,
@@ -43,7 +45,7 @@ export async function runHeartbeat(): Promise<{ ok: boolean; text: string }> {
     "",
     `Your own beat-log history lives in:\n  ${HEARTBEATS_DIR}\nRead the most recent file there for the last beat (treat this as the first beat if it's empty).`,
     "",
-    "Pull the current state: Stripe (subscriptions, MRR, cancels), Mixpanel (installs, signups, WAU, key events per the metrics framework), ClickUp (shipped / in progress / blocked), and the repos. If any source can't be read, say so in the beat — never guess a number.",
+    `Pull the current state: Stripe (subscriptions, MRR, cancels), Mixpanel (installs, signups, WAU, key events per the metrics framework), ClickUp (shipped / in progress / blocked), and the repos. For Mixpanel, read BOTH projects and report them separately: PROD = "${MIXPANEL_PROD_PROJECT_ID}" (the live app, your primary signal) and DEV = "${MIXPANEL_DEV_PROJECT_ID}" (staging, for context). If any source can't be read, say so in the beat — never guess a number.`,
     "Assess what changed since the last beat and what it means for revenue. Use known context before raising alarms.",
     "Draft 2 to 4 concrete next moves, ranked by revenue impact, each typed Execute / PR-FAQ / ADR / Council.",
     `Post the drafts for discussion in the public group chat (channel id ${PUBLIC_CHANNEL_ID}).`,
