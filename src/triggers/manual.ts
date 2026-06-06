@@ -4,9 +4,7 @@
  * agent doesn't have to rediscover it.
  */
 
-import { NAVID_DM_CHANNEL_ID } from "../config.js";
-
-const SUBTURTLE_APP_LIST_ID = "901805492347";
+import { NAVID_DM_CHANNEL_ID, SUBTURTLE_APP_LIST_ID } from "../config.js";
 
 export function readPrompt(): string {
   return [
