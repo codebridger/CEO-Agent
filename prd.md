@@ -109,3 +109,19 @@ The agent can improve its own instructions, with review:
 2. **M2 — Webhook:** signed webhook listener + loop guard + event inbox + thread files; direct mentions answered immediately with thread history.
 3. **M3 — Rhythms:** PM check every 5 hours processing the inbox + weekday daily heartbeat + beat logs to the council repo by PR.
 4. **M4 — Self-management:** self-improvement PR flow, webhook register/unregister, scheduled restart with crash-loop guard.
+
+## 8. Connector readiness (verified 2026-06-06)
+
+Live check of the MCP/API connections the agent depends on (§3).
+
+| Connector | PRD need | Status | Notes |
+|---|---|---|---|
+| **ClickUp** | read/write | ✅ Working | Workspace `9018800487`; `Subturtle.app` list `901805492347` (70 tasks); public channel `6-901805492347-8` + private DM channels visible. Team resolves: Navid `78238611`, Somayeh `78238620`. |
+| **Stripe** | read | ✅ Working | Live account **Subturtle** `acct_1QFZu6JzqwOMGRBg` (`livemode:true`); balance + charges read OK. Recent charges $9.99 USD; balance held in GBP (consistent with in-flight GBP-base pricing work). |
+| **Mixpanel** | read | ⚠️ Blocked | Auth works and lists projects (`Subturtle-dev` `3785672`, `Subturtle Legacy` `2795069`), but both return *"MCP access is not enabled for this project"*. No event/query reads until an org admin enables MCP access per-project. |
+| **git/GitHub** | clone/branch/PR | ✅ Available | via CLI. |
+
+**Action items:**
+1. **Mixpanel — enable MCP access** on `Subturtle-dev` and `Subturtle Legacy` (Project Settings, admin-only). Blocks the heartbeat's Mixpanel read (§4.4). Also pin in the contract *which* project the heartbeat reads.
+2. **Webhook management has no MCP tool.** The ClickUp connector exposes tasks/chat/docs but not webhook register/unregister or `X-Signature` verification — M2/§4.4 must call the ClickUp REST API directly.
+3. **Stripe read-only is not enforced by the connector.** The connected Stripe tool is write-capable (`stripe_api_execute`) and points at the live account. The §5 "no payment actions, ever" guardrail must be enforced in CONTRACT/app code.
