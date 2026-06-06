@@ -60,6 +60,24 @@ The app owns the agent's episodic memory as plain files so it survives restarts 
 - **Task replies** post as a **threaded reply under the triggering comment** (not a new root comment), assigned to the asker + `notify_all` so they actually get a ClickUp notification. ClickUp has no MCP tool for threaded replies, so the **agent composes** the text and the **app posts it** via REST (`/comment/{id}/reply`). A root-level comment is used only if the asker explicitly asks ("root", "top level", "new comment").
 - **Chat replies** go out through the agent's connector, addressing the person and adding them as a follower so they're notified.
 
+### Rhythms (PM check + heartbeat)
+
+Beyond reacting, the agent runs two scheduled routines (`src/rhythms/`), via a 60s scheduler that
+persists state in `data/schedule.json` (survives restarts, catches up a missed run, never
+double-fires):
+
+- **PM check — every 5h** (Sonnet): drains the inbox, groups activity by task, chases stuck work,
+  answers, encourages, and proposes the next batch if nothing is active. Archives the inbox after.
+- **Heartbeat — weekdays 08:00 (`HEARTBEAT_TZ`)** (Opus): clones the council repo
+  (`subturtle-docs`) **read-only** for context (playbook, metrics framework, decisions), pulls
+  Stripe/Mixpanel/ClickUp/repo state, posts 2–4 ranked moves to the public channel, and writes a
+  beat log to **`data/heartbeats/<date>.md`** (the agent's own history, committed to this repo — not
+  the council repo).
+
+Both can be run on demand: `npm run trigger -- pm-check|heartbeat`, or Navid DMs the agent
+**"run heartbeat" / "run pm check"** (honored only from his account). The agent's history (threads +
+beat logs) is committed to the repo at the end of each rhythm; secrets in `data/` stay git-ignored.
+
 ### Guardrails (defense in depth)
 
 The contract is the primary control, backed at the tool layer (`src/agent/policy.ts`, passed as `--disallowedTools`): Stripe writes and ClickUp task-deletes are blocked on every run. During a **task wake** the comment tool is *also* blocked — the agent composes but cannot post, so the write-capable REST token stays server-side and can't be used to bypass those guardrails.
@@ -175,6 +193,8 @@ Run any of these on demand; each is one headless run as the agent:
 npm run trigger -- read              # summarise the Subturtle.app board (no writes)
 npm run trigger -- dm-navid          # send the founder a first private chat message
 npm run trigger -- comment <taskId>  # read a task and post one comment
+npm run trigger -- pm-check          # run the PM check now (drain inbox, sweep work)
+npm run trigger -- heartbeat         # run the heartbeat now (assess, draft, write a beat log)
 ```
 
 ---
@@ -194,25 +214,35 @@ npm run trigger -- comment <taskId>  # read a task and post one comment
 | `PORT` | Listener port (`8787` behind a tunnel; `443` direct) |
 | `POLL_INTERVAL_MS` | Chat poll cadence (default `90000`) |
 | `THREAD_COMPACT_BYTES` | Compact a thread file past this size (default `24000`) |
+| `PM_CHECK_INTERVAL_MS` | PM check cadence (default `18000000` = 5h) |
+| `HEARTBEAT_HOUR` / `HEARTBEAT_TZ` | Weekday heartbeat time (default `8` / `Europe/Vilnius`) |
+| `COUNCIL_REPO` | Council repo for read-only heartbeat context (default `codebridger/subturtle-docs`) |
+| `AGENT_GIT_EMAIL` | Git author email for the agent's history commits |
 | `MODEL_PM` / `MODEL_HEARTBEAT` | Model tiers (default `sonnet` / `opus`) |
 | `CLICKUP_WORKSPACE_ID`, `NAVID_USER_ID`, `SOMI_USER_ID`, `*_CHANNEL_ID`, `SUBTURTLE_APP_LIST_ID` | Workspace, team, and routing ids |
 
 The webhook **signing secret** is *not* in `.env` — `webhook register` writes it to `data/webhooks.json`.
 
-## Data layout (git-ignored `data/`)
+## Data layout (`data/`)
+
+Most of `data/` is git-ignored runtime state; the agent's **history** (`threads/`, `heartbeats/`)
+is the exception — it's version-controlled in this repo.
 
 ```
 data/
-  webhooks.json        # active webhook id + signing secret
-  threads/             # per-thread episodic memory + INDEX.md
-  events/inbox.jsonl   # Category-B activity awaiting the PM check (+ processed.jsonl archive)
-  poller/cursors.json  # last-seen chat message per channel
-  tls/                 # self-signed origin cert (direct-to-origin mode only)
+  threads/             # per-thread episodic memory + INDEX.md      [tracked in git]
+  heartbeats/          # the agent's beat logs, <date>.md           [tracked in git]
+  webhooks.json        # active webhook id + signing secret         (ignored — secret)
+  tls/                 # self-signed origin cert                    (ignored — secret)
+  events/inbox.jsonl   # Category-B activity awaiting the PM check  (ignored)
+  poller/cursors.json  # last-seen chat message per channel         (ignored)
+  schedule.json        # last PM check / heartbeat run              (ignored)
+  council/             # read-only clone of the council repo        (ignored)
 ```
 
 ## Roadmap
 
 - **M1 — Skeleton** ✅ headless runner + manual triggers.
 - **M2 — Webhook** ✅ signed listener + loop guard + inbox + thread memory + chat poller (this).
-- **M3 — Rhythms** — PM check every 5h draining the inbox + weekday heartbeat with beat logs.
+- **M3 — Rhythms** ✅ PM check every 5h draining the inbox + weekday heartbeat with beat logs (this).
 - **M4 — Self-management** — self-improvement PRs, agent-driven webhook register/unregister, scheduled restart.

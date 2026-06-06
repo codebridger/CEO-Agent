@@ -164,3 +164,25 @@ export const TLS_DIR = resolve(DATA_DIR, "tls");
 
 /** Webhook registration state (id + signing secret) written by `webhook register`. */
 export const WEBHOOKS_STATE_PATH = resolve(DATA_DIR, "webhooks.json");
+
+// --- M3: rhythms (PM check + heartbeat) ----------------------------------
+
+/** PM check cadence — every 5 hours by default (PRD §4.1.3). */
+export const PM_CHECK_INTERVAL_MS = optionalIntEnv("PM_CHECK_INTERVAL_MS", 5 * 60 * 60 * 1000);
+
+/** Heartbeat runs on weekdays (Mon–Fri) at this local hour in HEARTBEAT_TZ (PRD §4.1.4). */
+export const HEARTBEAT_HOUR = optionalIntEnv("HEARTBEAT_HOUR", 8);
+export const HEARTBEAT_TZ = optionalEnv("HEARTBEAT_TZ", "Europe/Vilnius");
+
+/** Council repo — read-only context for the heartbeat. Cloned fresh, never pushed to. */
+export const COUNCIL_REPO = optionalEnv("COUNCIL_REPO", "codebridger/subturtle-docs");
+export const COUNCIL_DIR = resolve(DATA_DIR, "council/subturtle-docs"); // git-ignored under /data/*
+
+/** The agent's own beat-log history — version-controlled in this repo. */
+export const HEARTBEATS_DIR = resolve(DATA_DIR, "heartbeats");
+
+/** Scheduler state (last PM/heartbeat run), so rhythms survive restarts. */
+export const SCHEDULE_STATE_PATH = resolve(DATA_DIR, "schedule.json");
+
+/** Git author email for the agent's history commits (name = AGENT_NAME). */
+export const AGENT_GIT_EMAIL = optionalEnv("AGENT_GIT_EMAIL", "info@codebridger.co.uk");

@@ -14,10 +14,14 @@
  * through the agent's connector.
  */
 
-import { AGENT_NAME, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
+import { AGENT_NAME, IDENTITY, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
-import { createTaskComment, replyToComment } from "../clickup/rest.js";
+import { createTaskComment, replyToComment, sendChatMessage } from "../clickup/rest.js";
 import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/threads.js";
+import { matchCommand } from "../rhythms/commands.js";
+import { runExclusive } from "../rhythms/lock.js";
+import { runHeartbeat } from "../rhythms/heartbeat.js";
+import { runPmCheck } from "../rhythms/pmCheck.js";
 
 const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
 
@@ -113,7 +117,29 @@ async function postTaskReply(inbound: Inbound, text: string): Promise<string> {
  * Handle one Category-A message end to end. Resolves when the reply is sent and
  * the thread file updated. Errors are logged, not thrown (callers fire-and-forget).
  */
+/** A manual rhythm command from Navid ("run heartbeat" / "run pm check"). */
+async function handleCommand(inbound: Inbound, cmd: "heartbeat" | "pm-check"): Promise<void> {
+  console.log(`[wake] rhythm command from Navid: ${cmd}`);
+  const ack =
+    cmd === "heartbeat"
+      ? "On it — running the heartbeat now. I'll post the beat when it's done."
+      : "On it — running the PM check now.";
+  if (inbound.channelId) {
+    await sendChatMessage(inbound.channelId, ack).catch((e) =>
+      console.error("[wake] command ack failed:", (e as Error).message),
+    );
+  }
+  // Fire-and-forget under the cross-process lock so it can't overlap a scheduled run.
+  void runExclusive(cmd, cmd === "heartbeat" ? runHeartbeat : runPmCheck);
+}
+
 export function handleWake(inbound: Inbound): Promise<void> {
+  // A rhythm command from Navid short-circuits the normal reply.
+  if (inbound.authorUserId === IDENTITY.navidUserId) {
+    const cmd = matchCommand(inbound.text);
+    if (cmd) return handleCommand(inbound, cmd);
+  }
+
   return withLock(inbound.threadId, async () => {
     try {
       const history = await loadThread(inbound.threadId);

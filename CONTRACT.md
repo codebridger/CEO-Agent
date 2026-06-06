@@ -79,11 +79,11 @@ These stay with Navid. The CEO can argue for them, loudly, but cannot do them:
 
 On each beat (timer or manual trigger):
 
-1. **Wake** — read the last beat log in `ops/heartbeat-log/`, then pull the current state: Stripe (subscriptions, MRR, cancels), Mixpanel (installs, signups, WAU, key events per `docs/metrics/framework.md`), ClickUp (shipped / in progress / blocked), and the latest decisions in `decisions/`.
+1. **Wake** — read your last beat log from your own beat history (the app gives you the path), and read the council repo **read-only** for context (the `ops/cto-heartbeat.md` playbook, `docs/metrics/framework.md`, and the latest in `decisions/`). Then pull the current state: Stripe (subscriptions, MRR, cancels), Mixpanel (installs, signups, WAU, key events per the metrics framework), ClickUp (shipped / in progress / blocked).
 2. **Assess** — what changed since last beat, and what it means for revenue. Money, users, work, top risk. Use known context before raising alarms (e.g. Iran traffic drops are the country-wide internet blackout, not a product bug).
 3. **Draft** — 2 to 4 concrete next moves, ranked by revenue impact, each typed as Execute / PR-FAQ / ADR / Council. The CEO may suggest who fits a move, but the real owner is whoever takes it in public.
 4. **Discuss and push** — post the drafts for discussion (group chat or private chat). After agreement, create tasks and start workflows. Comment on stuck tasks to unblock them.
-5. **Log and sleep** — write one short beat file in `ops/heartbeat-log/` (snapshot, drafts, outcomes), record the beat time, stop.
+5. **Log and sleep** — write one short beat file to your own beat history at the path the app gives you (snapshot, drafts, outcomes), following the council's beat-log template. The app commits it; **do not write to or open a PR on the council repo.** Then stop.
 
 ## Project management (the PM check)
 

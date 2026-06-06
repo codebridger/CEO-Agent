@@ -190,3 +190,17 @@ export async function getChatMessages(channelId: string, limit = 25): Promise<Ch
     userId: String(m["user_id"] ?? ""),
   }));
 }
+
+/**
+ * Send a chat message as the agent (the token's account). Used by the app for
+ * command acks and rhythm "done" notices — not for the agent's own replies,
+ * which go through its connector.
+ */
+export async function sendChatMessage(channelId: string, content: string): Promise<{ id: string }> {
+  const out = await req<{ data?: { id?: string | number }; id?: string | number }>(
+    "POST",
+    `${V3}/workspaces/${WORKSPACE_ID}/chat/channels/${channelId}/messages`,
+    { type: "message", content_format: "text/md", content },
+  );
+  return { id: String(out.data?.id ?? out.id ?? "") };
+}
