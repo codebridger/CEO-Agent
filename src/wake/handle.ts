@@ -32,6 +32,8 @@ import { matchCommand } from "../rhythms/commands.js";
 import { runExclusive } from "../rhythms/lock.js";
 import { runHeartbeat } from "../rhythms/heartbeat.js";
 import { runPmCheck } from "../rhythms/pmCheck.js";
+import { enterWake, exitWake } from "./inflight.js";
+import { coerceActions, executeActions, type Action } from "../control/actions.js";
 
 const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
 const SEND_CHAT_TOOL = "mcp__claude_ai_ClickUp__clickup_send_chat_message";
@@ -116,6 +118,15 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[]): 
       "exactly what went out — so do NOT include a message unless you truly want it delivered, and never",
       "claim something was sent that isn't in this list. Address people by name inside the text.",
       "",
+      "You may also include an optional \"actions\" array to manage your own infrastructure:",
+      '  {"messages": [...], "actions": [ {"type": "<action>", ...} ]}',
+      "Actions:",
+      '  - {"type": "webhook.register"}  → (re)create your ClickUp webhook. Safe/additive; allowed anytime.',
+      '  - {"type": "webhook.unregister", "id": "<id>"}  → delete a webhook. Only honored from Navid\'s private DM.',
+      '  - {"type": "restart", "reason": "...", "at": <epoch-ms optional>}  → restart your app (e.g. after a config',
+      "      change). Only honored from Navid's private DM. The restart is graceful and waits until you're idle.",
+      "  Omit \"actions\" entirely when you're just talking. The system performs each action and reports the real result.",
+      "",
       "Team directory (id — name):",
       directoryBlock(members),
     );
@@ -171,6 +182,7 @@ export function handleWake(inbound: Inbound): Promise<void> {
   }
 
   return withLock(inbound.threadId, async () => {
+    enterWake();
     try {
       // Chat wakes get the team directory so the agent can address anyone by id.
       const members = inbound.source === "chat" ? await loadDirectory() : [];
@@ -206,13 +218,24 @@ export function handleWake(inbound: Inbound): Promise<void> {
         await appendTurn(inbound.threadId, delivered ? AGENT_NAME : `${AGENT_NAME} (post failed)`, replyText);
         console.log(`[wake] handled ${inbound.threadId} (${label})`);
       } else {
-        summary = await deliverChat(inbound, replyText, members);
+        const directive = parseChatDirective(replyText);
+        // Deliver messages FIRST so the human always sees the agent's words, even
+        // if an action then fails or queues a restart.
+        summary = await deliverChat(inbound, directive.messages, members);
+        if (directive.actions.length > 0) {
+          const outcomes = await executeActions(directive.actions, inbound);
+          for (const o of outcomes) await appendTurn(inbound.threadId, `${AGENT_NAME} (action)`, o);
+          summary = [summary, ...outcomes].filter(Boolean).join("; ");
+          console.log(`[wake] actions for ${inbound.threadId}: ${outcomes.join("; ")}`);
+        }
       }
 
       await upsertIndex(inbound.threadId, summary);
       await maybeCompact(inbound.threadId);
     } catch (err) {
       console.error(`[wake] error handling ${inbound.threadId}:`, (err as Error).message);
+    } finally {
+      exitWake();
     }
   });
 }
@@ -232,16 +255,24 @@ interface OutMsg {
   text: string;
 }
 
-/** Pull the {messages:[...]} directive out of the agent's output, defensively. */
-function parseChatDirective(raw: string): OutMsg[] {
-  const coerce = (s: string): OutMsg[] | null => {
+interface Directive {
+  messages: OutMsg[];
+  actions: Action[];
+}
+
+/** Pull the {messages:[...], actions:[...]} directive out of the agent's output, defensively. */
+function parseChatDirective(raw: string): Directive {
+  const coerce = (s: string): Directive | null => {
     try {
-      const o = JSON.parse(s) as { messages?: unknown };
-      if (!Array.isArray(o.messages)) return null;
-      return o.messages
+      const o = JSON.parse(s) as { messages?: unknown; actions?: unknown };
+      const hasMessages = Array.isArray(o.messages);
+      const hasActions = Array.isArray(o.actions);
+      if (!hasMessages && !hasActions) return null;
+      const messages = (hasMessages ? (o.messages as unknown[]) : [])
         .map((m) => m as { to?: unknown; text?: unknown })
         .filter((m) => typeof m.text === "string" && m.text.trim())
         .map((m) => ({ to: String(m.to ?? "here"), text: String(m.text) }));
+      return { messages, actions: coerceActions(o.actions) };
     } catch {
       return null;
     }
@@ -250,19 +281,22 @@ function parseChatDirective(raw: string): OutMsg[] {
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
   const brace = raw.match(/\{[\s\S]*\}/);
   const parsed =
-    coerce(raw) ?? (fence?.[1] && coerce(fence[1].trim())) ?? (brace?.[0] && coerce(brace[0]));
+    coerce(raw) || (fence?.[1] && coerce(fence[1].trim())) || (brace?.[0] && coerce(brace[0]));
   // Fallback: if the agent ignored the format, treat the text as a plain in-thread
-  // reply rather than silently dropping it.
-  return parsed && parsed.length > 0 ? parsed : [{ to: "here", text: raw }];
+  // reply rather than silently dropping it. Never invent actions on the fallback path.
+  if (!parsed) return { messages: [{ to: "here", text: raw }], actions: [] };
+  if (parsed.messages.length === 0 && parsed.actions.length === 0) {
+    return { messages: [{ to: "here", text: raw }], actions: [] };
+  }
+  return parsed;
 }
 
 /**
  * Deliver every message in the agent's directive via REST, verify each, and record
  * the true outcome to the thread file(s). Returns a one-line summary for the index.
  */
-async function deliverChat(inbound: Inbound, raw: string, members: Member[]): Promise<string> {
+async function deliverChat(inbound: Inbound, msgs: OutMsg[], members: Member[]): Promise<string> {
   const byId = new Map(members.map((m) => [m.id, m]));
-  const msgs = parseChatDirective(raw);
   const outcomes: string[] = [];
 
   for (const m of msgs) {

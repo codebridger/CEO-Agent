@@ -1,46 +1,31 @@
 /**
- * Webhook management CLI (PRD §4.4). M2 covers the human-run operations:
+ * Webhook management CLI (PRD §4.4) — the human-run operations:
  *   register            create the ClickUp subscription (scoped to Subturtle.app)
  *   list                show ClickUp's webhooks + reconcile with local state
- *   unregister <id>     delete a subscription (manual; agent self-unregister is M4)
+ *   unregister <id>     delete a subscription
  *
- * Registration uses the REST token (no MCP tool exists). The returned signing
- * secret is stored in data/webhooks.json — never printed in full, never committed.
+ * The actual work lives in src/webhooks/manage.ts (shared with the boot reconcile
+ * and the agent's directives). This file is just the human-facing wrapper + output.
  */
 
-import { SUBTURTLE_APP_LIST_ID, WEBHOOK_EVENTS, WEBHOOK_PUBLIC_URL } from "../config.js";
-import { createWebhook, deleteWebhook, listWebhooks } from "../clickup/rest.js";
-import { readWebhookState, writeWebhookState } from "../state/webhooks.js";
+import { listWebhooks } from "../clickup/rest.js";
+import { registerWebhook, unregisterWebhook } from "../webhooks/manage.js";
+import { readWebhookState } from "../state/webhooks.js";
 
 function mask(secret: string): string {
   return secret ? `${secret.slice(0, 4)}…${secret.slice(-3)} (${secret.length} chars)` : "(none)";
 }
 
 async function register(): Promise<void> {
-  if (!WEBHOOK_PUBLIC_URL) {
-    throw new Error("WEBHOOK_PUBLIC_URL is not set in .env (e.g. https://aso.<host>/clickup/webhook).");
-  }
   const existing = await readWebhookState();
-  if (existing) {
+  if (existing && existing.id) {
     console.error(
       `A webhook is already registered locally (${existing.id} → ${existing.endpoint}).\n` +
         "Run `unregister " + existing.id + "` first if you want to re-create it.",
     );
     return;
   }
-  const w = await createWebhook({
-    endpoint: WEBHOOK_PUBLIC_URL,
-    events: WEBHOOK_EVENTS,
-    listId: SUBTURTLE_APP_LIST_ID,
-  });
-  await writeWebhookState({
-    id: w.id,
-    secret: w.secret,
-    endpoint: w.endpoint,
-    events: w.events,
-    scope: `list:${SUBTURTLE_APP_LIST_ID}`,
-    created: new Date().toISOString(),
-  });
+  const w = await registerWebhook();
   console.log(`Registered webhook ${w.id}`);
   console.log(`  endpoint: ${w.endpoint}`);
   console.log(`  events:   ${w.events.join(", ")}`);
@@ -57,20 +42,15 @@ async function list(): Promise<void> {
     console.log(`     events: ${w.events.join(", ")}`);
     if (w.health) console.log(`     health: ${JSON.stringify(w.health)}`);
   }
-  if (local && !remote.some((w) => w.id === local.id)) {
+  if (local && local.id && !remote.some((w) => w.id === local.id)) {
     console.warn(`\n⚠ local state has ${local.id} but ClickUp doesn't — re-register.`);
   }
-  if (!local) console.log("\nNo local registration (data/webhooks.json missing).");
+  if (!local || !local.id) console.log("\nNo local registration (data/webhooks.json missing).");
 }
 
 async function unregister(id: string | undefined): Promise<void> {
   if (!id) throw new Error("unregister requires a webhook <id>");
-  await deleteWebhook(id);
-  const local = await readWebhookState();
-  if (local && local.id === id) {
-    // Clear local state by writing an empty marker file would be confusing; just note it.
-    await writeWebhookState({ ...local, id: "", secret: "", endpoint: local.endpoint, events: [], created: local.created });
-  }
+  await unregisterWebhook(id);
   console.log(`Deleted webhook ${id}.`);
 }
 

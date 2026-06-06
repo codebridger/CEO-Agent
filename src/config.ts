@@ -174,6 +174,28 @@ export const TLS_DIR = resolve(DATA_DIR, "tls");
 /** Webhook registration state (id + signing secret) written by `webhook register`. */
 export const WEBHOOKS_STATE_PATH = resolve(DATA_DIR, "webhooks.json");
 
+// --- M4: self-management (restart + crash-loop guard) --------------------
+
+/** A pending restart request {at, reason} (PRD §4.5.1) — picked up by the restart watcher. */
+export const RESTART_REQUEST_PATH = resolve(DATA_DIR, "restart.json");
+
+/**
+ * Clean/crash exit flag. Written {clean:false} as the first I/O each boot, flipped
+ * to {clean:true} only on a graceful shutdown. If a boot finds the previous flag
+ * still false (or missing), the prior process crashed (PRD §4.5.4).
+ */
+export const LAST_EXIT_PATH = resolve(DATA_DIR, "last-exit.json");
+
+/** Rolling record of recent crash timestamps (+ lastNotified) for the crash-loop guard. */
+export const CRASH_HISTORY_PATH = resolve(DATA_DIR, "crash-history.json");
+
+/** Crashes within CRASH_WINDOW_MS that trip the guard and DM Navid (PRD §4.5.4). */
+export const CRASH_LOOP_THRESHOLD = optionalIntEnv("CRASH_LOOP_THRESHOLD", 5);
+export const CRASH_WINDOW_MS = optionalIntEnv("CRASH_WINDOW_MS", 60 * 60 * 1000);
+
+/** How often the restart watcher checks for a due, idle-safe restart. */
+export const RESTART_WATCH_MS = optionalIntEnv("RESTART_WATCH_MS", 30_000);
+
 // --- M3: rhythms (PM check + heartbeat) ----------------------------------
 
 /** PM check cadence — every 5 hours by default (PRD §4.1.3). */

@@ -34,6 +34,16 @@ async function acquire(name: string): Promise<boolean> {
   }
 }
 
+/** True if a rhythm run currently holds the lock (a fresh, non-stale lockfile exists). */
+export async function isRhythmBusy(): Promise<boolean> {
+  try {
+    const s = await stat(LOCK);
+    return Date.now() - s.mtimeMs < STALE_MS;
+  } catch {
+    return false; // no lockfile → idle
+  }
+}
+
 /** Run `fn` while holding the rhythm lock; skip (return undefined) if it's busy. */
 export async function runExclusive<T>(name: string, fn: () => Promise<T>): Promise<T | undefined> {
   if (!(await acquire(name))) {

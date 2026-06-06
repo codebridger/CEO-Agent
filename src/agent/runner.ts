@@ -22,6 +22,20 @@ export interface RunResult {
   error?: string;
 }
 
+/**
+ * Environment for the spawned agent, with the app's privileged secrets stripped.
+ * The agent acts on ClickUp through the claude.ai connector (its own auth), so it
+ * never needs the app's REST token — and leaving CLICKUP_API_TOKEN in its env would
+ * let a run bypass every app-side guardrail by calling the ClickUp API directly via
+ * Bash. (The agent still has Bash + network; full sandboxing is a separate task.)
+ */
+const SECRET_ENV_KEYS = ["CLICKUP_API_TOKEN"];
+function childEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  for (const k of SECRET_ENV_KEYS) delete env[k];
+  return env;
+}
+
 /** Shape of `claude --print --output-format json` (loose — we only read a few fields). */
 const ClaudeJson = z
   .object({
@@ -59,7 +73,7 @@ export async function runAgent(opts: RunOptions): Promise<RunResult> {
   }
 
   return await new Promise<RunResult>((resolvePromise) => {
-    const child = spawn("claude", args, { stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn("claude", args, { stdio: ["ignore", "pipe", "pipe"], env: childEnv() });
     let stdout = "";
     let stderr = "";
 

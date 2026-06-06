@@ -5,7 +5,7 @@
  * data/webhooks.json (git-ignored) — the secret never touches the repo or .env.
  */
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { WEBHOOKS_STATE_PATH } from "../config.js";
 
@@ -35,4 +35,11 @@ export async function writeWebhookState(s: WebhookState): Promise<void> {
 /** The signing secret for the active webhook ("" if not registered yet). */
 export async function getWebhookSecret(): Promise<string> {
   return (await readWebhookState())?.secret ?? "";
+}
+
+/** Delete the local registration record (after a successful unregister). */
+export async function clearWebhookState(): Promise<void> {
+  await unlink(WEBHOOKS_STATE_PATH).catch((err) => {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+  });
 }
