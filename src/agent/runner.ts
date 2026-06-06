@@ -10,6 +10,8 @@ export interface RunOptions {
   model?: (typeof MODEL)[keyof typeof MODEL];
   /** Hard wall-clock limit; the child is killed past this. */
   timeoutMs?: number;
+  /** Extra tools to block for this run only (merged with the standing denials). */
+  disallowTools?: string[];
 }
 
 export interface RunResult {
@@ -33,12 +35,12 @@ const ClaudeJson = z
 
 /**
  * Run one headless Claude Code session with the contract loaded. The agent
- * inherits the claude.ai connectors (ClickUp authed as Aso Dara, Stripe/Mixpanel
+ * inherits the claude.ai connectors (ClickUp authed as the agent's account, Stripe/Mixpanel
  * read). This is the reusable core every trigger (manual now; webhook/heartbeat
  * later) goes through.
  */
 export async function runAgent(opts: RunOptions): Promise<RunResult> {
-  const { task, model = MODEL.pm, timeoutMs = 300_000 } = opts;
+  const { task, model = MODEL.pm, timeoutMs = 300_000, disallowTools = [] } = opts;
 
   const args = [
     "--print",
@@ -51,8 +53,9 @@ export async function runAgent(opts: RunOptions): Promise<RunResult> {
     model,
     "--dangerously-skip-permissions",
   ];
-  if (DISALLOWED_TOOLS.length > 0) {
-    args.push("--disallowedTools", ...DISALLOWED_TOOLS);
+  const disallowed = [...DISALLOWED_TOOLS, ...disallowTools];
+  if (disallowed.length > 0) {
+    args.push("--disallowedTools", ...disallowed);
   }
 
   return await new Promise<RunResult>((resolvePromise) => {

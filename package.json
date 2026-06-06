@@ -6,6 +6,9 @@
   "description": "App body for Aso Dara, Subturtle's CEO agent. Wakes a headless Claude Code run with the contract loaded and lets it act.",
   "scripts": {
     "trigger": "tsx src/cli.ts",
+    "webhook": "tsx src/cli/webhook.ts",
+    "dev": "tsx src/main.ts",
+    "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },

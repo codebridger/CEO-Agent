@@ -4,7 +4,7 @@
  * are defense in depth so a single bad step cannot do irreversible or forbidden harm.
  *
  * Tool names are the claude.ai connector names (the agent inherits these connectors;
- * the ClickUp one is authed as Aso Dara).
+ * the ClickUp one is authed as the agent's account).
  */
 
 /**
