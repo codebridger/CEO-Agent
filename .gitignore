@@ -1,5 +1,11 @@
 node_modules/
 dist/
-/data/
 .env
 *.local
+
+# Runtime data is ignored by default — EXCEPT the agent's own history (threads +
+# beat logs), which is version-controlled. Secrets (webhooks.json signing secret,
+# tls/ keys), the inbox, poller cursors and the council clone stay ignored.
+/data/*
+!/data/threads/
+!/data/heartbeats/

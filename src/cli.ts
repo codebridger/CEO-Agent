@@ -1,4 +1,6 @@
 import { runAgent } from "./agent/runner.js";
+import { runHeartbeat } from "./rhythms/heartbeat.js";
+import { runPmCheck } from "./rhythms/pmCheck.js";
 import { commentPrompt, dmNavidPrompt, readPrompt } from "./triggers/manual.js";
 
 function usage(): never {
@@ -8,8 +10,10 @@ function usage(): never {
       "",
       "Kinds:",
       "  read              Read the Subturtle.app list and summarise (no writes).",
-      "  dm-navid          Send a short first private chat message to Navid as Aso Dara.",
-      "  comment <taskId>  Read a task and post one comment as Aso Dara.",
+      "  dm-navid          Send a short first private chat message to Navid.",
+      "  comment <taskId>  Read a task and post one comment.",
+      "  pm-check          Run the PM check now (drain inbox, sweep active work).",
+      "  heartbeat         Run the heartbeat now (assess, draft, write a beat log).",
     ].join("\n"),
   );
   process.exit(1);
@@ -17,6 +21,14 @@ function usage(): never {
 
 async function main(): Promise<void> {
   const [kind, ...rest] = process.argv.slice(2);
+
+  // Rhythms are full routines, not a single prompt → runAgent.
+  if (kind === "pm-check" || kind === "heartbeat") {
+    console.error(`[trigger:${kind}] running...`);
+    const r = kind === "heartbeat" ? await runHeartbeat() : await runPmCheck();
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(r.ok ? 0 : 1);
+  }
 
   let task: string;
   switch (kind) {

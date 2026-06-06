@@ -190,3 +190,67 @@ export async function getChatMessages(channelId: string, limit = 25): Promise<Ch
     userId: String(m["user_id"] ?? ""),
   }));
 }
+
+/**
+ * Send a chat message as the agent (the token's account). The app sends ALL chat
+ * messages this way — command acks, rhythm "done" notices, and the agent's own
+ * replies — so every send is verified (returns a real message id) instead of
+ * trusted from the model's self-report.
+ */
+export async function sendChatMessage(channelId: string, content: string): Promise<{ id: string }> {
+  const out = await req<{ data?: { id?: string | number }; id?: string | number }>(
+    "POST",
+    `${V3}/workspaces/${WORKSPACE_ID}/chat/channels/${channelId}/messages`,
+    { type: "message", content_format: "text/md", content },
+  );
+  const id = String(out.data?.id ?? out.id ?? "");
+  if (!id) throw new Error(`ClickUp send to channel ${channelId} returned no message id`);
+  return { id };
+}
+
+export interface Member {
+  id: number;
+  /** Display name (falls back to email, then id). */
+  name: string;
+  email?: string;
+}
+
+/**
+ * Every member of the workspace — the team directory the agent uses to resolve a
+ * name ("Somi") to a user id before sending them a direct message. Sourced from
+ * the V2 team endpoint (the connector's member tool has no REST equivalent here).
+ */
+export async function getWorkspaceMembers(): Promise<Member[]> {
+  const out = await req<{ teams?: Array<{ id?: string | number; members?: Array<{ user?: Record<string, unknown> }> }> }>(
+    "GET",
+    `${V2}/team`,
+  );
+  const teams = out.teams ?? [];
+  const team = teams.find((t) => String(t.id) === WORKSPACE_ID) ?? teams[0];
+  return (team?.members ?? [])
+    .map((m) => m.user)
+    .filter((u): u is Record<string, unknown> => !!u && u["id"] != null)
+    .map((u) => ({
+      id: Number(u["id"]),
+      name: String(u["username"] ?? u["email"] ?? u["id"]),
+      email: u["email"] ? String(u["email"]) : undefined,
+    }));
+}
+
+/**
+ * Resolve (or create) the direct-message channel between the agent and `userIds`.
+ * ClickUp returns the existing DM if one already exists, so this is idempotent —
+ * it's how the agent can message anyone, even with no prior thread.
+ */
+export async function getOrCreateDirectMessage(userIds: number[]): Promise<{ id: string }> {
+  const out = await req<{ data?: { id?: string | number }; id?: string | number }>(
+    "POST",
+    `${V3}/workspaces/${WORKSPACE_ID}/chat/channels/direct_message`,
+    { user_ids: userIds },
+  );
+  const id = String(out.data?.id ?? out.id ?? "");
+  if (!id) {
+    throw new Error(`ClickUp direct_message returned no channel id: ${JSON.stringify(out).slice(0, 200)}`);
+  }
+  return { id };
+}

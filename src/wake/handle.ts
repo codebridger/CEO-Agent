@@ -6,20 +6,35 @@
  * thread queues so two events can't race on one thread file; different threads
  * run concurrently. The lock is an in-process promise chain keyed by thread id.
  *
- * Task replies: the agent COMPOSES the reply (it cannot post — the comment tool
- * is blocked for the run), and the app posts it as a **threaded reply** under the
- * triggering comment via REST, assigned to the asker so they get a notification.
- * This keeps replies in-thread (no MCP tool can do that) and keeps the write
- * token server-side, away from the agent's reasoning. Chat replies still go out
- * through the agent's connector.
+ * The app — not the agent — performs and VERIFIES every ClickUp write, so a run
+ * can never claim a message was delivered when it wasn't:
+ *   - Task replies: the agent composes the text (the comment tool is blocked for
+ *     the run); the app posts it as a threaded reply under the triggering comment.
+ *   - Chat: the agent composes a small JSON directive saying who to message and
+ *     what to say (the send-chat tool is blocked for the run); the app delivers
+ *     each message via REST and records only what actually went out. Targets can
+ *     be the current thread ("here") or any teammate by user id — the app
+ *     resolves/creates that person's DM channel, so the agent can message anyone.
  */
 
-import { AGENT_NAME, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
+import { AGENT_NAME, IDENTITY, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
-import { createTaskComment, replyToComment } from "../clickup/rest.js";
+import {
+  createTaskComment,
+  getOrCreateDirectMessage,
+  getWorkspaceMembers,
+  replyToComment,
+  sendChatMessage,
+  type Member,
+} from "../clickup/rest.js";
 import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/threads.js";
+import { matchCommand } from "../rhythms/commands.js";
+import { runExclusive } from "../rhythms/lock.js";
+import { runHeartbeat } from "../rhythms/heartbeat.js";
+import { runPmCheck } from "../rhythms/pmCheck.js";
 
 const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
+const SEND_CHAT_TOOL = "mcp__claude_ai_ClickUp__clickup_send_chat_message";
 
 export interface Inbound {
   /** Where the message came from — decides how the agent replies. */
@@ -61,7 +76,19 @@ function wantsRootComment(text: string): boolean {
   return /\b(root|top[\s-]?level|new comment|not (in )?(the )?thread)\b/i.test(text);
 }
 
-function buildWakePrompt(inbound: Inbound, history: string): string {
+const MEMBERS_TOOL = "mcp__claude_ai_ClickUp__clickup_get_workspace_members";
+
+/** Render the team directory the agent uses to pick a DM target by user id. */
+function directoryBlock(members: Member[]): string {
+  if (members.length === 0) {
+    return `(empty here — call the ${MEMBERS_TOOL} tool to look up the person's numeric user id)`;
+  }
+  return members
+    .map((m) => `  - ${m.id} — ${m.name}${m.email ? ` <${m.email}>` : ""}`)
+    .join("\n");
+}
+
+function buildWakePrompt(inbound: Inbound, history: string, members: Member[]): string {
   const uid = inbound.authorUserId;
   const head = [
     `You have been woken by a new ${inbound.source === "chat" ? "chat message" : "task comment"} addressed to you.`,
@@ -79,11 +106,18 @@ function buildWakePrompt(inbound: Inbound, history: string): string {
 
   if (inbound.source === "chat") {
     head.push(
-      `Then reply in ClickUp chat channel id "${inbound.channelId}" using the send-chat-message tool with that exact channel_id — not any other channel, not your own notes channel.`,
-      uid != null
-        ? `Address ${inbound.author} by name and pass followers: ["${uid}"] so they get the notification.`
-        : "",
-      "After sending, report back the exact text you sent (it is recorded to memory).",
+      "Do NOT send anything yourself — you have no send tool on this run. Decide what to send and to whom,",
+      "then OUTPUT ONLY a JSON object (no prose, no code fence), exactly this shape:",
+      '  {"messages": [ {"to": "<target>", "text": "<message>"} ]}',
+      "Each target is one of:",
+      '  - "here"  → reply in this same conversation (the normal case: answering whoever just messaged you).',
+      "  - a teammate's numeric user id → send them a direct message. Find the id in the team directory below.",
+      "List one entry per message you actually want sent. The system delivers each via ClickUp and records",
+      "exactly what went out — so do NOT include a message unless you truly want it delivered, and never",
+      "claim something was sent that isn't in this list. Address people by name inside the text.",
+      "",
+      "Team directory (id — name):",
+      directoryBlock(members),
     );
   } else {
     // Task: compose only. The app posts it as a threaded reply (the agent has no
@@ -113,15 +147,40 @@ async function postTaskReply(inbound: Inbound, text: string): Promise<string> {
  * Handle one Category-A message end to end. Resolves when the reply is sent and
  * the thread file updated. Errors are logged, not thrown (callers fire-and-forget).
  */
+/** A manual rhythm command from Navid ("run heartbeat" / "run pm check"). */
+async function handleCommand(inbound: Inbound, cmd: "heartbeat" | "pm-check"): Promise<void> {
+  console.log(`[wake] rhythm command from Navid: ${cmd}`);
+  const ack =
+    cmd === "heartbeat"
+      ? "On it — running the heartbeat now. I'll post the beat when it's done."
+      : "On it — running the PM check now.";
+  if (inbound.channelId) {
+    await sendChatMessage(inbound.channelId, ack).catch((e) =>
+      console.error("[wake] command ack failed:", (e as Error).message),
+    );
+  }
+  // Fire-and-forget under the cross-process lock so it can't overlap a scheduled run.
+  void runExclusive(cmd, cmd === "heartbeat" ? runHeartbeat : runPmCheck);
+}
+
 export function handleWake(inbound: Inbound): Promise<void> {
+  // A rhythm command from Navid short-circuits the normal reply.
+  if (inbound.authorUserId === IDENTITY.navidUserId) {
+    const cmd = matchCommand(inbound.text);
+    if (cmd) return handleCommand(inbound, cmd);
+  }
+
   return withLock(inbound.threadId, async () => {
     try {
+      // Chat wakes get the team directory so the agent can address anyone by id.
+      const members = inbound.source === "chat" ? await loadDirectory() : [];
       const history = await loadThread(inbound.threadId);
       const res = await runAgent({
-        task: buildWakePrompt(inbound, history),
+        task: buildWakePrompt(inbound, history, members),
         model: MODEL.pm,
-        // For task wakes the app posts the reply — block the agent from commenting itself.
-        disallowTools: inbound.source === "task" ? [CREATE_COMMENT_TOOL] : [],
+        // The app performs every write — block the agent's own posting tools so it
+        // can only compose, never (claim to) send.
+        disallowTools: inbound.source === "task" ? [CREATE_COMMENT_TOOL] : [SEND_CHAT_TOOL],
       });
 
       await appendTurn(inbound.threadId, inbound.author, inbound.text);
@@ -134,25 +193,121 @@ export function handleWake(inbound: Inbound): Promise<void> {
       }
 
       const replyText = res.text.trim();
-      let label = inbound.source === "chat" ? `channel ${inbound.channelId}` : "";
-      let delivered = true;
+      let summary = replyText;
       if (inbound.source === "task") {
+        let delivered = true;
+        let label = "";
         try {
           label = await postTaskReply(inbound, replyText);
         } catch (err) {
           delivered = false;
           console.error(`[wake] posting reply failed for ${inbound.threadId}:`, (err as Error).message);
         }
+        await appendTurn(inbound.threadId, delivered ? AGENT_NAME : `${AGENT_NAME} (post failed)`, replyText);
+        console.log(`[wake] handled ${inbound.threadId} (${label})`);
+      } else {
+        summary = await deliverChat(inbound, replyText, members);
       }
 
-      await appendTurn(inbound.threadId, delivered ? AGENT_NAME : `${AGENT_NAME} (post failed)`, replyText);
-      await upsertIndex(inbound.threadId, replyText);
+      await upsertIndex(inbound.threadId, summary);
       await maybeCompact(inbound.threadId);
-      console.log(`[wake] handled ${inbound.threadId} (${label})`);
     } catch (err) {
       console.error(`[wake] error handling ${inbound.threadId}:`, (err as Error).message);
     }
   });
+}
+
+/** Best-effort team directory; an empty list just means the agent works by raw ids. */
+async function loadDirectory(): Promise<Member[]> {
+  try {
+    return await getWorkspaceMembers();
+  } catch (err) {
+    console.error("[wake] could not load team directory:", (err as Error).message);
+    return [];
+  }
+}
+
+interface OutMsg {
+  to: string;
+  text: string;
+}
+
+/** Pull the {messages:[...]} directive out of the agent's output, defensively. */
+function parseChatDirective(raw: string): OutMsg[] {
+  const coerce = (s: string): OutMsg[] | null => {
+    try {
+      const o = JSON.parse(s) as { messages?: unknown };
+      if (!Array.isArray(o.messages)) return null;
+      return o.messages
+        .map((m) => m as { to?: unknown; text?: unknown })
+        .filter((m) => typeof m.text === "string" && m.text.trim())
+        .map((m) => ({ to: String(m.to ?? "here"), text: String(m.text) }));
+    } catch {
+      return null;
+    }
+  };
+  // Try the whole output, then a fenced block, then the first {...} span.
+  const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const brace = raw.match(/\{[\s\S]*\}/);
+  const parsed =
+    coerce(raw) ?? (fence?.[1] && coerce(fence[1].trim())) ?? (brace?.[0] && coerce(brace[0]));
+  // Fallback: if the agent ignored the format, treat the text as a plain in-thread
+  // reply rather than silently dropping it.
+  return parsed && parsed.length > 0 ? parsed : [{ to: "here", text: raw }];
+}
+
+/**
+ * Deliver every message in the agent's directive via REST, verify each, and record
+ * the true outcome to the thread file(s). Returns a one-line summary for the index.
+ */
+async function deliverChat(inbound: Inbound, raw: string, members: Member[]): Promise<string> {
+  const byId = new Map(members.map((m) => [m.id, m]));
+  const msgs = parseChatDirective(raw);
+  const outcomes: string[] = [];
+
+  for (const m of msgs) {
+    const here = m.to === "here" || m.to === inbound.channelId;
+    let who = here ? "this thread" : m.to;
+    try {
+      let channelId: string;
+      let targetThreadId: string;
+      if (here) {
+        channelId = inbound.channelId ?? "";
+        targetThreadId = inbound.threadId;
+        if (!channelId) throw new Error("no channel id for this thread");
+      } else {
+        const uid = Number(String(m.to).replace(/^user:/, "").trim());
+        if (!Number.isInteger(uid)) throw new Error(`unknown target "${m.to}"`);
+        const member = byId.get(uid);
+        who = member ? `${member.name} (${uid})` : `user ${uid}`;
+        const dm = await getOrCreateDirectMessage([uid]);
+        channelId = dm.id;
+        targetThreadId = `chat-${dm.id}`;
+      }
+
+      const sent = await sendChatMessage(channelId, m.text);
+      // Record under the agent's name in the inbound thread (so the conversation
+      // reads naturally), and also in the recipient's own thread when it differs.
+      await appendTurn(inbound.threadId, here ? AGENT_NAME : `${AGENT_NAME} → ${who}`, m.text);
+      if (targetThreadId !== inbound.threadId) {
+        await appendTurn(targetThreadId, AGENT_NAME, m.text);
+        await upsertIndex(targetThreadId, m.text);
+      }
+      outcomes.push(here ? "replied" : `sent to ${who}`);
+      console.log(`[wake] delivered chat to ${who} (msg ${sent.id})`);
+    } catch (err) {
+      const reason = (err as Error).message;
+      await appendTurn(
+        inbound.threadId,
+        `${AGENT_NAME} (send to ${who} FAILED)`,
+        `${m.text}\n\n[delivery error: ${reason}]`,
+      );
+      outcomes.push(`FAILED to ${who}: ${reason}`);
+      console.error(`[wake] chat delivery failed (${who}):`, reason);
+    }
+  }
+
+  return outcomes.join("; ");
 }
 
 /** Convenience used by the poller for the Navid DM (the most common chat thread). */
