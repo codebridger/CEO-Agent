@@ -1,6 +1,6 @@
 /**
  * Route a categorized ClickUp event: drop (C), append to the inbox (B), or wake
- * Aso now (A). Called off the HTTP request path (after the 200 ack) so the
+ * the agent now (A). Called off the HTTP request path (after the 200 ack) so the
  * listener stays fast.
  */
 

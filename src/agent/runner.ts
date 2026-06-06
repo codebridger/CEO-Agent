@@ -35,7 +35,7 @@ const ClaudeJson = z
 
 /**
  * Run one headless Claude Code session with the contract loaded. The agent
- * inherits the claude.ai connectors (ClickUp authed as Aso Dara, Stripe/Mixpanel
+ * inherits the claude.ai connectors (ClickUp authed as the agent's account, Stripe/Mixpanel
  * read). This is the reusable core every trigger (manual now; webhook/heartbeat
  * later) goes through.
  */

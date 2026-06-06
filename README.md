@@ -1,6 +1,8 @@
 # CEO-Agent
 
-**Aso Dara** — Subturtle's AI CEO agent. It watches the business (Stripe, Mixpanel, ClickUp), answers the team, runs PM checks and heartbeats, and pushes toward revenue — discussing before acting, with the founder holding the final word. Aso's operating rules live in [`CONTRACT.md`](CONTRACT.md); the product spec and milestones are in [`prd.md`](prd.md).
+A headless **AI CEO agent**: it watches the business (Stripe, Mixpanel, ClickUp), answers the team, runs PM checks and heartbeats, and pushes toward revenue — discussing before acting, with the founder holding the final word.
+
+The agent's **persona** — name, voice, account, and operating rules — is defined entirely by [`CONTRACT.md`](CONTRACT.md) plus the `AGENT_NAME` setting, not by the code. **This instance runs as _Aso Dara_ for Subturtle**; another deployment loads a different contract and name and is otherwise the same body. The product spec and milestones are in [`prd.md`](prd.md).
 
 ---
 
@@ -8,16 +10,16 @@
 
 ### The body is headless Claude Code
 
-Aso has no long-running "brain". Each time it needs to act, the app spawns **one fresh headless Claude Code run** (`claude -p`) with [`CONTRACT.md`](CONTRACT.md) loaded as the system prompt:
+The agent has no long-running "brain". Each time it needs to act, the app spawns **one fresh headless Claude Code run** (`claude -p`) with [`CONTRACT.md`](CONTRACT.md) loaded as the system prompt:
 
 ```
 claude --print "<task>" --append-system-prompt-file CONTRACT.md \
        --output-format json --model sonnet --disallowedTools <guardrails> ...
 ```
 
-Because the contract is re-read on every run, editing it takes effect on the next wake — no redeploy. The run inherits the **claude.ai connectors** (ClickUp authed as Aso, Stripe/Mixpanel read), so Aso reads and writes the business as itself. This wrapper is `src/agent/runner.ts` (`runAgent`) — the single engine every trigger goes through.
+Because the contract is re-read on every run, editing it takes effect on the next wake — no redeploy. The run inherits the **claude.ai connectors** (ClickUp authed as the agent's account, Stripe/Mixpanel read), so the agent reads and writes the business as itself. This wrapper is `src/agent/runner.ts` (`runAgent`) — the single engine every trigger goes through.
 
-### What wakes Aso
+### What wakes the agent
 
 A long-running Node process (pm2) turns external events into agent runs. Two transports feed one categorizer:
 
@@ -27,11 +29,11 @@ ClickUp task event ─POST─▶ Cloudflare ─▶ tunnel ─▶ HTTP listener (
    └─ off the request path ▶ categorize ─┬─ C  drop (incl. loop guard)
                                           ├─ B  append data/events/inbox.jsonl
                                           └─ A  handleWake(thread, msg) ─▶ runAgent
-chat (DMs/@mentions) ─poll ~90s via REST─▶ new, non-Aso ▶ handleWake(...) ─▶ runAgent
+chat (DMs/@mentions) ─poll ~90s via REST─▶ new, not self ▶ handleWake(...) ─▶ runAgent
 ```
 
 - **Webhook listener** (`src/server/`) receives ClickUp **task** events, verifies the `X-Signature` (HMAC-SHA256 of the raw body) against the registered secret, **acks 200 immediately**, then dispatches off the request path so the ack stays fast.
-- **Chat poller** (`src/poller/`) covers what webhooks can't: ClickUp has **no chat webhook**, so DMs and channel @mentions are polled every ~90s via the v3 chat REST API. Per-channel cursors (`data/poller/cursors.json`) mean only genuinely new messages wake Aso; on first sight a channel is baselined so old history never replays.
+- **Chat poller** (`src/poller/`) covers what webhooks can't: ClickUp has **no chat webhook**, so DMs and channel @mentions are polled every ~90s via the v3 chat REST API. Per-channel cursors (`data/poller/cursors.json`) mean only genuinely new messages wake the agent; on first sight a channel is baselined so old history never replays.
 
 ### Categories (PRD §4.1)
 
@@ -39,19 +41,21 @@ chat (DMs/@mentions) ─poll ~90s via REST─▶ new, non-Aso ▶ handleWake(...
 
 | | What | Handling |
 |---|---|---|
-| **A** | A direct **@mention** of Aso on a task, or any **DM** | Wake now: load the thread, reply, record |
+| **A** | A direct **@mention** of the agent on a task, or any **DM** | Wake now: load the thread, reply, record |
 | **B** | Other task activity (created / updated / status / moved …) | Append to `data/events/inbox.jsonl` for the PM check |
-| **C** | **Anything authored by Aso** (loop guard), or irrelevant types | Drop |
+| **C** | **Anything authored by the agent itself** (loop guard), or irrelevant types | Drop |
+
+The loop guard keys on the agent's own ClickUp user id (`AGENT_USER_ID`); @mention detection keys on `AGENT_NAME` — both config, so nothing about the identity is baked into the code.
 
 ### Memory (PRD §4.2)
 
-The app owns Aso's episodic memory as plain files so it survives restarts and is debuggable:
+The app owns the agent's episodic memory as plain files so it survives restarts and is debuggable:
 
-- `data/threads/<source>-<id>.md` — one file per conversation (e.g. `clickup-task-86e….md`, `chat-8crzyb7-1458.md`), holding the running history. On a wake, the matching file is loaded as context so Aso answers *with the full story*.
+- `data/threads/<source>-<id>.md` — one file per conversation (e.g. `clickup-task-86e….md`, `chat-8crzyb7-1458.md`), holding the running history. On a wake, the matching file is loaded as context so the agent answers *with the full story*.
 - `data/threads/INDEX.md` — one line per thread.
 - Files are compacted (older part summarized to a "story so far") once they pass a size limit.
 
-### How Aso replies
+### How the agent replies
 
 - **Task replies** post as a **threaded reply under the triggering comment** (not a new root comment), assigned to the asker + `notify_all` so they actually get a ClickUp notification. ClickUp has no MCP tool for threaded replies, so the **agent composes** the text and the **app posts it** via REST (`/comment/{id}/reply`). A root-level comment is used only if the asker explicitly asks ("root", "top level", "new comment").
 - **Chat replies** go out through the agent's connector, addressing the person and adding them as a follower so they're notified.
@@ -64,12 +68,12 @@ The contract is the primary control, backed at the tool layer (`src/agent/policy
 
 ## Run it as an instance
 
-This is how to stand up a live instance (this is the actual production setup — a Cloudflare Tunnel, because the host blocks direct inbound).
+How to stand up a live instance (this is the actual production setup — a Cloudflare Tunnel, because the host blocks direct inbound).
 
 ### 0. Prerequisites
 
 - Node 22+, npm, `git` — and a logged-in **Claude Code** on the same machine/user (the agent runs inherit its connectors).
-- A **ClickUp personal API token** (`pk_…`) for Aso's account — Settings → Apps → API Token. Used only for webhook register/list and the chat poll; never for acting.
+- A **ClickUp personal API token** (`pk_…`) for the agent's account — Settings → Apps → API Token. Used only for webhook register/list and the chat poll; never for acting.
 - A domain on Cloudflare (here: `subturtle.app`) for the public webhook hostname.
 
 ### 1. Install & configure
@@ -79,21 +83,25 @@ npm install
 cp .env.example .env     # then edit .env
 ```
 
-Fill in `.env` (see [Configuration](#configuration) below). The required ones:
+Set the agent's persona and the required keys in `.env` (full list in [Configuration](#configuration)):
 
 ```ini
+AGENT_NAME=Aso Dara                 # this instance's name (used for @mention detection)
+AGENT_USER_ID=113552267             # the agent's own ClickUp account id (loop guard)
 CLICKUP_API_TOKEN=pk_xxxxxxxx
 WEBHOOK_PUBLIC_URL=https://aso-agent.subturtle.app/clickup/webhook
-SERVER_TLS=false         # behind a tunnel; the listener serves plain HTTP on loopback
+SERVER_TLS=false                    # behind a tunnel; the listener serves plain HTTP on loopback
 PORT=8787
 ```
+
+The agent's voice and rules live in `CONTRACT.md` — edit it to match the persona named above.
 
 ### 2. Expose the listener — Cloudflare Tunnel (recommended)
 
 A tunnel dials **out** to Cloudflare, so it needs no inbound firewall/security-group rule (works behind managed/NAT'd hosts). Install `cloudflared`, then:
 
 ```bash
-cloudflared tunnel login                       # browser auth; pick the zone (subturtle.app)
+cloudflared tunnel login                       # browser auth; pick the zone (e.g. subturtle.app)
 cloudflared tunnel create ceo-agent            # note the tunnel UUID
 
 # ~/.cloudflared/config.yml
@@ -115,7 +123,7 @@ If the host accepts public inbound, set `SERVER_TLS=true`, `PORT=443`, point a *
 ```bash
 mkdir -p data/tls
 openssl req -x509 -newkey rsa:2048 -nodes -days 825 \
-  -keyout data/tls/origin.key -out data/tls/origin.crt -subj "/CN=aso-agent.subturtle.app"
+  -keyout data/tls/origin.key -out data/tls/origin.crt -subj "/CN=<your-hostname>"
 sudo setcap 'cap_net_bind_service=+ep' "$(readlink -f "$(which node)")"   # bind :443 as non-root
 ```
 </details>
@@ -143,7 +151,7 @@ sudo env PATH=$PATH pm2 startup systemd -u $USER --hp $HOME   # relaunch on rebo
 curl https://aso-agent.subturtle.app/health     # → ok (proves ClickUp → tunnel → listener)
 ```
 
-Then, from a **non-Aso** account: post a comment **@mentioning Aso** on a task (expect a threaded reply + notification within seconds), and send Aso a **DM** (expect a chat reply within ~`POLL_INTERVAL_MS`).
+Then, from a **different** account (not the agent's): post a comment **@mentioning the agent** on a task (expect a threaded reply + notification within seconds), and send it a **DM** (expect a chat reply within ~`POLL_INTERVAL_MS`).
 
 ### Operating it
 
@@ -161,12 +169,12 @@ To deploy a code change: `git pull && npm run build && pm2 restart ceo-agent`. C
 
 ## Manual triggers (no server needed)
 
-Run any of these on demand; each is one headless run as Aso:
+Run any of these on demand; each is one headless run as the agent:
 
 ```bash
 npm run trigger -- read              # summarise the Subturtle.app board (no writes)
-npm run trigger -- dm-navid          # send Navid a first private chat message
-npm run trigger -- comment <taskId>  # read a task and post one comment as Aso
+npm run trigger -- dm-navid          # send the founder a first private chat message
+npm run trigger -- comment <taskId>  # read a task and post one comment
 ```
 
 ---
@@ -177,7 +185,9 @@ npm run trigger -- comment <taskId>  # read a task and post one comment as Aso
 
 | Var | Meaning |
 |---|---|
-| `CLICKUP_API_TOKEN` | Aso's `pk_…` token — webhook register/list + chat poll only |
+| `AGENT_NAME` | The persona this instance runs as (used for @mention detection) |
+| `AGENT_USER_ID` | The agent's own ClickUp account id (loop guard) |
+| `CLICKUP_API_TOKEN` | The agent's `pk_…` token — webhook register/list + chat poll only |
 | `WEBHOOK_PUBLIC_URL` | Public URL ClickUp posts to (the tunnel hostname + `/clickup/webhook`) |
 | `WEBHOOK_PATH` | Path the listener serves (default `/clickup/webhook`) |
 | `SERVER_TLS` | `false` behind a tunnel (plain HTTP); `true` for direct-to-origin HTTPS |
@@ -185,7 +195,7 @@ npm run trigger -- comment <taskId>  # read a task and post one comment as Aso
 | `POLL_INTERVAL_MS` | Chat poll cadence (default `90000`) |
 | `THREAD_COMPACT_BYTES` | Compact a thread file past this size (default `24000`) |
 | `MODEL_PM` / `MODEL_HEARTBEAT` | Model tiers (default `sonnet` / `opus`) |
-| `CLICKUP_WORKSPACE_ID`, `*_USER_ID`, `*_CHANNEL_ID`, `SUBTURTLE_APP_LIST_ID` | Workspace ids (loop guard, routing, scope) |
+| `CLICKUP_WORKSPACE_ID`, `NAVID_USER_ID`, `SOMI_USER_ID`, `*_CHANNEL_ID`, `SUBTURTLE_APP_LIST_ID` | Workspace, team, and routing ids |
 
 The webhook **signing secret** is *not* in `.env` — `webhook register` writes it to `data/webhooks.json`.
 

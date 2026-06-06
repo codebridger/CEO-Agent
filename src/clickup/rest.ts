@@ -1,5 +1,5 @@
 /**
- * Thin ClickUp REST client (Aso's personal token). This is the plumbing the
+ * Thin ClickUp REST client (the agent's personal token). This is the plumbing the
  * claude.ai connector can't do: webhook register/list/delete (no MCP tool
  * exists) and the cheap chat/comment reads the poller and dispatcher need.
  *
@@ -15,7 +15,7 @@ const V3 = "https://api.clickup.com/api/v3";
 function token(): string {
   if (!CLICKUP_API_TOKEN) {
     throw new Error(
-      "CLICKUP_API_TOKEN is not set. Add Aso's ClickUp personal token (pk_…) to .env — " +
+      "CLICKUP_API_TOKEN is not set. Add the agent's ClickUp personal token (pk_…) to .env — " +
         "it's required for webhook registration and the chat poller.",
     );
   }

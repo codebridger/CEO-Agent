@@ -1,8 +1,8 @@
 /**
  * Categorize a ClickUp webhook event into A / B / C (PRD §4.1):
- *   A — direct mention of Aso → wake now (returns an Inbound for handleWake)
+ *   A — direct mention of the agent → wake now (returns an Inbound for handleWake)
  *   B — other task activity → inbox for the (M3) PM check
- *   C — drop (loop guard for Aso-authored events, or irrelevant types)
+ *   C — drop (loop guard for agent-authored events, or irrelevant types)
  *
  * The webhook body for comment events is thin, so mention detection fetches the
  * comment via REST and inspects it — isolated here so finalizing the mention
@@ -10,6 +10,7 @@
  */
 
 import { IDENTITY } from "../config.js";
+import { textMentionsAgent } from "../agent/identity.js";
 import { getTaskComments, type TaskComment } from "../clickup/rest.js";
 import type { Inbound } from "../wake/handle.js";
 
@@ -45,17 +46,15 @@ function authorLabel(userId: number | undefined): string {
   return userId != null ? `teammate ${userId}` : "someone";
 }
 
-/** Does this comment @-mention Aso? Checks segment user refs, then text. */
-function commentMentionsAso(c: TaskComment): boolean {
-  const aso = IDENTITY.asoUserId;
+/** Does this comment @-mention the agent? Checks segment user refs, then text. */
+function commentMentionsAgent(c: TaskComment): boolean {
   for (const seg of c.segments) {
     const direct = seg["user"] as { id?: number | string } | undefined;
     const nested = (seg["attributes"] as { user?: { id?: number | string } } | undefined)?.user;
     const u = direct ?? nested;
-    if (u?.id != null && Number(u.id) === aso) return true;
+    if (u?.id != null && Number(u.id) === IDENTITY.agentUserId) return true;
   }
-  const t = c.text.toLowerCase();
-  return t.includes("@aso") || t.includes("aso dara");
+  return textMentionsAgent(c.text);
 }
 
 export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> {
@@ -64,8 +63,8 @@ export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> 
   const author = eventAuthor(ev);
 
   // Loop guard — never react to our own activity (PRD §4.1 Category C).
-  if (author != null && author === IDENTITY.asoUserId) {
-    return { category: "C", reason: `authored by Aso (loop guard): ${event}` };
+  if (author != null && author === IDENTITY.agentUserId) {
+    return { category: "C", reason: `authored by the agent (loop guard): ${event}` };
   }
 
   if (event === "taskCommentPosted" && taskId) {
@@ -75,8 +74,8 @@ export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> 
     } catch (err) {
       console.error(`[categorize] could not fetch comments for ${taskId}:`, (err as Error).message);
     }
-    const latest = comments.find((c) => c.userId !== IDENTITY.asoUserId);
-    if (latest && commentMentionsAso(latest)) {
+    const latest = comments.find((c) => c.userId !== IDENTITY.agentUserId);
+    if (latest && commentMentionsAgent(latest)) {
       return {
         category: "A",
         inbound: {

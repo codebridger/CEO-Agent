@@ -1,10 +1,10 @@
 /**
- * Thread files (PRD §4.2) — Aso's episodic memory. One markdown file per
+ * Thread files (PRD §4.2) — the agent's episodic memory. One markdown file per
  * conversation thread, named by source + id (e.g. `clickup-task-86exu5xd7.md`,
  * `chat-8crzyb7-1458.md`), plus an INDEX.md with one line per thread.
  *
  * The app owns these files (deterministic): the wake handler loads the history,
- * passes it to the agent as context, then records the inbound message and Aso's
+ * passes it to the agent as context, then records the inbound message and the agent's
  * reply here. The agent is asked only to read + reply, not to manage files.
  */
 
@@ -45,7 +45,7 @@ export async function appendTurn(threadId: string, who: string, text: string): P
 
 /**
  * INDEX.md: one line per thread — `- <id> · last <iso> · <state>`. Upsert the
- * line for this thread (read the index Aso reads first, replace or append).
+ * line for this thread (read the index the agent reads first, replace or append).
  */
 export async function upsertIndex(threadId: string, state: string): Promise<void> {
   await ensureDir();

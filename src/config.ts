@@ -47,19 +47,37 @@ function optionalIntEnv(key: string, fallback: number): number {
   return n;
 }
 
+/** First env var that is set wins; throws if none are. Used for renamed vars. */
+function requireIntEnvAny(keys: string[]): number {
+  for (const k of keys) {
+    const v = process.env[k];
+    if (v && v.trim() !== "") return requireIntEnv(k);
+  }
+  throw new Error(`Missing required env var (one of: ${keys.join(", ")}).`);
+}
+
 // --- configuration (sourced from .env) -----------------------------------
 
 /** ClickUp workspace ("team") id. */
 export const WORKSPACE_ID = requireEnv("CLICKUP_WORKSPACE_ID");
 
 /**
- * Known ClickUp identities. The agent acts as Aso Dara; the loop guard ignores
- * events authored by Aso's own account.
+ * The agent's display name. This is just the persona this instance runs as — the
+ * real identity (voice, account, rules) is defined in CONTRACT.md. Another
+ * instance loads a different contract and sets a different AGENT_NAME. Used for
+ * @mention detection and for labelling the agent's turns in thread files.
+ */
+export const AGENT_NAME = optionalEnv("AGENT_NAME", "Aso Dara");
+
+/**
+ * Known ClickUp identities. `agentUserId` is the account the agent speaks as; the
+ * loop guard ignores events authored by it. (AGENT_USER_ID; ASO_USER_ID accepted
+ * for backward compatibility.)
  */
 export const IDENTITY = {
-  asoUserId: requireIntEnv("ASO_USER_ID"), // Aso Dara — the agent speaks as this
-  navidUserId: requireIntEnv("NAVID_USER_ID"), // Navid Shad (founder, final word)
-  somiUserId: requireIntEnv("SOMI_USER_ID"), // Somayeh Roohani (full-stack)
+  agentUserId: requireIntEnvAny(["AGENT_USER_ID", "ASO_USER_ID"]),
+  navidUserId: requireIntEnv("NAVID_USER_ID"), // founder, final word
+  somiUserId: requireIntEnv("SOMI_USER_ID"), // teammate
 } as const;
 
 /** Private chat with Navid (PRD §6.2). Pinned so the agent never misroutes a DM. */
@@ -83,7 +101,7 @@ export const MODEL = {
 // --- M2: webhook listener + chat poller ----------------------------------
 
 /**
- * ClickUp personal API token (Aso's account). The claude.ai connector has NO
+ * ClickUp personal API token (the agent's account). The claude.ai connector has NO
  * webhook tool, so registering/listing webhooks and the cheap chat poll go
  * through the REST API with this token. Acting (comments/chat replies) still
  * happens via the claude.ai connector inside agent runs — this token is for
@@ -120,7 +138,7 @@ export const POLL_INTERVAL_MS = optionalIntEnv("POLL_INTERVAL_MS", 90_000);
 export const THREAD_COMPACT_BYTES = optionalIntEnv("THREAD_COMPACT_BYTES", 24_000);
 
 /**
- * Task events we subscribe to. Comments are classified A (mention of Aso, wake
+ * Task events we subscribe to. Comments are classified A (mention of the agent, wake
  * now) vs B (activity, inbox) at dispatch time; the rest are Category-B activity.
  * Scoped to the Subturtle.app list on registration (PRD §6.3 — minimal default).
  */

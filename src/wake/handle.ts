@@ -1,5 +1,5 @@
 /**
- * Category-A wake handler: a direct mention or DM that Aso answers immediately,
+ * Category-A wake handler: a direct mention or DM that the agent answers immediately,
  * with the full history of that thread loaded as context (PRD §4.1, §4.2).
  *
  * Runs are **serialized per thread** (decision in the architecture memo): same
@@ -14,7 +14,7 @@
  * through the agent's connector.
  */
 
-import { MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
+import { AGENT_NAME, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import { createTaskComment, replyToComment } from "../clickup/rest.js";
 import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/threads.js";
@@ -22,19 +22,19 @@ import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/thr
 const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
 
 export interface Inbound {
-  /** Where the message came from — decides how Aso replies. */
+  /** Where the message came from — decides how the agent replies. */
   source: "task" | "chat";
   /** Stable thread id / file slug, e.g. "clickup-task-86e..." or "chat-8crzyb7-1458". */
   threadId: string;
-  /** The new message text Aso should respond to. */
+  /** The new message text the agent should respond to. */
   text: string;
   /** Display label of the sender (for the thread file). */
   author: string;
-  /** ClickUp user id of the sender — so Aso can notify them in its reply. */
+  /** ClickUp user id of the sender — so the agent can notify them in its reply. */
   authorUserId?: number;
   /** Task id to comment on (source === "task"). */
   taskId?: string;
-  /** The comment that triggered this wake — Aso's reply threads under it. */
+  /** The comment that triggered this wake — the agent's reply threads under it. */
   commentId?: string;
   /** Chat channel id to reply in (source === "chat"). */
   channelId?: string;
@@ -127,7 +127,7 @@ export function handleWake(inbound: Inbound): Promise<void> {
       await appendTurn(inbound.threadId, inbound.author, inbound.text);
 
       if (!res.ok || !res.text.trim()) {
-        await appendTurn(inbound.threadId, "Aso (run failed)", res.error ?? "no output");
+        await appendTurn(inbound.threadId, `${AGENT_NAME} (run failed)`, res.error ?? "no output");
         await upsertIndex(inbound.threadId, `run failed: ${res.error ?? "unknown"}`);
         console.error(`[wake] agent run failed for ${inbound.threadId}: ${res.error}`);
         return;
@@ -145,7 +145,7 @@ export function handleWake(inbound: Inbound): Promise<void> {
         }
       }
 
-      await appendTurn(inbound.threadId, delivered ? "Aso" : "Aso (post failed)", replyText);
+      await appendTurn(inbound.threadId, delivered ? AGENT_NAME : `${AGENT_NAME} (post failed)`, replyText);
       await upsertIndex(inbound.threadId, replyText);
       await maybeCompact(inbound.threadId);
       console.log(`[wake] handled ${inbound.threadId} (${label})`);

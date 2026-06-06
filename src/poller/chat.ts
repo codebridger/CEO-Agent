@@ -1,9 +1,9 @@
 /**
  * Chat poller (PRD §4.1 fallback): ClickUp has no webhook for chat, so we poll
- * the agent's channels with the REST token (cheap) and wake Aso on new messages.
+ * the agent's channels with the REST token (cheap) and wake it on new messages.
  *
- *  - DM channels: every new message from someone other than Aso wakes Aso.
- *  - The public group channel: only messages that @mention Aso wake it (ambient
+ *  - DM channels: every new message from someone other than the agent wakes it.
+ *  - The public group channel: only messages that @mention the agent wake it (ambient
  *    group chatter is left alone).
  *
  * Per-channel cursors (last seen message timestamp) persist in
@@ -21,6 +21,7 @@ import {
   PUBLIC_CHANNEL_ID,
 } from "../config.js";
 import { getChatChannels, getChatMessages } from "../clickup/rest.js";
+import { textMentionsAgent } from "../agent/identity.js";
 import { handleWake } from "../wake/handle.js";
 
 interface Watch {
@@ -58,11 +59,6 @@ async function buildWatchList(): Promise<Watch[]> {
   return [...isDM].map(([id, dm]) => ({ id, isDM: dm }));
 }
 
-function mentionsAso(text: string): boolean {
-  const t = text.toLowerCase();
-  return /@\s*aso/.test(t) || t.includes("aso dara");
-}
-
 function chatUserLabel(userId: string): string {
   if (userId === String(IDENTITY.navidUserId)) return "Navid Shad (founder)";
   if (userId === String(IDENTITY.somiUserId)) return "Somayeh Roohani";
@@ -71,7 +67,7 @@ function chatUserLabel(userId: string): string {
 
 async function tick(): Promise<void> {
   const watches = await buildWatchList();
-  const aso = String(IDENTITY.asoUserId);
+  const agentId = String(IDENTITY.agentUserId);
 
   for (const w of watches) {
     let msgs;
@@ -91,11 +87,11 @@ async function tick(): Promise<void> {
     }
 
     const fresh = msgs
-      .filter((m) => m.date > known && m.userId !== aso)
+      .filter((m) => m.date > known && m.userId !== agentId)
       .sort((a, b) => a.date - b.date);
 
     for (const m of fresh) {
-      if (!w.isDM && !mentionsAso(m.content)) continue; // group: only @mentions
+      if (!w.isDM && !textMentionsAgent(m.content)) continue; // group: only @mentions
       console.log(`[poller] new ${w.isDM ? "DM" : "mention"} in ${w.id} from ${m.userId}`);
       // Fire-and-forget — handleWake serializes per thread internally.
       void handleWake({
