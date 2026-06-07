@@ -109,8 +109,10 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[]): 
   if (inbound.source === "chat") {
     head.push(
       "Do NOT send anything yourself — you have no send tool on this run. Decide what to send and to whom,",
-      "then OUTPUT ONLY a JSON object (no prose, no code fence), exactly this shape:",
+      "then OUTPUT ONLY a JSON object (no prose before or after it, no code fence), exactly this shape:",
       '  {"messages": [ {"to": "<target>", "text": "<message>"} ]}',
+      "It MUST be valid JSON. Inside \"text\": write \\n for line breaks, and do NOT use double-quote",
+      "characters — use single quotes ('like this') if you need to quote something. Output the JSON only.",
       "Each target is one of:",
       '  - "here"  → reply in this same conversation (the normal case: answering whoever just messaged you).',
       "  - a teammate's numeric user id → send them a direct message. Find the id in the team directory below.",
@@ -286,13 +288,62 @@ function parseChatDirective(raw: string): Directive {
   const brace = raw.match(/\{[\s\S]*\}/);
   const parsed =
     coerce(raw) || (fence?.[1] && coerce(fence[1].trim())) || (brace?.[0] && coerce(brace[0]));
-  // Fallback: if the agent ignored the format, treat the text as a plain in-thread
-  // reply rather than silently dropping it. Never invent actions on the fallback path.
-  if (!parsed) return { messages: [{ to: "here", text: raw }], actions: [] };
-  if (parsed.messages.length === 0 && parsed.actions.length === 0) {
-    return { messages: [{ to: "here", text: raw }], actions: [] };
+  if (parsed && (parsed.messages.length > 0 || parsed.actions.length > 0)) return parsed;
+
+  // Strict JSON failed (the usual cause: the agent left an unescaped " inside `text`,
+  // e.g. quoting a commit message). Recover the message text(s) leniently so we deliver
+  // the agent's actual words — never the raw {"messages":...} plumbing. Don't recover
+  // actions: executing a malformed directive is riskier than skipping it.
+  const recovered = recoverMessages(raw);
+  if (recovered.length > 0) return { messages: recovered, actions: [] };
+
+  // True fallback: no directive at all (the agent answered in plain prose). Post the
+  // prose as an in-thread reply, but strip any stray JSON envelope so plumbing never leaks.
+  const prose = stripDirectiveEnvelope(raw).trim();
+  return { messages: [{ to: "here", text: prose || raw }], actions: [] };
+}
+
+/** Turn JSON-ish escapes (\n, \t, \", \\, \uXXXX) into real characters. */
+function unescapeJsonish(s: string): string {
+  return s
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, "\t")
+    .replace(/\\r/g, "")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, "\\");
+}
+
+/**
+ * Lenient extraction of `{to, text}` pairs from a messages directive whose JSON is
+ * malformed (typically unescaped quotes inside `text`). Bypasses JSON.parse: grabs each
+ * text up to the closing `"}` of its object (non-greedy, so unescaped inner quotes survive).
+ */
+function recoverMessages(raw: string): OutMsg[] {
+  if (!/"messages"\s*:/.test(raw)) return [];
+  const out: OutMsg[] = [];
+  const withTo = /"to"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"text"\s*:\s*"([\s\S]*?)"\s*\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = withTo.exec(raw)) !== null) {
+    const text = unescapeJsonish(m[2] ?? "").trim();
+    if (text) out.push({ to: (m[1] ?? "").trim() || "here", text });
   }
-  return parsed;
+  if (out.length > 0) return out;
+  // No to/text pairs matched — fall back to text-only, defaulting each to this thread.
+  const textOnly = /"text"\s*:\s*"([\s\S]*?)"\s*\}/g;
+  while ((m = textOnly.exec(raw)) !== null) {
+    const text = unescapeJsonish(m[1] ?? "").trim();
+    if (text) out.push({ to: "here", text });
+  }
+  return out;
+}
+
+/** Remove a fenced or bare {...} directive envelope from prose, leaving the human text. */
+function stripDirectiveEnvelope(raw: string): string {
+  return raw
+    .replace(/```(?:json)?\s*[\s\S]*?```/g, "")
+    .replace(/\{[\s\S]*"messages"[\s\S]*\}/g, "")
+    .trim();
 }
 
 /**
