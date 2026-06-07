@@ -21,7 +21,6 @@ import { runAgent } from "../agent/runner.js";
 import { renderPrompt } from "../prompts/load.js";
 import { sendChatMessage } from "../clickup/rest.js";
 import { cloneOrUpdate } from "../council/repo.js";
-import { commitHistory } from "../history/commit.js";
 import { localParts } from "./time.js";
 import { setLastHeartbeat } from "./state.js";
 
@@ -72,7 +71,7 @@ export async function runHeartbeat(): Promise<{ ok: boolean; text: string }> {
   const res = await runAgent({ task, model: MODEL.heartbeat, timeoutMs: 600_000 });
   if (res.ok) {
     await setLastHeartbeat(dateStr);
-    await commitHistory(`heartbeat ${dateStr}`);
+    // History is committed + pushed once a day by the scheduler's daily data push.
     try {
       await sendChatMessage(NAVID_DM_CHANNEL_ID, `Heartbeat done for ${dateStr}. ${res.text.slice(0, 240)}`);
     } catch (err) {

@@ -8,7 +8,6 @@
 import { MODEL, SUBTURTLE_APP_LIST_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import { renderPrompt } from "../prompts/load.js";
-import { commitHistory } from "../history/commit.js";
 import { drainTo, readInbox, type InboxEvent } from "../memory/inbox.js";
 import { setLastPmCheck } from "./state.js";
 
@@ -53,7 +52,8 @@ export async function runPmCheck(): Promise<{ ok: boolean; text: string }> {
   if (res.ok) {
     await drainTo(); // archive the inbox only on success
     await setLastPmCheck(new Date().toISOString());
-    await commitHistory(`pm-check ${new Date().toISOString().slice(0, 10)}`);
+    // History is committed + pushed once a day by the scheduler's daily data push,
+    // not per PM check — keeps the data-branch log to one commit a day.
     console.log("[pm-check] done");
   } else {
     console.error("[pm-check] run failed:", res.error);

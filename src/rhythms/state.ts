@@ -9,6 +9,8 @@ export interface ScheduleState {
   lastPmCheckAt?: string;
   /** "YYYY-MM-DD" (in HEARTBEAT_TZ) of the last heartbeat. */
   lastHeartbeatDate?: string;
+  /** "YYYY-MM-DD" (in HEARTBEAT_TZ) of the last successful daily data push. */
+  lastDataPushDate?: string;
 }
 
 export async function readState(): Promise<ScheduleState> {
@@ -30,4 +32,8 @@ export async function setLastPmCheck(iso: string): Promise<void> {
 
 export async function setLastHeartbeat(dateStr: string): Promise<void> {
   await writeState({ ...(await readState()), lastHeartbeatDate: dateStr });
+}
+
+export async function setLastDataPush(dateStr: string): Promise<void> {
+  await writeState({ ...(await readState()), lastDataPushDate: dateStr });
 }

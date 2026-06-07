@@ -205,6 +205,13 @@ export const PM_CHECK_INTERVAL_MS = optionalIntEnv("PM_CHECK_INTERVAL_MS", 5 * 6
 export const HEARTBEAT_HOUR = optionalIntEnv("HEARTBEAT_HOUR", 8);
 export const HEARTBEAT_TZ = optionalEnv("HEARTBEAT_TZ", "Europe/Vilnius");
 
+/**
+ * The agent's history is pushed to its data branch ONCE per day — at this local hour
+ * in HEARTBEAT_TZ (end of day by default) — to keep the commit log to one a day rather
+ * than one per PM check/heartbeat. The data still lives on disk continuously between pushes.
+ */
+export const DATA_PUSH_HOUR = optionalIntEnv("DATA_PUSH_HOUR", 23);
+
 /** Council repo — read-only context for the heartbeat. Cloned fresh, never pushed to. */
 export const COUNCIL_REPO = optionalEnv("COUNCIL_REPO", "codebridger/subturtle-docs");
 export const COUNCIL_DIR = resolve(DATA_DIR, "council/subturtle-docs"); // git-ignored under /data/*

@@ -76,7 +76,13 @@ async function mirror(sub: string): Promise<void> {
   }
 }
 
-export async function commitHistory(message: string): Promise<void> {
+/**
+ * Mirror + commit the agent's history onto the data branch and push it. Returns true
+ * when the branch is in sync with origin afterwards (pushed, or already up to date),
+ * false on any failure — the daily scheduler uses this to retry an unpushed commit on
+ * the next tick rather than stranding it locally.
+ */
+export async function commitHistory(message: string): Promise<boolean> {
   try {
     await ensureWorktree();
 
@@ -87,17 +93,23 @@ export async function commitHistory(message: string): Promise<void> {
     const hasStaged = await git(["diff", "--cached", "--quiet"], DATA_BRANCH_WORKTREE)
       .then(() => false)
       .catch(() => true);
-    if (!hasStaged) return;
-
-    await git(
-      ["-c", `user.name=${AGENT_NAME}`, "-c", `user.email=${AGENT_GIT_EMAIL}`, "commit", "-m", message],
-      DATA_BRANCH_WORKTREE,
-    );
-    await git(["push", "-u", "origin", DATA_BRANCH], DATA_BRANCH_WORKTREE).catch((err) =>
-      console.error("[history] push failed (committed locally):", (err as Error).message),
-    );
-    console.log(`[history] committed to ${DATA_BRANCH}: ${message}`);
+    if (hasStaged) {
+      await git(
+        ["-c", `user.name=${AGENT_NAME}`, "-c", `user.email=${AGENT_GIT_EMAIL}`, "commit", "-m", message],
+        DATA_BRANCH_WORKTREE,
+      );
+      console.log(`[history] committed to ${DATA_BRANCH}: ${message}`);
+    }
+    // Always push — this also retries a previously-failed push when nothing is newly staged.
+    try {
+      await git(["push", "-u", "origin", DATA_BRANCH], DATA_BRANCH_WORKTREE);
+      return true;
+    } catch (err) {
+      console.error("[history] push failed (committed locally):", (err as Error).message);
+      return false;
+    }
   } catch (err) {
     console.error("[history] commit failed:", (err as Error).message);
+    return false;
   }
 }

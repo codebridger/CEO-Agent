@@ -6,11 +6,12 @@
  * cross-process rhythm lock so nothing overlaps.
  */
 
-import { HEARTBEAT_HOUR, HEARTBEAT_TZ, PM_CHECK_INTERVAL_MS } from "../config.js";
+import { DATA_PUSH_HOUR, HEARTBEAT_HOUR, HEARTBEAT_TZ, PM_CHECK_INTERVAL_MS } from "../config.js";
+import { commitHistory } from "../history/commit.js";
 import { runHeartbeat } from "./heartbeat.js";
 import { runExclusive } from "./lock.js";
 import { runPmCheck } from "./pmCheck.js";
-import { readState, setLastPmCheck } from "./state.js";
+import { readState, setLastDataPush, setLastPmCheck } from "./state.js";
 import { isWeekday, localParts } from "./time.js";
 
 const TICK_MS = 60_000;
@@ -26,6 +27,20 @@ async function heartbeatDue(now: Date): Promise<boolean> {
   if (!isWeekday(weekday) || hour < HEARTBEAT_HOUR) return false;
   const { lastHeartbeatDate } = await readState();
   return lastHeartbeatDate !== dateStr; // once per day
+}
+
+async function dataPushDue(now: Date): Promise<boolean> {
+  const { dateStr, hour } = localParts(HEARTBEAT_TZ, now);
+  if (hour < DATA_PUSH_HOUR) return false; // not yet end of day
+  const { lastDataPushDate } = await readState();
+  return lastDataPushDate !== dateStr; // once per day, every day (incl. weekends)
+}
+
+/** Commit + push the agent's history once a day; mark the day done only when in sync. */
+async function pushDailyData(now: Date): Promise<void> {
+  const { dateStr } = localParts(HEARTBEAT_TZ, now);
+  const inSync = await commitHistory(`data ${dateStr}`);
+  if (inSync) await setLastDataPush(dateStr);
 }
 
 /** Start the scheduler loop. Returns a stop function. */
@@ -47,6 +62,8 @@ export async function startScheduler(): Promise<() => void> {
       } else if (await pmCheckDue(now)) {
         await runExclusive("pm-check", runPmCheck);
       }
+      // Independent of the rhythms: push the day's history once, at end of day.
+      if (await dataPushDue(now)) await pushDailyData(now);
     } catch (err) {
       console.error("[scheduler] tick error:", (err as Error).message);
     } finally {
@@ -58,7 +75,8 @@ export async function startScheduler(): Promise<() => void> {
   const hb = localParts(HEARTBEAT_TZ);
   console.log(
     `[scheduler] started — PM check every ${Math.round(PM_CHECK_INTERVAL_MS / 3_600_000)}h, ` +
-      `heartbeat weekdays ${HEARTBEAT_HOUR}:00 ${HEARTBEAT_TZ} (now ${hb.dateStr} ${hb.hour}:00 local)`,
+      `heartbeat weekdays ${HEARTBEAT_HOUR}:00 ${HEARTBEAT_TZ}, ` +
+      `daily data push ${DATA_PUSH_HOUR}:00 ${HEARTBEAT_TZ} (now ${hb.dateStr} ${hb.hour}:00 local)`,
   );
 
   return () => {
