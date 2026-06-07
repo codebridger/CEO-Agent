@@ -3,9 +3,11 @@ dist/
 .env
 *.local
 
-# Runtime data is ignored by default — EXCEPT the agent's own history (threads +
-# beat logs), which is version-controlled. Secrets (webhooks.json signing secret,
-# tls/ keys), the inbox, poller cursors and the council clone stay ignored.
-/data/*
-!/data/threads/
-!/data/heartbeats/
+# Runtime data lives ENTIRELY outside main. main carries only logic + code.
+# The agent's own history (threads + beat logs) is version-controlled on a
+# separate branch named after the agent (AGENT_NAME, e.g. `aso-dara`), checked
+# out as a linked worktree at /.data-branch and pushed there by src/history/commit.ts.
+# Everything under /data (history, secrets, tls keys, inbox, poller cursors,
+# council clone) is ignored on main.
+/data/
+/.data-branch/

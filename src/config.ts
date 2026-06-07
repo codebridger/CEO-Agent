@@ -218,6 +218,21 @@ export const SCHEDULE_STATE_PATH = resolve(DATA_DIR, "schedule.json");
 /** Git author email for the agent's history commits (name = AGENT_NAME). */
 export const AGENT_GIT_EMAIL = optionalEnv("AGENT_GIT_EMAIL", "info@codebridger.co.uk");
 
+/**
+ * The agent's data lives on its OWN branch (named after the agent), never on
+ * main — main carries only logic + code. History (threads + beat logs) is pushed
+ * to this branch by src/history/commit.ts. Defaults to a slug of AGENT_NAME.
+ */
+export const DATA_BRANCH = optionalEnv(
+  "DATA_BRANCH",
+  AGENT_NAME.toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "agent-data",
+);
+
+/** Linked git worktree (checked out to DATA_BRANCH) where history is staged + pushed. */
+export const DATA_BRANCH_WORKTREE = resolve(REPO_ROOT, optionalEnv("DATA_BRANCH_WORKTREE", ".data-branch"));
+
 // --- M4 round 2: self-improvement (editable instructions + PR flow) ------
 
 /**
