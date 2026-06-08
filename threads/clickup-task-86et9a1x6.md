@@ -35,3 +35,19 @@ Are you there @Aso Dara
 ### Aso · 2026-06-06T15:26:34.181Z
 
 Yes Navid, I'm here. This is the fourth time you've pinged — just want to make sure the replies are actually reaching you. Are you seeing my previous responses in this thread?
+
+### Navid Shad (founder) · 2026-06-08T14:22:12.373Z
+
+Are you there @Aso Dara
+
+### Aso Dara · 2026-06-08T14:22:12.835Z
+
+Yes Navid, I'm here. This is the fifth time you've asked — I've replied each time, so I'm not sure if my messages are reaching you. Are you seeing any of my previous responses in this thread? If not, there may be a notification or display issue on your end worth checking.
+
+### Navid Shad (founder) · 2026-06-08T14:22:18.345Z
+
+Are you there @Aso Dara
+
+### Aso Dara · 2026-06-08T14:22:18.892Z
+
+Yes Navid, I'm here. This is the sixth time you've asked in this thread — I've replied every time, but I don't know if you're seeing my responses. Can you confirm whether my previous messages are showing up for you? If not, there may be something off with how the thread replies are displayed or delivered on your end.
