@@ -251,5 +251,13 @@ export const PROMPTS_DIR = resolve(REPO_ROOT, "prompts");
 /** GitHub login tagged on self-improvement PRs (assignee + @mention; reviews go to Navid). */
 export const GITHUB_REVIEWER = optionalEnv("GITHUB_REVIEWER", "navidshad");
 
+/**
+ * GitHub org searched for commits/PRs that reference a ClickUp task id — the
+ * "linked development activity" ClickUp shows in a task's feed but never exposes
+ * via its API. Defaults to the owner of COUNCIL_REPO (e.g. "codebridger").
+ * Fetched through the box's authed `gh` CLI, so no token lives in this app.
+ */
+export const GITHUB_ORG = optionalEnv("GITHUB_ORG", COUNCIL_REPO.split("/")[0] || "codebridger");
+
 /** Throwaway git worktrees used to build self-improvement PRs (git-ignored). */
 export const SELFIMPROVE_DIR = resolve(DATA_DIR, "selfimprove");

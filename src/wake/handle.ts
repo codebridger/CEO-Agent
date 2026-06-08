@@ -27,6 +27,7 @@ import {
   sendChatMessage,
   type Member,
 } from "../clickup/rest.js";
+import { buildTaskActivityDigest } from "../activity/digest.js";
 import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/threads.js";
 import { matchCommand } from "../rhythms/commands.js";
 import { runExclusive } from "../rhythms/lock.js";
@@ -90,7 +91,7 @@ function directoryBlock(members: Member[]): string {
     .join("\n");
 }
 
-function buildWakePrompt(inbound: Inbound, history: string, members: Member[]): string {
+function buildWakePrompt(inbound: Inbound, history: string, members: Member[], activity: string): string {
   const uid = inbound.authorUserId;
   const head = [
     `You have been woken by a new ${inbound.source === "chat" ? "chat message" : "task comment"} addressed to you.`,
@@ -100,10 +101,16 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[]): 
       ? "Conversation so far (your episodic memory for this thread):\n---\n" + history.trim() + "\n---"
       : "This is a new thread — no prior history.",
     "",
+    activity.trim()
+      ? "Task activity tail (full comment thread + linked GitHub work — already fetched for you):\n---\n" +
+        activity.trim() +
+        "\n---"
+      : "",
+    "",
     `New message from ${inbound.author}:`,
     inbound.text.trim(),
     "",
-    "Read whatever ClickUp/Stripe context you need first.",
+    "Read whatever further ClickUp/Stripe context you need first.",
   ];
 
   if (inbound.source === "chat") {
@@ -193,8 +200,11 @@ export function handleWake(inbound: Inbound): Promise<void> {
       // Chat wakes get the team directory so the agent can address anyone by id.
       const members = inbound.source === "chat" ? await loadDirectory() : [];
       const history = await loadThread(inbound.threadId);
+      // Task wakes get the full activity tail (comments + replies + linked GitHub),
+      // assembled here so the agent never has to reconstruct it (and can't miss it).
+      const activity = inbound.source === "task" && inbound.taskId ? await loadActivity(inbound.taskId) : "";
       const res = await runAgent({
-        task: buildWakePrompt(inbound, history, members),
+        task: buildWakePrompt(inbound, history, members, activity),
         model: MODEL.pm,
         // The app performs every write — block the agent's own posting tools so it
         // can only compose, never (claim to) send.
@@ -244,6 +254,17 @@ export function handleWake(inbound: Inbound): Promise<void> {
       exitWake();
     }
   });
+}
+
+/** Best-effort activity tail; an empty string just means the agent reads context itself. */
+async function loadActivity(taskId: string): Promise<string> {
+  try {
+    const digest = await buildTaskActivityDigest(taskId);
+    return digest.markdown;
+  } catch (err) {
+    console.error(`[wake] could not build activity digest for ${taskId}:`, (err as Error).message);
+    return "";
+  }
 }
 
 /** Best-effort team directory; an empty list just means the agent works by raw ids. */

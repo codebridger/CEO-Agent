@@ -129,6 +129,107 @@ export async function getTaskComments(taskId: string): Promise<TaskComment[]> {
   });
 }
 
+/** One threaded reply under a comment, normalized like a top-level comment. */
+export interface CommentReply {
+  id: string;
+  text: string;
+  userId: number | undefined;
+  date: number | undefined;
+}
+
+/** GET the threaded replies under a single comment (used to expand reply_count > 0). */
+export async function getCommentReplies(commentId: string): Promise<CommentReply[]> {
+  const out = await req<{ comments?: Array<Record<string, unknown>> }>(
+    "GET",
+    `${V2}/comment/${commentId}/reply`,
+  );
+  return (out.comments ?? []).map((c) => {
+    const user = c["user"] as Record<string, unknown> | undefined;
+    return {
+      id: String(c["id"]),
+      text: String(c["comment_text"] ?? ""),
+      userId: user ? Number(user["id"]) : undefined,
+      date: c["date"] ? Number(c["date"]) : undefined,
+    };
+  });
+}
+
+/** A comment plus its expanded threaded replies — one node of the activity tail. */
+export interface CommentThread extends TaskComment {
+  reply_count: number;
+  replies: CommentReply[];
+}
+
+/**
+ * The fullest comment history the public API allows: pages `GET /task/{id}/comment`
+ * back through `start`/`start_id` (the endpoint returns ~25 newest-first per page)
+ * and expands every comment that has threaded replies. This is the accessible
+ * "activity tail" — ClickUp exposes no field/status-change history endpoint
+ * (404), time-in-status is plan-gated, and audit logs are Enterprise-only, so
+ * comments + replies are all an API token can reconstruct.
+ *
+ * Returns OLDEST-first (chronological) for prompt readability. Best-effort on
+ * replies: a failed reply fetch leaves that node's `replies` empty rather than
+ * throwing the whole tail away.
+ */
+export async function getTaskActivityTail(
+  taskId: string,
+  opts: { maxComments?: number } = {},
+): Promise<CommentThread[]> {
+  const max = opts.maxComments ?? 100;
+  const collected: Array<Record<string, unknown>> = [];
+  let start: number | undefined;
+  let startId: string | undefined;
+
+  // Page newest-first until we hit `max` or a short/empty page (end of history).
+  for (let guard = 0; guard < 20 && collected.length < max; guard++) {
+    const qs = new URLSearchParams();
+    if (start !== undefined) qs.set("start", String(start));
+    if (startId !== undefined) qs.set("start_id", startId);
+    const url = `${V2}/task/${taskId}/comment${qs.toString() ? `?${qs}` : ""}`;
+    const page = await req<{ comments?: Array<Record<string, unknown>> }>("GET", url);
+    const batch = page.comments ?? [];
+    if (batch.length === 0) break;
+    collected.push(...batch);
+    const last = batch[batch.length - 1];
+    const lastDate = last?.["date"] ? Number(last["date"]) : undefined;
+    const lastId = last?.["id"] ? String(last["id"]) : undefined;
+    // No forward progress (same cursor) → stop, else we'd loop on the tail page.
+    if (lastDate === start && lastId === startId) break;
+    if (batch.length < 25) break; // last page
+    start = lastDate;
+    startId = lastId;
+  }
+
+  const trimmed = collected.slice(0, max);
+  const threads: CommentThread[] = await Promise.all(
+    trimmed.map(async (c) => {
+      const user = c["user"] as Record<string, unknown> | undefined;
+      const replyCount = c["reply_count"] ? Number(c["reply_count"]) : 0;
+      const base: CommentThread = {
+        id: String(c["id"]),
+        text: String(c["comment_text"] ?? ""),
+        userId: user ? Number(user["id"]) : undefined,
+        segments: (c["comment"] as Array<Record<string, unknown>>) ?? [],
+        date: c["date"] ? Number(c["date"]) : undefined,
+        reply_count: replyCount,
+        replies: [],
+      };
+      if (replyCount > 0) {
+        try {
+          base.replies = await getCommentReplies(base.id);
+        } catch (err) {
+          console.error(`[clickup] replies for comment ${base.id} failed:`, (err as Error).message);
+        }
+      }
+      return base;
+    }),
+  );
+
+  // Oldest-first for the prompt.
+  return threads.sort((a, b) => (a.date ?? 0) - (b.date ?? 0));
+}
+
 export interface PostCommentOpts {
   text: string;
   /** Assign the comment to this user id so they get a notification. */

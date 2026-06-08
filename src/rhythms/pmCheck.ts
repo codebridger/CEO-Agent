@@ -9,7 +9,11 @@ import { MODEL, SUBTURTLE_APP_LIST_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import { renderPrompt } from "../prompts/load.js";
 import { drainTo, readInbox, type InboxEvent } from "../memory/inbox.js";
+import { buildTaskActivityDigest } from "../activity/digest.js";
 import { setLastPmCheck } from "./state.js";
+
+/** Cap how many tasks we pull a full activity tail for — bounds prompt size + GitHub search calls. */
+const MAX_ACTIVITY_TASKS = 8;
 
 /** Built-in fallback if prompts/pm-check.md is missing (the contract carries the real rules). */
 const PM_CHECK_FALLBACK = [
@@ -20,7 +24,7 @@ const PM_CHECK_FALLBACK = [
   "Work over each group per your contract, then sweep the active tasks in the Subturtle.app list (list id {{listId}}). Comment where it helps; if nothing is active, propose the next batch in the public channel. Report a short summary of what you did.",
 ].join("\n");
 
-function groupByTask(events: InboxEvent[]): string {
+function groupByTask(events: InboxEvent[]): { rendered: string; taskIds: string[] } {
   const groups = new Map<string, InboxEvent[]>();
   for (const e of events) {
     const key = e.taskId ?? e.threadId;
@@ -33,13 +37,34 @@ function groupByTask(events: InboxEvent[]): string {
     lines.push(`- Task ${task}:`);
     for (const e of evs) lines.push(`    • ${e.event} — ${e.summary}`);
   }
-  return lines.join("\n");
+  // Only real task ids (not threadId-only chat groups) get an activity tail.
+  const taskIds = [...new Set(events.map((e) => e.taskId).filter((t): t is string => !!t))];
+  return { rendered: lines.join("\n"), taskIds };
+}
+
+/** Build the per-task activity tails for the touched tasks, capped, as one block. */
+async function activityTails(taskIds: string[]): Promise<string> {
+  const picked = taskIds.slice(0, MAX_ACTIVITY_TASKS);
+  if (picked.length === 0) return "";
+  const digests = await Promise.all(picked.map((id) => buildTaskActivityDigest(id)));
+  const more =
+    taskIds.length > picked.length
+      ? `\n\n(+${taskIds.length - picked.length} more touched tasks — read their tails directly if needed.)`
+      : "";
+  return (
+    "Full activity tail for each touched task (comments + threaded replies + linked GitHub work), " +
+    "already fetched so you don't miss any of it:\n\n" +
+    digests.map((d) => d.markdown).join("\n\n---\n\n") +
+    more
+  );
 }
 
 export async function runPmCheck(): Promise<{ ok: boolean; text: string }> {
   const events = await readInbox();
+  const grouped = events.length ? groupByTask(events) : { rendered: "", taskIds: [] };
+  const tails = await activityTails(grouped.taskIds);
   const activity = events.length
-    ? `Activity since your last check, grouped by task:\n${groupByTask(events)}`
+    ? `Activity since your last check, grouped by task:\n${grouped.rendered}${tails ? `\n\n${tails}` : ""}`
     : "No new activity arrived since your last check.";
 
   const task = await renderPrompt(
