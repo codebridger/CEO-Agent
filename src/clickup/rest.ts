@@ -22,20 +22,60 @@ function token(): string {
   return CLICKUP_API_TOKEN;
 }
 
-async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method,
-    headers: {
-      Authorization: token(),
-      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
-    },
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(`ClickUp ${method} ${url} → ${res.status}: ${text.slice(0, 400)}`);
+/** Transient HTTP statuses worth retrying: rate-limit + server-side 5xx. */
+const TRANSIENT_STATUS = new Set([429, 500, 502, 503, 504]);
+const MAX_ATTEMPTS = 3;
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/** Exponential backoff with jitter; honor a numeric Retry-After (seconds) if given. */
+function backoffMs(attempt: number, retryAfter: string | null): number {
+  if (retryAfter) {
+    const secs = Number(retryAfter);
+    if (Number.isFinite(secs) && secs > 0) return Math.min(secs * 1000, 10_000);
   }
-  return (text ? JSON.parse(text) : {}) as T;
+  return 300 * 2 ** attempt + Math.floor(Math.random() * 200);
+}
+
+async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
+  // Only idempotent GETs are retried — never replay a POST/PUT/DELETE, or we'd
+  // risk double-posting a comment or chat message.
+  const canRetry = method === "GET";
+  let lastErr: Error | undefined;
+
+  for (let attempt = 0; attempt < (canRetry ? MAX_ATTEMPTS : 1); attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: {
+          Authorization: token(),
+          ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        },
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      });
+    } catch (err) {
+      // Network-level failure (DNS, reset, timeout) — transient for a GET.
+      lastErr = new Error(`ClickUp ${method} ${url} → network error: ${(err as Error).message}`);
+      if (canRetry && attempt < MAX_ATTEMPTS - 1) {
+        await sleep(backoffMs(attempt, null));
+        continue;
+      }
+      throw lastErr;
+    }
+
+    const text = await res.text();
+    if (res.ok) return (text ? JSON.parse(text) : {}) as T;
+
+    lastErr = new Error(`ClickUp ${method} ${url} → ${res.status}: ${text.slice(0, 400)}`);
+    if (canRetry && TRANSIENT_STATUS.has(res.status) && attempt < MAX_ATTEMPTS - 1) {
+      await sleep(backoffMs(attempt, res.headers.get("retry-after")));
+      continue;
+    }
+    throw lastErr;
+  }
+
+  throw lastErr ?? new Error(`ClickUp ${method} ${url} → exhausted retries`);
 }
 
 // --- webhooks (no MCP equivalent) ----------------------------------------
