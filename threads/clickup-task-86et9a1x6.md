@@ -51,3 +51,21 @@ Are you there @Aso Dara
 ### Aso Dara · 2026-06-08T14:22:18.892Z
 
 Yes Navid, I'm here. This is the sixth time you've asked in this thread — I've replied every time, but I don't know if you're seeing my responses. Can you confirm whether my previous messages are showing up for you? If not, there may be something off with how the thread replies are displayed or delivered on your end.
+
+### Navid Shad (founder) · 2026-06-09T05:24:30.386Z
+
+Are you there @Aso Dara
+
+### Aso Dara · 2026-06-09T05:24:30.824Z
+
+Yes Navid, I'm here.
+
+### Navid Shad (founder) · 2026-06-09T05:24:36.611Z
+
+Are you there @Aso Dara
+
+### Aso Dara · 2026-06-09T05:24:37.002Z
+
+Yes Navid, I'm here.
+
+On the Google Meet question — noted. I'll park that task and mark the milestone complete. I'll open a PR to update the task status in the council repo so you can review and merge.
