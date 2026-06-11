@@ -165,30 +165,22 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[], a
   return head.filter(Boolean).join("\n");
 }
 
-/** Post the composed reply to ClickUp (threaded by default). Returns a log label. */
+/** Post the composed reply to ClickUp (threaded by default, markdown rendered). Returns a log label. */
 async function postTaskReply(inbound: Inbound, text: string): Promise<string> {
   const threaded = Boolean(inbound.commentId) && !wantsRootComment(inbound.text);
-  const kind = threaded ? "threaded reply" : "root comment";
-  const where = threaded ? `under comment ${inbound.commentId}` : `on task ${inbound.taskId}`;
   // Address the person with a real @mention (like a human would) rather than assigning
-  // them the comment. Drop the "(founder)"-style suffix from the display label.
+  // them the comment. Drop the "(founder)"-style suffix from the display label. The text
+  // itself is rendered as markdown by rest.ts (rich segments, plain-text fallback).
   const name = inbound.author.replace(/\s*\([^)]*\)\s*$/, "").trim() || inbound.author;
   const mention = inbound.authorUserId ? { id: inbound.authorUserId, name } : undefined;
+  const opts = { text, mention, notifyAll: true };
 
-  const post = (o: Parameters<typeof createTaskComment>[1]) =>
-    threaded ? replyToComment(inbound.commentId ?? "", o) : createTaskComment(inbound.taskId ?? "", o);
-
-  try {
-    const r = await post({ text, mention, notifyAll: true });
-    return `${kind} ${r.id} ${where}${mention ? " (@mention)" : ""}`;
-  } catch (err) {
-    if (!mention) throw err;
-    // The rich mention format was rejected — fall back to a plain comment so the
-    // reply still lands (the agent already addresses the person by name in the text).
-    console.error(`[wake] mention post failed (${(err as Error).message}); retrying plain`);
-    const r = await post({ text, notifyAll: true });
-    return `${kind} ${r.id} ${where} (plain — mention failed)`;
+  if (threaded) {
+    const r = await replyToComment(inbound.commentId ?? "", opts);
+    return `threaded reply ${r.id} under comment ${inbound.commentId}`;
   }
+  const r = await createTaskComment(inbound.taskId ?? "", opts);
+  return `root comment ${r.id} on task ${inbound.taskId}`;
 }
 
 /**

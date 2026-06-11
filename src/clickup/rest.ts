@@ -8,6 +8,7 @@
  */
 
 import { CLICKUP_API_TOKEN, WORKSPACE_ID } from "../config.js";
+import { markdownToSegments } from "./markdown.js";
 
 const V2 = "https://api.clickup.com/api/v2";
 const V3 = "https://api.clickup.com/api/v3";
@@ -285,16 +286,20 @@ export interface PostCommentOpts {
   mention?: { id: number; name: string };
 }
 
-function commentBody(o: PostCommentOpts): Record<string, unknown> {
-  if (o.mention) {
-    return {
-      comment: [
-        { type: "tag", user: { id: o.mention.id }, text: `@${o.mention.name}` },
-        { text: ` ${o.text}` },
-      ],
-      notify_all: o.notifyAll ?? true,
-    };
-  }
+/**
+ * Rich body: the agent's text rendered as ClickUp segments so markdown actually
+ * formats (ClickUp ignores markdown in `comment_text`). A mention, if any, leads.
+ */
+function richBody(o: PostCommentOpts): Record<string, unknown> {
+  const body = markdownToSegments(o.text);
+  const comment: unknown[] = o.mention
+    ? [{ type: "tag", user: { id: o.mention.id }, text: `@${o.mention.name}` }, { text: " " }, ...body]
+    : body;
+  return { comment, notify_all: o.notifyAll ?? true };
+}
+
+/** Plain fallback body — used only if ClickUp rejects the rich segment form. */
+function plainBody(o: PostCommentOpts): Record<string, unknown> {
   return {
     comment_text: o.text,
     notify_all: o.notifyAll ?? true,
@@ -302,16 +307,26 @@ function commentBody(o: PostCommentOpts): Record<string, unknown> {
   };
 }
 
+/** POST a comment as rich markdown segments; fall back to plain text if the rich form is rejected. */
+async function postComment(path: string, o: PostCommentOpts): Promise<{ id: string }> {
+  try {
+    const out = await req<{ id?: string | number }>("POST", path, richBody(o));
+    return { id: String(out.id ?? "") };
+  } catch (err) {
+    console.error(`[clickup] rich comment rejected (${(err as Error).message}); retrying as plain text`);
+    const out = await req<{ id?: string | number }>("POST", path, plainBody(o));
+    return { id: String(out.id ?? "") };
+  }
+}
+
 /** Post a threaded reply UNDER an existing comment (keeps the conversation in-thread). */
 export async function replyToComment(commentId: string, o: PostCommentOpts): Promise<{ id: string }> {
-  const out = await req<{ id?: string | number }>("POST", `${V2}/comment/${commentId}/reply`, commentBody(o));
-  return { id: String(out.id ?? "") };
+  return postComment(`${V2}/comment/${commentId}/reply`, o);
 }
 
 /** Post a new ROOT-level comment on a task (used only when asked to talk at top level). */
 export async function createTaskComment(taskId: string, o: PostCommentOpts): Promise<{ id: string }> {
-  const out = await req<{ id?: string | number }>("POST", `${V2}/task/${taskId}/comment`, commentBody(o));
-  return { id: String(out.id ?? "") };
+  return postComment(`${V2}/task/${taskId}/comment`, o);
 }
 
 export interface ChatChannel {
