@@ -18,6 +18,7 @@ import {
   PUBLIC_CHANNEL_ID,
 } from "../config.js";
 import { runAgent } from "../agent/runner.js";
+import { BROWSER_TOOLS } from "../agent/policy.js";
 import { renderPrompt } from "../prompts/load.js";
 import { sendChatMessage } from "../clickup/rest.js";
 import { cloneOrUpdate } from "../council/repo.js";
@@ -68,7 +69,8 @@ export async function runHeartbeat(): Promise<{ ok: boolean; text: string }> {
     HEARTBEAT_FALLBACK,
   );
 
-  const res = await runAgent({ task, model: MODEL.heartbeat, timeoutMs: 600_000 });
+  // Unattended run — never drive the browser on Navid's screen (see policy.ts).
+  const res = await runAgent({ task, model: MODEL.heartbeat, timeoutMs: 600_000, disallowTools: BROWSER_TOOLS });
   if (res.ok) {
     await setLastHeartbeat(dateStr);
     // History is committed + pushed once a day by the scheduler's daily data push.

@@ -7,6 +7,7 @@
 
 import { MODEL, SUBTURTLE_APP_LIST_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
+import { BROWSER_TOOLS } from "../agent/policy.js";
 import { renderPrompt } from "../prompts/load.js";
 import { drainTo, readInbox, type InboxEvent } from "../memory/inbox.js";
 import { buildTaskActivityDigest } from "../activity/digest.js";
@@ -73,7 +74,8 @@ export async function runPmCheck(): Promise<{ ok: boolean; text: string }> {
     PM_CHECK_FALLBACK,
   );
 
-  const res = await runAgent({ task, model: MODEL.pm });
+  // Unattended run — never drive the browser on Navid's screen (see policy.ts).
+  const res = await runAgent({ task, model: MODEL.pm, disallowTools: BROWSER_TOOLS });
   if (res.ok) {
     await drainTo(); // archive the inbox only on success
     await setLastPmCheck(new Date().toISOString());

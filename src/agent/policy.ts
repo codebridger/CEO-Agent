@@ -19,3 +19,14 @@ export const DISALLOWED_TOOLS: string[] = [
   "mcp__claude_ai_Stripe__stripe_api_execute",
   "mcp__claude_ai_ClickUp__clickup_delete_task",
 ];
+
+/**
+ * Remote browser (the real Chrome on Navid's laptop, via remote-browser-mcp +
+ * Cloudflare tunnel). Not denied globally: interactive wakes may browse — the
+ * contract makes them call check_local_status first, which notifies Navid that
+ * a session is starting. Scheduled/maintenance runs (heartbeat, PM check,
+ * thread compaction) pass these via `disallowTools` so an unattended rhythm
+ * never drives Navid's screen. Server-level names cover every tool the
+ * `browser` (Playwright MCP) and `browser-daemon` servers expose.
+ */
+export const BROWSER_TOOLS: string[] = ["mcp__browser", "mcp__browser-daemon"];
