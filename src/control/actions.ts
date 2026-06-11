@@ -16,13 +16,15 @@ import { readWebhookState } from "../state/webhooks.js";
 import { requestRestart } from "../ops/restart.js";
 import { sendChatMessage } from "../clickup/rest.js";
 import { proposeImprovement, type ProposeFile } from "../selfimprove/propose.js";
+import { appendNote } from "../memory/notes.js";
 import type { Inbound } from "../wake/handle.js";
 
 export type Action =
   | { type: "webhook.register" }
   | { type: "webhook.unregister"; id?: string }
   | { type: "restart"; at?: number; reason?: string }
-  | { type: "self-improve"; topic: string; summary: string; files: ProposeFile[] };
+  | { type: "self-improve"; topic: string; summary: string; files: ProposeFile[] }
+  | { type: "remember"; text: string };
 
 /** Validate a loosely-typed array from the directive into Actions; drop junk. */
 export function coerceActions(raw: unknown): Action[] {
@@ -41,6 +43,9 @@ export function coerceActions(raw: unknown): Action[] {
         .filter((f) => typeof f.path === "string" && typeof f.content === "string")
         .map((f) => ({ path: String(f.path), content: String(f.content) }));
       out.push({ type, topic: String(o["topic"] ?? "update"), summary: String(o["summary"] ?? ""), files });
+    } else if (type === "remember") {
+      const text = String(o["text"] ?? "").trim();
+      if (text) out.push({ type, text });
     } else if (type) out.push({ type } as Action); // unknown — executeActions rejects it explicitly
   }
   return out;
@@ -93,6 +98,13 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
             ? `restart scheduled for ${new Date(action.at).toISOString()}`
             : "restart queued — will happen at the next idle moment",
         );
+        continue;
+      }
+
+      if (action.type === "remember") {
+        // Additive and personal to the agent — allowed from any chat.
+        const stored = await appendNote(action.text, inbound.author);
+        outcomes.push(`remember: noted "${stored}"`);
         continue;
       }
 

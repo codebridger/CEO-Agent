@@ -86,6 +86,7 @@ export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> 
           authorUserId: latest.userId,
           taskId,
           commentId: latest.id,
+          eventId: latest.id,
         },
       };
     }

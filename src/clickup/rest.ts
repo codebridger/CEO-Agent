@@ -276,9 +276,25 @@ export interface PostCommentOpts {
   assignee?: number;
   /** Also notify the task's assignees. */
   notifyAll?: boolean;
+  /**
+   * Open the comment with a real `@Name` mention of this person (the way a human
+   * would address them) instead of assigning them the comment. Sends the rich
+   * `comment` segment array; the leading `tag` segment is what ClickUp renders as
+   * the mention chip.
+   */
+  mention?: { id: number; name: string };
 }
 
 function commentBody(o: PostCommentOpts): Record<string, unknown> {
+  if (o.mention) {
+    return {
+      comment: [
+        { type: "tag", user: { id: o.mention.id }, text: `@${o.mention.name}` },
+        { text: ` ${o.text}` },
+      ],
+      notify_all: o.notifyAll ?? true,
+    };
+  }
   return {
     comment_text: o.text,
     notify_all: o.notifyAll ?? true,

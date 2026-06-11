@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { z } from "zod";
 import { CONTRACT_PATH, MODEL } from "../config.js";
 import { DISALLOWED_TOOLS } from "./policy.js";
+import { readStandingMemory } from "../memory/notes.js";
 
 export interface RunOptions {
   /** The task-specific prompt (the contract is loaded separately as system prompt). */
@@ -12,6 +13,8 @@ export interface RunOptions {
   timeoutMs?: number;
   /** Extra tools to block for this run only (merged with the standing denials). */
   disallowTools?: string[];
+  /** Prepend the agent's standing memory to the task (default true; off for internal runs like compaction). */
+  includeMemory?: boolean;
 }
 
 export interface RunResult {
@@ -56,9 +59,17 @@ const ClaudeJson = z
 export async function runAgent(opts: RunOptions): Promise<RunResult> {
   const { task, model = MODEL.pm, timeoutMs = 300_000, disallowTools = [] } = opts;
 
+  // Prepend standing memory so durable facts are in front of the agent on every run.
+  const memory = opts.includeMemory === false ? "" : (await readStandingMemory()).trim();
+  const fullTask = memory
+    ? "Standing memory — durable facts you've chosen to remember. Treat these as current truth " +
+      "about the team, the product, and your situation unless this conversation overrides them:\n" +
+      `---\n${memory}\n---\n\n${task}`
+    : task;
+
   const args = [
     "--print",
-    task,
+    fullTask,
     "--output-format",
     "json",
     "--append-system-prompt-file",

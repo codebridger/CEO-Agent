@@ -34,6 +34,7 @@ import { runExclusive } from "../rhythms/lock.js";
 import { runHeartbeat } from "../rhythms/heartbeat.js";
 import { runPmCheck } from "../rhythms/pmCheck.js";
 import { enterWake, exitWake } from "./inflight.js";
+import { markEventSeen } from "./dedup.js";
 import { coerceActions, executeActions, type Action } from "../control/actions.js";
 
 const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
@@ -56,6 +57,11 @@ export interface Inbound {
   commentId?: string;
   /** Chat channel id to reply in (source === "chat"). */
   channelId?: string;
+  /**
+   * Stable id of the underlying event (task comment id / chat message id) used to
+   * drop duplicate deliveries. Omit only for synthetic wakes that should always run.
+   */
+  eventId?: string;
 }
 
 // thread id -> tail of its run queue. Same-thread runs chain; cleaned up when idle.
@@ -130,6 +136,9 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[], a
       "You may also include an optional \"actions\" array to manage your own infrastructure:",
       '  {"messages": [...], "actions": [ {"type": "<action>", ...} ]}',
       "Actions:",
+      '  - {"type": "remember", "text": "<durable fact>"}  → save a fact to your standing memory so you',
+      "      keep it across runs (e.g. a teammate left, a decision, a preference). It's loaded into every",
+      "      future run automatically. Use it whenever you learn something you should not forget. Safe; anytime.",
       '  - {"type": "webhook.register"}  → (re)create your ClickUp webhook. Safe/additive; allowed anytime.',
       '  - {"type": "webhook.unregister", "id": "<id>"}  → delete a webhook. Only honored from Navid\'s private DM.',
       '  - {"type": "restart", "reason": "...", "at": <epoch-ms optional>}  → restart your app (e.g. after a config',
@@ -158,13 +167,28 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[], a
 
 /** Post the composed reply to ClickUp (threaded by default). Returns a log label. */
 async function postTaskReply(inbound: Inbound, text: string): Promise<string> {
-  const opts = { text, assignee: inbound.authorUserId, notifyAll: true };
-  if (inbound.commentId && !wantsRootComment(inbound.text)) {
-    const r = await replyToComment(inbound.commentId, opts);
-    return `threaded reply ${r.id} under comment ${inbound.commentId}`;
+  const threaded = Boolean(inbound.commentId) && !wantsRootComment(inbound.text);
+  const kind = threaded ? "threaded reply" : "root comment";
+  const where = threaded ? `under comment ${inbound.commentId}` : `on task ${inbound.taskId}`;
+  // Address the person with a real @mention (like a human would) rather than assigning
+  // them the comment. Drop the "(founder)"-style suffix from the display label.
+  const name = inbound.author.replace(/\s*\([^)]*\)\s*$/, "").trim() || inbound.author;
+  const mention = inbound.authorUserId ? { id: inbound.authorUserId, name } : undefined;
+
+  const post = (o: Parameters<typeof createTaskComment>[1]) =>
+    threaded ? replyToComment(inbound.commentId ?? "", o) : createTaskComment(inbound.taskId ?? "", o);
+
+  try {
+    const r = await post({ text, mention, notifyAll: true });
+    return `${kind} ${r.id} ${where}${mention ? " (@mention)" : ""}`;
+  } catch (err) {
+    if (!mention) throw err;
+    // The rich mention format was rejected — fall back to a plain comment so the
+    // reply still lands (the agent already addresses the person by name in the text).
+    console.error(`[wake] mention post failed (${(err as Error).message}); retrying plain`);
+    const r = await post({ text, notifyAll: true });
+    return `${kind} ${r.id} ${where} (plain — mention failed)`;
   }
-  const r = await createTaskComment(inbound.taskId ?? "", opts);
-  return `root comment ${r.id} on task ${inbound.taskId}`;
 }
 
 /**
@@ -188,6 +212,15 @@ async function handleCommand(inbound: Inbound, cmd: "heartbeat" | "pm-check"): P
 }
 
 export function handleWake(inbound: Inbound): Promise<void> {
+  // Idempotency: the same comment/message can arrive more than once (ClickUp
+  // re-delivery, the latest-comment resolver in categorize, poller/webhook
+  // overlap). Drop a repeat synchronously, before any work, so the agent never
+  // answers the same message twice.
+  if (inbound.eventId && !markEventSeen(`${inbound.source}:${inbound.eventId}`)) {
+    console.log(`[wake] drop duplicate ${inbound.threadId} (event ${inbound.eventId})`);
+    return Promise.resolve();
+  }
+
   // A rhythm command from Navid short-circuits the normal reply.
   if (inbound.authorUserId === IDENTITY.navidUserId) {
     const cmd = matchCommand(inbound.text);

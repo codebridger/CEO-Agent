@@ -101,6 +101,7 @@ async function tick(): Promise<void> {
         author: chatUserLabel(m.userId),
         authorUserId: Number(m.userId) || undefined,
         channelId: w.id,
+        eventId: m.id,
       });
     }
     cursors[w.id] = Math.max(known, maxDate);

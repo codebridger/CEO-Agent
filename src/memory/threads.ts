@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { THREAD_COMPACT_BYTES, THREAD_INDEX_PATH, THREADS_DIR } from "../config.js";
 import { MODEL } from "../config.js";
 import { runAgent } from "../agent/runner.js";
+import { BROWSER_TOOLS } from "../agent/policy.js";
 
 /** A thread id is a filesystem-safe slug, e.g. "clickup-task-86exu5xd7" or "chat-8crzyb7-1458". */
 export function threadFile(threadId: string): string {
@@ -89,6 +90,7 @@ export async function maybeCompact(threadId: string): Promise<void> {
   try {
     const res = await runAgent({
       model: MODEL.pm,
+      includeMemory: false, // summarizing a thread; standing memory would muddy the summary
       task: [
         "Summarize the conversation history below into a tight 'story so far' — who is involved,",
         "what was discussed, what was decided or agreed, and any open threads. Plain English,",
@@ -98,6 +100,8 @@ export async function maybeCompact(threadId: string): Promise<void> {
         head,
       ].join("\n"),
       timeoutMs: 120_000,
+      // Maintenance run — no browser, no notification ping (see policy.ts).
+      disallowTools: BROWSER_TOOLS,
     });
     if (!res.ok || !res.text.trim()) return;
     const rebuilt =

@@ -10,7 +10,7 @@
  * we mirror `data/threads` + `data/heartbeats` into that worktree, commit, and push the
  * branch. The live app keeps reading/writing `data/` directly — this only publishes it.
  *
- * Scope is strictly threads + beat logs; secrets (webhooks.json, tls/), the inbox,
+ * Scope is threads + beat logs + standing memory; secrets (webhooks.json, tls/), the inbox,
  * poller cursors and the council clone never leave `data/` (they're not mirrored).
  * Best-effort: a push failure is logged, not fatal (the commit is still local).
  */
@@ -31,7 +31,7 @@ import {
 
 const exec = promisify(execFile);
 // Subdirs of data/ that are version-controlled, mirrored into the data-branch worktree.
-const HISTORY_SUBDIRS = ["threads", "heartbeats"];
+const HISTORY_SUBDIRS = ["threads", "heartbeats", "memory"];
 
 function git(args: string[], cwd: string = REPO_ROOT): Promise<{ stdout: string; stderr: string }> {
   return exec("git", args, { cwd });

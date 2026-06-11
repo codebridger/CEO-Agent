@@ -164,6 +164,9 @@ export const WEBHOOK_EVENTS = [
 
 export const THREADS_DIR = resolve(DATA_DIR, "threads");
 export const THREAD_INDEX_PATH = resolve(THREADS_DIR, "INDEX.md");
+/** Standing memory: durable facts the agent chooses to remember, loaded into every run. */
+export const MEMORY_DIR = resolve(DATA_DIR, "memory");
+export const NOTES_PATH = resolve(MEMORY_DIR, "notes.md");
 export const EVENTS_DIR = resolve(DATA_DIR, "events");
 export const INBOX_PATH = resolve(EVENTS_DIR, "inbox.jsonl");
 export const PROCESSED_PATH = resolve(EVENTS_DIR, "processed.jsonl");
