@@ -175,6 +175,8 @@ export interface CommentReply {
   id: string;
   text: string;
   userId: number | undefined;
+  /** Raw `comment` segment array, for mention detection (a reply can @-mention too). */
+  segments: Array<Record<string, unknown>>;
   date: number | undefined;
 }
 
@@ -190,6 +192,7 @@ export async function getCommentReplies(commentId: string): Promise<CommentReply
       id: String(c["id"]),
       text: String(c["comment_text"] ?? ""),
       userId: user ? Number(user["id"]) : undefined,
+      segments: (c["comment"] as Array<Record<string, unknown>>) ?? [],
       date: c["date"] ? Number(c["date"]) : undefined,
     };
   });

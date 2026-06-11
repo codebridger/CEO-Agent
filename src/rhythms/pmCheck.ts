@@ -7,10 +7,12 @@
 
 import { MODEL, SUBTURTLE_APP_LIST_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
-import { BROWSER_TOOLS } from "../agent/policy.js";
+import { BROWSER_TOOLS, CREATE_COMMENT_TOOL } from "../agent/policy.js";
 import { renderPrompt } from "../prompts/load.js";
 import { drainTo, readInbox, type InboxEvent } from "../memory/inbox.js";
 import { buildTaskActivityDigest } from "../activity/digest.js";
+import { getWorkspaceMembers, type Member } from "../clickup/rest.js";
+import { parseCommentDirective, postPmComments } from "./pmComments.js";
 import { setLastPmCheck } from "./state.js";
 
 /** Cap how many tasks we pull a full activity tail for — bounds prompt size + GitHub search calls. */
@@ -22,7 +24,14 @@ const PM_CHECK_FALLBACK = [
   "",
   "{{activity}}",
   "",
-  "Work over each group per your contract, then sweep the active tasks in the Subturtle.app list (list id {{listId}}). Comment where it helps; if nothing is active, propose the next batch in the public channel. Report a short summary of what you did.",
+  "Work over each group per your contract, then sweep the active tasks in the Subturtle.app list (list id {{listId}}). If nothing is active, propose the next batch in the public channel.",
+  "",
+  "You CANNOT post task comments yourself on this run. To comment on a task, end your reply with ONLY this JSON object (no prose around it):",
+  '  {"comments":[{"taskId":"<id>","replyTo":"<commentId or null>","mention":<userId or null>,"text":"<markdown>"}],"summary":"<one line>"}',
+  "The app posts each comment for you with proper markdown and a real @-mention. Put \"text\" LAST in each object, write \\n for line breaks, and avoid double-quotes inside text. Use replyTo to thread under a comment (else a new root comment); set mention to the user id you're addressing. Empty comments array is fine if there's nothing worth posting.",
+  "",
+  "Team directory (id — name):",
+  "{{directory}}",
 ].join("\n");
 
 function groupByTask(events: InboxEvent[]): { rendered: string; taskIds: string[] } {
@@ -60,6 +69,22 @@ async function activityTails(taskIds: string[]): Promise<string> {
   );
 }
 
+/** Render the team directory the agent uses to pick a mention target by user id. */
+function directoryBlock(members: Member[]): string {
+  if (members.length === 0) return "  (directory unavailable — omit mentions this run)";
+  return members.map((m) => `  - ${m.id} — ${m.name}${m.email ? ` <${m.email}>` : ""}`).join("\n");
+}
+
+/** Best-effort team directory; an empty list just means the agent posts without mentions. */
+async function loadDirectory(): Promise<Member[]> {
+  try {
+    return await getWorkspaceMembers();
+  } catch (err) {
+    console.error("[pm-check] could not load team directory:", (err as Error).message);
+    return [];
+  }
+}
+
 export async function runPmCheck(): Promise<{ ok: boolean; text: string }> {
   const events = await readInbox();
   const grouped = events.length ? groupByTask(events) : { rendered: "", taskIds: [] };
@@ -68,22 +93,42 @@ export async function runPmCheck(): Promise<{ ok: boolean; text: string }> {
     ? `Activity since your last check, grouped by task:\n${grouped.rendered}${tails ? `\n\n${tails}` : ""}`
     : "No new activity arrived since your last check.";
 
+  const members = await loadDirectory();
   const task = await renderPrompt(
     "pm-check",
-    { activity, listId: SUBTURTLE_APP_LIST_ID },
+    { activity, listId: SUBTURTLE_APP_LIST_ID, directory: directoryBlock(members) },
     PM_CHECK_FALLBACK,
   );
 
   // Unattended run — never drive the browser on Navid's screen (see policy.ts).
-  const res = await runAgent({ task, model: MODEL.pm, disallowTools: BROWSER_TOOLS });
-  if (res.ok) {
-    await drainTo(); // archive the inbox only on success
-    await setLastPmCheck(new Date().toISOString());
-    // History is committed + pushed once a day by the scheduler's daily data push,
-    // not per PM check — keeps the data-branch log to one commit a day.
-    console.log("[pm-check] done");
-  } else {
+  // Block the plain comment tool so the agent can't post raw `comment_text` (markdown
+  // + @mentions would render as literal text); it emits a directive and the app posts
+  // each comment with rich segments instead — same path as interactive @-mention replies.
+  const res = await runAgent({
+    task,
+    model: MODEL.pm,
+    disallowTools: [...BROWSER_TOOLS, CREATE_COMMENT_TOOL],
+  });
+  if (!res.ok) {
     console.error("[pm-check] run failed:", res.error);
+    return { ok: false, text: res.text };
   }
-  return { ok: res.ok, text: res.text };
+
+  // Post the comments the agent asked for, with markdown + real mentions.
+  const directive = parseCommentDirective(res.text);
+  let outcomes: string[] = [];
+  if (directive.comments.length > 0) {
+    outcomes = await postPmComments(directive.comments, members);
+    console.log(`[pm-check] posted ${outcomes.length} comment(s): ${outcomes.join("; ")}`);
+  }
+
+  await drainTo(); // archive the inbox only on success
+  await setLastPmCheck(new Date().toISOString());
+  // History is committed + pushed once a day by the scheduler's daily data push,
+  // not per PM check — keeps the data-branch log to one commit a day.
+  console.log("[pm-check] done");
+  const summary = [directive.summary, outcomes.length ? `(${outcomes.length} comment(s) posted)` : ""]
+    .filter(Boolean)
+    .join(" ");
+  return { ok: true, text: summary || res.text };
 }

@@ -36,9 +36,7 @@ import { runPmCheck } from "../rhythms/pmCheck.js";
 import { enterWake, exitWake } from "./inflight.js";
 import { markEventSeen } from "./dedup.js";
 import { coerceActions, executeActions, type Action } from "../control/actions.js";
-
-const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
-const SEND_CHAT_TOOL = "mcp__claude_ai_ClickUp__clickup_send_chat_message";
+import { CREATE_COMMENT_TOOL, SEND_CHAT_TOOL } from "../agent/policy.js";
 
 export interface Inbound {
   /** Where the message came from — decides how the agent replies. */

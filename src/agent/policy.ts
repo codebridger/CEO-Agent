@@ -21,6 +21,18 @@ export const DISALLOWED_TOOLS: string[] = [
 ];
 
 /**
+ * The connector's create-comment tool. Posts only plain `comment_text` (no rich
+ * segments), so markdown renders literally and an `@name` is just text, not a
+ * mention chip. Every path that wants real formatting blocks this and routes the
+ * comment through the app's rich-segment poster instead (clickup/rest.ts richBody):
+ * interactive replies (wake/handle.ts) and the PM check (rhythms/pmCheck.ts).
+ */
+export const CREATE_COMMENT_TOOL = "mcp__claude_ai_ClickUp__clickup_create_task_comment";
+
+/** The connector's send-chat tool — blocked where the app sends chat itself. */
+export const SEND_CHAT_TOOL = "mcp__claude_ai_ClickUp__clickup_send_chat_message";
+
+/**
  * Remote browser (the real Chrome on Navid's laptop, via remote-browser-mcp +
  * Cloudflare tunnel). Not denied globally: interactive wakes may browse — the
  * contract makes them call check_local_status first, which notifies Navid that

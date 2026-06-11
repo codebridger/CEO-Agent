@@ -11,7 +11,7 @@
 
 import { IDENTITY } from "../config.js";
 import { textMentionsAgent } from "../agent/identity.js";
-import { getTaskComments, type TaskComment } from "../clickup/rest.js";
+import { getTaskActivityTail } from "../clickup/rest.js";
 import type { Inbound } from "../wake/handle.js";
 
 export interface ClickUpWebhookEvent {
@@ -46,15 +46,74 @@ function authorLabel(userId: number | undefined): string {
   return userId != null ? `teammate ${userId}` : "someone";
 }
 
-/** Does this comment @-mention the agent? Checks segment user refs, then text. */
-function commentMentionsAgent(c: TaskComment): boolean {
-  for (const seg of c.segments) {
+/**
+ * One comment or threaded reply, flattened for mention resolution. `rootId` is the
+ * top-level comment to thread a reply under (a reply's parent, or the comment itself) —
+ * ClickUp replies always attach to a root comment, so this is the in-thread target.
+ */
+interface Mentionable {
+  id: string;
+  text: string;
+  userId: number | undefined;
+  date: number;
+  segments: Array<Record<string, unknown>>;
+  rootId: string;
+  /** True if this is a reply (not the root comment) — i.e. it lives inside a thread. */
+  isReply: boolean;
+  /** True if the agent already participates in this thread (authored its root or any reply). */
+  agentInThread: boolean;
+}
+
+/** Does this item @-mention the agent? Checks segment user refs, then text. */
+function mentionsAgent(item: { segments: Array<Record<string, unknown>>; text: string }): boolean {
+  for (const seg of item.segments) {
     const direct = seg["user"] as { id?: number | string } | undefined;
     const nested = (seg["attributes"] as { user?: { id?: number | string } } | undefined)?.user;
     const u = direct ?? nested;
     if (u?.id != null && Number(u.id) === IDENTITY.agentUserId) return true;
   }
-  return textMentionsAgent(c.text);
+  return textMentionsAgent(item.text);
+}
+
+/**
+ * Flatten the task's full comment tail (root comments + their threaded replies) into
+ * one newest-first list, tagging each item with its thread (`rootId`) and whether the
+ * agent already participates in that thread. Including replies is essential: a person
+ * can @-mention the agent in a threaded reply, and the dispatcher must thread the answer
+ * back into THAT conversation — and once the agent is in a thread, a follow-up reply
+ * there should get an immediate response without re-@-mentioning.
+ */
+async function mentionablesNewestFirst(taskId: string): Promise<Mentionable[]> {
+  const tail = await getTaskActivityTail(taskId, { maxComments: 50 });
+  const items: Mentionable[] = [];
+  for (const root of tail) {
+    const agentInThread =
+      root.userId === IDENTITY.agentUserId ||
+      root.replies.some((r) => r.userId === IDENTITY.agentUserId);
+    items.push({
+      id: root.id,
+      text: root.text,
+      userId: root.userId,
+      date: root.date ?? 0,
+      segments: root.segments,
+      rootId: root.id,
+      isReply: false,
+      agentInThread,
+    });
+    for (const r of root.replies) {
+      items.push({
+        id: r.id,
+        text: r.text,
+        userId: r.userId,
+        date: r.date ?? 0,
+        segments: r.segments,
+        rootId: root.id,
+        isReply: true,
+        agentInThread,
+      });
+    }
+  }
+  return items.sort((a, b) => b.date - a.date);
 }
 
 export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> {
@@ -68,14 +127,20 @@ export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> 
   }
 
   if (event === "taskCommentPosted" && taskId) {
-    let comments: TaskComment[] = [];
+    let items: Mentionable[] = [];
     try {
-      comments = await getTaskComments(taskId);
+      items = await mentionablesNewestFirst(taskId);
     } catch (err) {
       console.error(`[categorize] could not fetch comments for ${taskId}:`, (err as Error).message);
     }
-    const latest = comments.find((c) => c.userId !== IDENTITY.agentUserId);
-    if (latest && commentMentionsAgent(latest)) {
+    // The most recent comment OR threaded reply from anyone but the agent.
+    const latest = items.find((c) => c.userId !== IDENTITY.agentUserId);
+    // Reply now (Category A) if the agent is @-mentioned, OR if this is a follow-up
+    // reply in a thread the agent is already part of — a live conversation shouldn't
+    // need a re-@-mention each turn. A brand-new root comment with no mention still
+    // goes to the inbox so the agent doesn't barge into every unrelated topic.
+    const continuesAgentThread = !!latest && latest.isReply && latest.agentInThread;
+    if (latest && (mentionsAgent(latest) || continuesAgentThread)) {
       return {
         category: "A",
         inbound: {
@@ -85,7 +150,11 @@ export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> 
           author: authorLabel(latest.userId),
           authorUserId: latest.userId,
           taskId,
-          commentId: latest.id,
+          // Thread the reply under the ROOT of wherever the message is, so a mention or
+          // follow-up inside a thread is answered in that same thread.
+          commentId: latest.rootId,
+          // Dedup on the actual message id (unique per comment/reply), so a new reply is
+          // a fresh wake but re-resolving the same message is dropped.
           eventId: latest.id,
         },
       };
