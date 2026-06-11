@@ -8,7 +8,7 @@
  * stored in data/webhooks.json — never printed in full, never committed.
  */
 
-import { SUBTURTLE_APP_LIST_ID, WEBHOOK_EVENTS, WEBHOOK_PUBLIC_URL } from "../config.js";
+import { WEBHOOK_EVENTS, WEBHOOK_PUBLIC_URL } from "../config.js";
 import { createWebhook, deleteWebhook, listWebhooks } from "../clickup/rest.js";
 import {
   clearWebhookState,
@@ -17,7 +17,13 @@ import {
   type WebhookState,
 } from "../state/webhooks.js";
 
-/** Create the ClickUp subscription scoped to Subturtle.app and persist its state. */
+/**
+ * Create the ClickUp subscription and persist its state. Scoped to the whole
+ * workspace (no list_id), so the agent receives events from every list — she works
+ * across more than one (e.g. Subturtle.app and the LinkedIn Content list, which live
+ * in different spaces). The categorizer decides what actually warrants a wake; an
+ * unrelated list just adds inbox activity, never an unsolicited reply.
+ */
 export async function registerWebhook(): Promise<WebhookState> {
   if (!WEBHOOK_PUBLIC_URL) {
     throw new Error("WEBHOOK_PUBLIC_URL is not set in .env (e.g. https://aso.<host>/clickup/webhook).");
@@ -25,14 +31,13 @@ export async function registerWebhook(): Promise<WebhookState> {
   const w = await createWebhook({
     endpoint: WEBHOOK_PUBLIC_URL,
     events: WEBHOOK_EVENTS,
-    listId: SUBTURTLE_APP_LIST_ID,
   });
   const state: WebhookState = {
     id: w.id,
     secret: w.secret,
     endpoint: w.endpoint,
     events: w.events,
-    scope: `list:${SUBTURTLE_APP_LIST_ID}`,
+    scope: "workspace",
     created: new Date().toISOString(),
   };
   await writeWebhookState(state);

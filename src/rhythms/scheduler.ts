@@ -13,6 +13,7 @@ import { runExclusive } from "./lock.js";
 import { runPmCheck } from "./pmCheck.js";
 import { readState, setLastDataPush, setLastPmCheck } from "./state.js";
 import { isWeekday, localParts } from "./time.js";
+import { dueJobs, runScheduledJob } from "./schedules.js";
 
 const TICK_MS = 60_000;
 
@@ -62,6 +63,11 @@ export async function startScheduler(): Promise<() => void> {
       } else if (await pmCheckDue(now)) {
         await runExclusive("pm-check", runPmCheck);
       }
+      // Agent-owned recurring jobs (the generic scheduler). Each runs under the same
+      // exclusive lock so it never overlaps a rhythm or another job.
+      for (const job of await dueJobs(now)) {
+        await runExclusive(`schedule:${job.id}`, () => runScheduledJob(job, now));
+      }
       // Independent of the rhythms: push the day's history once, at end of day.
       if (await dataPushDue(now)) await pushDailyData(now);
     } catch (err) {
@@ -72,6 +78,9 @@ export async function startScheduler(): Promise<() => void> {
   };
 
   const timer = setInterval(() => void tick(), TICK_MS);
+  // Run one tick right away (setInterval waits a full TICK_MS first) so a restart that
+  // straddled a scheduled minute catches up promptly instead of after the first interval.
+  void tick();
   const hb = localParts(HEARTBEAT_TZ);
   console.log(
     `[scheduler] started — PM check every ${Math.round(PM_CHECK_INTERVAL_MS / 3_600_000)}h, ` +

@@ -10,13 +10,15 @@
  *                          (writes a request; the watcher restarts when idle).
  */
 
-import { IDENTITY, NAVID_DM_CHANNEL_ID } from "../config.js";
+import { HEARTBEAT_TZ, IDENTITY, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { registerWebhook, unregisterWebhook } from "../webhooks/manage.js";
 import { readWebhookState } from "../state/webhooks.js";
 import { requestRestart } from "../ops/restart.js";
 import { sendChatMessage } from "../clickup/rest.js";
 import { proposeImprovement, type ProposeFile } from "../selfimprove/propose.js";
 import { appendNote } from "../memory/notes.js";
+import { isSafeCron } from "../rhythms/cron.js";
+import { describeJob, removeJob, upsertJob } from "../rhythms/schedules.js";
 import type { Inbound } from "../wake/handle.js";
 
 export type Action =
@@ -24,7 +26,9 @@ export type Action =
   | { type: "webhook.unregister"; id?: string }
   | { type: "restart"; at?: number; reason?: string }
   | { type: "self-improve"; topic: string; summary: string; files: ProposeFile[] }
-  | { type: "remember"; text: string };
+  | { type: "remember"; text: string }
+  | { type: "schedule"; id?: string; title: string; cron: string; task: string; tz?: string; enabled?: boolean }
+  | { type: "unschedule"; id: string };
 
 /** Validate a loosely-typed array from the directive into Actions; drop junk. */
 export function coerceActions(raw: unknown): Action[] {
@@ -46,6 +50,24 @@ export function coerceActions(raw: unknown): Action[] {
     } else if (type === "remember") {
       const text = String(o["text"] ?? "").trim();
       if (text) out.push({ type, text });
+    } else if (type === "schedule") {
+      const title = String(o["title"] ?? "").trim();
+      const cron = String(o["cron"] ?? "").trim();
+      const task = String(o["task"] ?? "").trim();
+      if (title && cron && task) {
+        out.push({
+          type,
+          id: o["id"] ? String(o["id"]) : undefined,
+          title,
+          cron,
+          task,
+          tz: o["tz"] ? String(o["tz"]) : undefined,
+          enabled: typeof o["enabled"] === "boolean" ? (o["enabled"] as boolean) : undefined,
+        });
+      }
+    } else if (type === "unschedule") {
+      const id = String(o["id"] ?? "").trim();
+      if (id) out.push({ type, id });
     } else if (type) out.push({ type } as Action); // unknown — executeActions rejects it explicitly
   }
   return out;
@@ -105,6 +127,33 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
         // Additive and personal to the agent — allowed from any chat.
         const stored = await appendNote(action.text, inbound.author);
         outcomes.push(`remember: noted "${stored}"`);
+        continue;
+      }
+
+      if (action.type === "schedule") {
+        // Additive and reversible (the agent manages its own jobs) — allowed from any chat,
+        // but capped: the cron must pin at least a minute so it can't run away.
+        const safe = isSafeCron(action.cron);
+        if (!safe.ok) {
+          outcomes.push(`schedule REJECTED — ${safe.reason}: "${action.cron}"`);
+          continue;
+        }
+        const { job, error } = await upsertJob({
+          id: action.id,
+          title: action.title,
+          cron: action.cron,
+          task: action.task,
+          tz: action.tz || HEARTBEAT_TZ,
+          enabled: action.enabled,
+          createdBy: inbound.author,
+        });
+        outcomes.push(job ? `schedule: ${action.id ? "updated" : "created"} ${describeJob(job)}` : `schedule FAILED — ${error}`);
+        continue;
+      }
+
+      if (action.type === "unschedule") {
+        const title = await removeJob(action.id);
+        outcomes.push(title ? `unschedule: removed "${title}" (${action.id})` : `unschedule: no job with id ${action.id}`);
         continue;
       }
 

@@ -17,7 +17,7 @@
  *     resolves/creates that person's DM channel, so the agent can message anyone.
  */
 
-import { AGENT_NAME, IDENTITY, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
+import { AGENT_NAME, HEARTBEAT_TZ, IDENTITY, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import {
   createTaskComment,
@@ -30,6 +30,7 @@ import {
 import { buildTaskActivityDigest } from "../activity/digest.js";
 import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/threads.js";
 import { matchCommand } from "../rhythms/commands.js";
+import { describeJob, listJobs, MAX_JOBS } from "../rhythms/schedules.js";
 import { runExclusive } from "../rhythms/lock.js";
 import { runHeartbeat } from "../rhythms/heartbeat.js";
 import { runPmCheck } from "../rhythms/pmCheck.js";
@@ -95,7 +96,13 @@ function directoryBlock(members: Member[]): string {
     .join("\n");
 }
 
-function buildWakePrompt(inbound: Inbound, history: string, members: Member[], activity: string): string {
+function buildWakePrompt(
+  inbound: Inbound,
+  history: string,
+  members: Member[],
+  activity: string,
+  schedules: string,
+): string {
   const uid = inbound.authorUserId;
   const head = [
     `You have been woken by a new ${inbound.source === "chat" ? "chat message" : "task comment"} addressed to you.`,
@@ -145,8 +152,16 @@ function buildWakePrompt(inbound: Inbound, history: string, members: Member[], a
       "      → improve your own instruction files. Read the current file first (under prompts/), then give the COMPLETE new",
       "      content. Only prompts/* and CONTRACT.md may be changed; it opens a PR for Navid (a CONTRACT.md change is",
       "      labelled as such). It never lands directly — it takes effect after Navid merges and you restart.",
+      '  - {"type": "schedule", "title": "<name>", "cron": "<m h dom mon dow>", "task": "<what to do each run>", "tz": "<IANA, optional>", "id": "<optional, to update>"}',
+      "      → create (or update, with id) a recurring job you run on a cron cadence, e.g. top up a content backlog every",
+      "      Monday. Standard 5-field cron in your timezone (default " + HEARTBEAT_TZ + "); the minute field must be specific",
+      '      (no "*" — so at most ~hourly). Each run is unattended: NO browser, and you cannot publish to external sites, so',
+      "      use it for ClickUp/repo/analysis work (drafting tasks, chasing, summarising), not for posting to LinkedIn etc.",
+      "      Safe/additive; allowed anytime. Up to " + String(MAX_JOBS) + " jobs.",
+      '  - {"type": "unschedule", "id": "<job id>"}  → remove one of your jobs. Allowed anytime.',
       "  Omit \"actions\" entirely when you're just talking. The system performs each action and reports the real result.",
       "",
+      schedules,
       "Team directory (id — name):",
       directoryBlock(members),
     );
@@ -220,14 +235,16 @@ export function handleWake(inbound: Inbound): Promise<void> {
   return withLock(inbound.threadId, async () => {
     enterWake();
     try {
-      // Chat wakes get the team directory so the agent can address anyone by id.
+      // Chat wakes get the team directory (to address anyone by id) and the agent's
+      // current scheduled jobs (so it can reference/replace them, not duplicate).
       const members = inbound.source === "chat" ? await loadDirectory() : [];
+      const schedules = inbound.source === "chat" ? await loadSchedulesBlock() : "";
       const history = await loadThread(inbound.threadId);
       // Task wakes get the full activity tail (comments + replies + linked GitHub),
       // assembled here so the agent never has to reconstruct it (and can't miss it).
       const activity = inbound.source === "task" && inbound.taskId ? await loadActivity(inbound.taskId) : "";
       const res = await runAgent({
-        task: buildWakePrompt(inbound, history, members, activity),
+        task: buildWakePrompt(inbound, history, members, activity, schedules),
         model: MODEL.pm,
         // The app performs every write — block the agent's own posting tools so it
         // can only compose, never (claim to) send.
@@ -297,6 +314,20 @@ async function loadDirectory(): Promise<Member[]> {
   } catch (err) {
     console.error("[wake] could not load team directory:", (err as Error).message);
     return [];
+  }
+}
+
+/** Render the agent's current scheduled jobs for its prompt (so it can update/remove, not duplicate). */
+async function loadSchedulesBlock(): Promise<string> {
+  try {
+    const jobs = await listJobs();
+    if (jobs.length === 0) return `Your scheduled jobs: none yet (you can create up to ${MAX_JOBS}).`;
+    return ["Your scheduled jobs (use the schedule action with an id to update, or unschedule to remove):"]
+      .concat(jobs.map((j) => `  - ${describeJob(j)}`))
+      .join("\n");
+  } catch (err) {
+    console.error("[wake] could not load schedules:", (err as Error).message);
+    return "";
   }
 }
 

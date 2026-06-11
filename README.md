@@ -32,7 +32,7 @@ ClickUp task event ─POST─▶ Cloudflare ─▶ tunnel ─▶ HTTP listener (
 chat (DMs/@mentions) ─poll ~90s via REST─▶ new, not self ▶ handleWake(...) ─▶ runAgent
 ```
 
-- **Webhook listener** (`src/server/`) receives ClickUp **task** events, verifies the `X-Signature` (HMAC-SHA256 of the raw body) against the registered secret, **acks 200 immediately**, then dispatches off the request path so the ack stays fast.
+- **Webhook listener** (`src/server/`) receives ClickUp **task** events, verifies the `X-Signature` (HMAC-SHA256 of the raw body) against the registered secret, **acks 200 immediately**, then dispatches off the request path so the ack stays fast. The webhook is registered **workspace-wide** (no list scope), so the agent sees activity in *every* list it works across — not just one — and any new list is covered automatically.
 - **Chat poller** (`src/poller/`) covers what webhooks can't: ClickUp has **no chat webhook**, so DMs and channel @mentions are polled every ~90s via the v3 chat REST API. Per-channel cursors (`data/poller/cursors.json`) mean only genuinely new messages wake the agent; on first sight a channel is baselined so old history never replays.
 
 ### Categories (PRD §4.1)
@@ -41,11 +41,13 @@ chat (DMs/@mentions) ─poll ~90s via REST─▶ new, not self ▶ handleWake(..
 
 | | What | Handling |
 |---|---|---|
-| **A** | A direct **@mention** of the agent on a task, or any **DM** | Wake now: load the thread, reply, record |
+| **A** | A task comment that **@mentions** the agent **or continues a thread it's already in**, or any **DM** | Wake now: load the thread, reply **in that thread**, record |
 | **B** | Other task activity (created / updated / status / moved …) | Append to `data/events/inbox.jsonl` for the PM check |
 | **C** | **Anything authored by the agent itself** (loop guard), or irrelevant types | Drop |
 
 The loop guard keys on the agent's own ClickUp user id (`AGENT_USER_ID`); @mention detection keys on `AGENT_NAME` — both config, so nothing about the identity is baked into the code.
+
+To pick the message to answer, the categorizer flattens **root comments *and* their threaded replies** (newest first) and takes the latest one from anyone but the agent. That message is Category A if it @mentions the agent **or** is a follow-up reply in a thread the agent already participates in — so once a back-and-forth is going, you don't have to re-@mention it each turn. A brand-new top-level comment with no mention stays Category B. The reply is always threaded under the **root of wherever that message lives**, and dedup keys on the real comment/reply id, so an answer lands in the right place exactly once.
 
 ### Memory (PRD §4.2)
 
@@ -57,7 +59,8 @@ The app owns the agent's episodic memory as plain files so it survives restarts 
 
 ### How the agent replies
 
-- **Task replies** post as a **threaded reply under the triggering comment** (not a new root comment), assigned to the asker + `notify_all` so they actually get a ClickUp notification. ClickUp has no MCP tool for threaded replies, so the **agent composes** the text and the **app posts it** via REST (`/comment/{id}/reply`). A root-level comment is used only if the asker explicitly asks ("root", "top level", "new comment").
+- **Task replies** post as a **threaded reply under the triggering comment** (not a new root comment), opening with a **real `@mention`** of the asker so they get a ClickUp notification. ClickUp has no MCP tool for threaded replies, so the **agent composes** the text and the **app posts it** via REST (`/comment/{id}/reply`). A root-level comment is used only if the asker explicitly asks ("root", "top level", "new comment").
+- **Markdown actually renders.** ClickUp ignores markdown in plain `comment_text` (it shows `## H` / `**bold**` / `@name` literally), so the app converts the agent's markdown into ClickUp's rich **comment segment** array (`src/clickup/markdown.ts` → `richBody` in `src/clickup/rest.ts`): headings, bold/italic/code, links, and lists format, and a leading `tag` segment becomes a real mention chip. Both reply paths use it — interactive replies **and** the proactive comments the PM check posts (see below) — so formatting is identical everywhere. The connector's plain `comment_text` is only a fallback if the rich form is ever rejected.
 - **Chat replies** go out through the agent's connector, addressing the person and adding them as a follower so they're notified.
 
 ### Rhythms (PM check + heartbeat)
@@ -68,6 +71,9 @@ double-fires):
 
 - **PM check — every 5h** (Sonnet): drains the inbox, groups activity by task, chases stuck work,
   answers, encourages, and proposes the next batch if nothing is active. Archives the inbox after.
+  Its comment tool is blocked too: it **emits the comments it wants** as a small directive and the
+  app posts each through the same rich path as a reply (markdown + real `@mention`), so proactive
+  comments format correctly instead of going out as literal `comment_text`.
 - **Heartbeat — weekdays 08:00 (`HEARTBEAT_TZ`)** (Opus): clones the council repo
   (`subturtle-docs`) **read-only** for context (playbook, metrics framework, decisions), pulls
   Stripe/Mixpanel/ClickUp/repo state, posts 2–4 ranked moves to the public channel, and writes a
@@ -78,9 +84,31 @@ Both can be run on demand: `npm run trigger -- pm-check|heartbeat`, or Navid DMs
 **"run heartbeat" / "run pm check"** (honored only from his account). The agent's history (threads +
 beat logs) is committed to the repo at the end of each rhythm; secrets in `data/` stay git-ignored.
 
+### Agent-scheduled jobs (generic scheduler)
+
+Beyond the two fixed rhythms, the agent can **create its own recurring jobs** — e.g. "every Monday
+09:00, top up the content backlog and flag what's due." It does this from chat by emitting a
+`schedule` action in its reply (`{type:"schedule", title, cron, task, tz?, id?}`, with `unschedule`
+to remove one); the job is persisted to `data/schedules.json` and run by the same 60s scheduler
+(`src/rhythms/schedules.ts`).
+
+- **Cron, in the job's timezone.** Standard 5-field cron (`m h dom mon dow`), matched by a small
+  dependency-free parser (`src/rhythms/cron.ts`). The minute field can't be `*` (or a `*`-step), so a
+  job can't run more often than ~hourly; up to **25** jobs.
+- **Unattended, like the other rhythms.** Each run is a fresh `claude -p` with the **browser
+  disallowed** — so a job does ClickUp/repo/analysis work (drafting tasks, chasing, summarising), not
+  posting to external sites like LinkedIn (that needs the attended browser).
+- **Restart-safe.** Jobs survive restarts (persisted), never double-fire (the run is stamped before
+  it executes), and **catch up a missed run**: if the box was down across a job's minute, the next
+  tick still fires it — once — as long as the miss was within the last 6h (older misses are dropped,
+  and a new job never retro-fires for occurrences before it existed).
+
+The agent **manages these from chat** (its current jobs are shown to it each run, so it updates by id
+instead of duplicating). Task-thread replies compose text only, so schedules are set/edited via DM.
+
 ### Guardrails (defense in depth)
 
-The contract is the primary control, backed at the tool layer (`src/agent/policy.ts`, passed as `--disallowedTools`): Stripe writes and ClickUp task-deletes are blocked on every run. During a **task wake** the comment tool is *also* blocked — the agent composes but cannot post, so the write-capable REST token stays server-side and can't be used to bypass those guardrails.
+The contract is the primary control, backed at the tool layer (`src/agent/policy.ts`, passed as `--disallowedTools`): Stripe writes and ClickUp task-deletes are blocked on every run. During a **task wake** and the **PM check** the comment tool is *also* blocked — the agent composes (a reply, or a directive of comments) but cannot post, so the write-capable REST token stays server-side, the guardrails can't be bypassed, and every comment goes out through the rich-formatting path. Scheduled jobs and the heartbeat run **unattended** with the browser blocked, so a timer never drives the local Chrome.
 
 ---
 
@@ -150,7 +178,7 @@ sudo setcap 'cap_net_bind_service=+ep' "$(readlink -f "$(which node)")"   # bind
 
 ```bash
 npm run build
-npm run webhook -- register     # creates the ClickUp webhook, saves the signing secret to data/webhooks.json
+npm run webhook -- register     # creates the workspace-wide ClickUp webhook, saves the signing secret to data/webhooks.json
 npm run webhook -- list         # show ClickUp's webhooks and reconcile with local state
 ```
 
@@ -237,6 +265,7 @@ data/
   events/inbox.jsonl   # Category-B activity awaiting the PM check  (ignored)
   poller/cursors.json  # last-seen chat message per channel         (ignored)
   schedule.json        # last PM check / heartbeat run              (ignored)
+  schedules.json       # the agent's own recurring jobs (scheduler) (ignored)
   council/             # read-only clone of the council repo        (ignored)
 ```
 
@@ -245,4 +274,4 @@ data/
 - **M1 — Skeleton** ✅ headless runner + manual triggers.
 - **M2 — Webhook** ✅ signed listener + loop guard + inbox + thread memory + chat poller (this).
 - **M3 — Rhythms** ✅ PM check every 5h draining the inbox + weekday heartbeat with beat logs (this).
-- **M4 — Self-management** — self-improvement PRs, agent-driven webhook register/unregister, scheduled restart.
+- **M4 — Self-management** — self-improvement PRs, agent-driven webhook register/unregister, scheduled restart, and **self-scheduled recurring jobs** (the agent creates its own cron jobs from chat).

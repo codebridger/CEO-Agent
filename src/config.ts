@@ -177,6 +177,9 @@ export const TLS_DIR = resolve(DATA_DIR, "tls");
 /** Webhook registration state (id + signing secret) written by `webhook register`. */
 export const WEBHOOKS_STATE_PATH = resolve(DATA_DIR, "webhooks.json");
 
+/** Agent-owned recurring jobs (the generic scheduler Aso manages via the `schedule` action). */
+export const SCHEDULES_PATH = resolve(DATA_DIR, "schedules.json");
+
 // --- M4: self-management (restart + crash-loop guard) --------------------
 
 /** A pending restart request {at, reason} (PRD §4.5.1) — picked up by the restart watcher. */
