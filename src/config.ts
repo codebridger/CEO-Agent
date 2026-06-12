@@ -180,6 +180,19 @@ export const WEBHOOKS_STATE_PATH = resolve(DATA_DIR, "webhooks.json");
 /** Agent-owned recurring jobs (the generic scheduler Aso manages via the `schedule` action). */
 export const SCHEDULES_PATH = resolve(DATA_DIR, "schedules.json");
 
+/**
+ * Agent-owned workflows (the `workflow` action): a richer job that carries its own
+ * model, browser opt-in, a playbook, and a ClickUp list binding so the human-in-the-loop
+ * iterate step (task comments on that list) runs with the same playbook + model as the
+ * recurring generate step.
+ *
+ * Workflows are runtime DATA Aso authors on demand — they live under data/ (off main,
+ * version-controlled on the agent's data branch), NOT in the code repo. The registry and
+ * each workflow's playbook markdown both sit under WORKFLOWS_DIR.
+ */
+export const WORKFLOWS_DIR = resolve(DATA_DIR, "workflows");
+export const WORKFLOWS_PATH = resolve(WORKFLOWS_DIR, "registry.json");
+
 // --- M4: self-management (restart + crash-loop guard) --------------------
 
 /** A pending restart request {at, reason} (PRD §4.5.1) — picked up by the restart watcher. */

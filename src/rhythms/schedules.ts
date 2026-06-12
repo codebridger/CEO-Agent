@@ -15,8 +15,8 @@ import { dirname } from "node:path";
 import { MODEL, SCHEDULES_PATH } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import { BROWSER_TOOLS } from "../agent/policy.js";
-import { cronMatches } from "./cron.js";
-import { cronFields, minuteKey } from "./time.js";
+import { occurrenceDue } from "./cronDue.js";
+import { minuteKey } from "./time.js";
 
 /** Hard cap on the number of jobs, so a runaway can't schedule unbounded autonomous runs. */
 export const MAX_JOBS = 25;
@@ -130,35 +130,8 @@ export async function removeJob(id: string): Promise<string | null> {
 }
 
 /**
- * How far back to catch up a missed occurrence. If the box was down (or restarting)
- * across a job's scheduled minute, the next tick still fires it — as long as the
- * occurrence was within this window. Misses older than this are dropped (don't run a
- * stale morning job in the evening), and multiple misses collapse to a single run.
- */
-export const MAX_CATCHUP_MS = 6 * 60 * 60 * 1000;
-const MAX_CATCHUP_MIN = Math.floor(MAX_CATCHUP_MS / 60_000);
-
-/** The most recent cron occurrence at or before `now`, within the catch-up window (else null). */
-function prevOccurrence(cron: string, tz: string, now: Date): Date | null {
-  for (let i = 0; i <= MAX_CATCHUP_MIN; i++) {
-    const t = new Date(now.getTime() - i * 60_000);
-    let m = false;
-    try {
-      m = cronMatches(cron, cronFields(tz, t));
-    } catch (err) {
-      console.error(`[schedule] bad cron "${cron}":`, (err as Error).message);
-      return null;
-    }
-    if (m) return new Date(Math.floor(t.getTime() / 60_000) * 60_000); // floored to the minute
-  }
-  return null;
-}
-
-/**
  * Enabled jobs that are due now, INCLUDING a single catch-up for an occurrence missed
- * while the app was down. A job is due if its most-recent scheduled occurrence (within
- * the catch-up window) is newer than the later of its last run and its creation time —
- * so it never double-fires, and never retro-fires for occurrences before it existed.
+ * while the app was down (see cronDue.ts for the shared catch-up semantics).
  */
 export async function dueJobs(now: Date): Promise<Job[]> {
   const store = await read();
@@ -166,12 +139,9 @@ export async function dueJobs(now: Date): Promise<Job[]> {
   for (const job of store.jobs) {
     if (!job.enabled) continue;
     if (job.lastRunMinute === minuteKey(job.tz, now)) continue; // already fired this minute
-    const occ = prevOccurrence(job.cron, job.tz, now);
-    if (!occ) continue; // no scheduled occurrence inside the look-back window
     const lastRun = job.lastRunAt ? new Date(job.lastRunAt).getTime() : 0;
     const baseline = Math.max(lastRun, new Date(job.createdAt).getTime());
-    if (baseline >= occ.getTime()) continue; // this occurrence already ran (or predates the job)
-    due.push(job);
+    if (occurrenceDue(job.cron, job.tz, now, baseline)) due.push(job);
   }
   return due;
 }

@@ -14,6 +14,7 @@ import { runPmCheck } from "./pmCheck.js";
 import { readState, setLastDataPush, setLastPmCheck } from "./state.js";
 import { isWeekday, localParts } from "./time.js";
 import { dueJobs, runScheduledJob } from "./schedules.js";
+import { dueWorkflows, runWorkflowGenerate } from "../workflows/registry.js";
 
 const TICK_MS = 60_000;
 
@@ -67,6 +68,10 @@ export async function startScheduler(): Promise<() => void> {
       // exclusive lock so it never overlaps a rhythm or another job.
       for (const job of await dueJobs(now)) {
         await runExclusive(`schedule:${job.id}`, () => runScheduledJob(job, now));
+      }
+      // Workflow generate-steps (the workflow facility). Same lock, same catch-up.
+      for (const wf of await dueWorkflows(now)) {
+        await runExclusive(`workflow:${wf.id}`, () => runWorkflowGenerate(wf, now));
       }
       // Independent of the rhythms: push the day's history once, at end of day.
       if (await dataPushDue(now)) await pushDailyData(now);

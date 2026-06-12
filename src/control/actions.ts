@@ -19,6 +19,12 @@ import { proposeImprovement, type ProposeFile } from "../selfimprove/propose.js"
 import { appendNote } from "../memory/notes.js";
 import { isSafeCron } from "../rhythms/cron.js";
 import { describeJob, removeJob, upsertJob } from "../rhythms/schedules.js";
+import {
+  describeWorkflow,
+  removeWorkflow,
+  upsertWorkflow,
+  type ModelTier,
+} from "../workflows/registry.js";
 import type { Inbound } from "../wake/handle.js";
 
 export type Action =
@@ -28,7 +34,22 @@ export type Action =
   | { type: "self-improve"; topic: string; summary: string; files: ProposeFile[] }
   | { type: "remember"; text: string }
   | { type: "schedule"; id?: string; title: string; cron: string; task: string; tz?: string; enabled?: boolean }
-  | { type: "unschedule"; id: string };
+  | { type: "unschedule"; id: string }
+  | {
+      type: "workflow";
+      id?: string;
+      name: string;
+      /** The playbook markdown (the workflow's rules). Required to create; optional to update. */
+      playbook?: string;
+      model?: ModelTier;
+      allowBrowser?: boolean;
+      listId?: string;
+      cron?: string;
+      tz?: string;
+      generate?: string;
+      enabled?: boolean;
+    }
+  | { type: "workflow.remove"; id: string };
 
 /** Validate a loosely-typed array from the directive into Actions; drop junk. */
 export function coerceActions(raw: unknown): Action[] {
@@ -66,6 +87,28 @@ export function coerceActions(raw: unknown): Action[] {
         });
       }
     } else if (type === "unschedule") {
+      const id = String(o["id"] ?? "").trim();
+      if (id) out.push({ type, id });
+    } else if (type === "workflow") {
+      const name = String(o["name"] ?? "").trim();
+      if (name) {
+        const model = o["model"] === "opus" ? "opus" : "sonnet";
+        const playbook = String(o["playbook"] ?? "").trim();
+        out.push({
+          type,
+          id: o["id"] ? String(o["id"]) : undefined,
+          name,
+          playbook: playbook || undefined,
+          model,
+          allowBrowser: o["allowBrowser"] === true,
+          listId: o["listId"] ? String(o["listId"]) : undefined,
+          cron: o["cron"] ? String(o["cron"]).trim() : undefined,
+          tz: o["tz"] ? String(o["tz"]) : undefined,
+          generate: o["generate"] ? String(o["generate"]).trim() : undefined,
+          enabled: typeof o["enabled"] === "boolean" ? (o["enabled"] as boolean) : undefined,
+        });
+      }
+    } else if (type === "workflow.remove") {
       const id = String(o["id"] ?? "").trim();
       if (id) out.push({ type, id });
     } else if (type) out.push({ type } as Action); // unknown — executeActions rejects it explicitly
@@ -154,6 +197,53 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
       if (action.type === "unschedule") {
         const title = await removeJob(action.id);
         outcomes.push(title ? `unschedule: removed "${title}" (${action.id})` : `unschedule: no job with id ${action.id}`);
+        continue;
+      }
+
+      if (action.type === "workflow") {
+        // A workflow that drives the browser (its unattended generate step can reach
+        // external surfaces / publish) is a sensitive capability — only Navid may grant
+        // it. A read-only / Canva-only workflow is additive, allowed from any chat.
+        if (action.allowBrowser && !fromNavidDM(inbound)) {
+          outcomes.push("workflow DENIED — a browser-enabled workflow can only be set up from Navid's private DM");
+          continue;
+        }
+        // A recurring generate step needs both a safe cron and something to generate.
+        if (action.cron) {
+          const safe = isSafeCron(action.cron);
+          if (!safe.ok) {
+            outcomes.push(`workflow REJECTED — ${safe.reason}: "${action.cron}"`);
+            continue;
+          }
+          if (!action.generate) {
+            outcomes.push('workflow REJECTED — a cron is set but no "generate" instructions were given');
+            continue;
+          }
+        }
+        const { workflow, error } = await upsertWorkflow({
+          id: action.id,
+          name: action.name,
+          playbookContent: action.playbook,
+          model: action.model ?? "sonnet",
+          allowBrowser: action.allowBrowser ?? false,
+          listId: action.listId,
+          cron: action.cron,
+          tz: action.tz || HEARTBEAT_TZ,
+          generate: action.generate,
+          enabled: action.enabled,
+          createdBy: inbound.author,
+        });
+        outcomes.push(
+          workflow
+            ? `workflow: ${action.id ? "updated" : "created"} ${describeWorkflow(workflow)}`
+            : `workflow FAILED — ${error}`,
+        );
+        continue;
+      }
+
+      if (action.type === "workflow.remove") {
+        const name = await removeWorkflow(action.id);
+        outcomes.push(name ? `workflow.remove: removed "${name}" (${action.id})` : `workflow.remove: no workflow with id ${action.id}`);
         continue;
       }
 

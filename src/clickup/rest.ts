@@ -152,6 +152,12 @@ export interface TaskComment {
   date: number | undefined;
 }
 
+/** GET the id of the list a task belongs to (used to bind a task to a workflow). */
+export async function getTaskListId(taskId: string): Promise<string | undefined> {
+  const t = await req<{ list?: { id?: string | number } }>("GET", `${V2}/task/${taskId}`);
+  return t.list?.id !== undefined ? String(t.list.id) : undefined;
+}
+
 /** GET a task's comments (newest first), normalized for mention detection. */
 export async function getTaskComments(taskId: string): Promise<TaskComment[]> {
   const out = await req<{ comments?: Array<Record<string, unknown>> }>(
