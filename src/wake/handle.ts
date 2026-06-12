@@ -31,6 +31,14 @@ import { buildTaskActivityDigest } from "../activity/digest.js";
 import { appendTurn, loadThread, maybeCompact, upsertIndex } from "../memory/threads.js";
 import { matchCommand } from "../rhythms/commands.js";
 import { describeJob, listJobs, MAX_JOBS } from "../rhythms/schedules.js";
+import {
+  describeWorkflow,
+  listWorkflows,
+  loadPlaybook,
+  modelFor,
+  MAX_WORKFLOWS,
+  workflowForTask,
+} from "../workflows/registry.js";
 import { runExclusive } from "../rhythms/lock.js";
 import { runHeartbeat } from "../rhythms/heartbeat.js";
 import { runPmCheck } from "../rhythms/pmCheck.js";
@@ -102,11 +110,18 @@ function buildWakePrompt(
   members: Member[],
   activity: string,
   schedules: string,
+  playbook: string,
+  workflows: string,
 ): string {
   const uid = inbound.authorUserId;
   const head = [
     `You have been woken by a new ${inbound.source === "chat" ? "chat message" : "task comment"} addressed to you.`,
     "Answer it now, in your own voice, following your contract (plain English, short, honest, no cheerleading).",
+    "",
+    playbook.trim()
+      ? "This task belongs to one of your workflows — follow its playbook for how to handle it " +
+        "(e.g. editing, illustrating, iterating):\n---\n" + playbook.trim() + "\n---"
+      : "",
     "",
     history.trim()
       ? "Conversation so far (your episodic memory for this thread):\n---\n" + history.trim() + "\n---"
@@ -159,9 +174,21 @@ function buildWakePrompt(
       "      use it for ClickUp/repo/analysis work (drafting tasks, chasing, summarising), not for posting to LinkedIn etc.",
       "      Safe/additive; allowed anytime. Up to " + String(MAX_JOBS) + " jobs.",
       '  - {"type": "unschedule", "id": "<job id>"}  → remove one of your jobs. Allowed anytime.',
+      '  - {"type": "workflow", "name": "<name>", "playbook": "<the rules, as markdown>", "model": "sonnet"|"opus",',
+      '       "listId": "<clickup list>", "cron": "<m h dom mon dow, optional>", "tz": "<IANA, optional>",',
+      '       "generate": "<what to draft each run, if cron set>", "allowBrowser": false, "id": "<optional, to update>"}',
+      '      → set up (or update, with id) a repeatable, human-in-the-loop WORKFLOW. "playbook" is its rules, written as',
+      "       markdown — it is saved in your OWN data (not the code repo), so creating/editing a workflow needs no PR or restart.",
+      "       A workflow has two halves that share that playbook + model: the cron GENERATE step drafts into the ClickUp list,",
+      "       and any comment on a task in that list wakes you to ITERATE (edit/illustrate) with the same playbook loaded. On",
+      '       update, omit "playbook" to keep the current rules. "model":"opus" runs both halves on Opus. "allowBrowser":true',
+      "       lets the unattended generate step use the browser — that (publishing-capable) variant is only honored from Navid's",
+      "       private DM; a Canva/ClickUp-only workflow is fine anytime.",
+      '  - {"type": "workflow.remove", "id": "<workflow id>"}  → remove a workflow. Allowed anytime.',
       "  Omit \"actions\" entirely when you're just talking. The system performs each action and reports the real result.",
       "",
       schedules,
+      workflows,
       "Team directory (id — name):",
       directoryBlock(members),
     );
@@ -239,13 +266,18 @@ export function handleWake(inbound: Inbound): Promise<void> {
       // current scheduled jobs (so it can reference/replace them, not duplicate).
       const members = inbound.source === "chat" ? await loadDirectory() : [];
       const schedules = inbound.source === "chat" ? await loadSchedulesBlock() : "";
+      const workflows = inbound.source === "chat" ? await loadWorkflowsBlock() : "";
       const history = await loadThread(inbound.threadId);
       // Task wakes get the full activity tail (comments + replies + linked GitHub),
       // assembled here so the agent never has to reconstruct it (and can't miss it).
       const activity = inbound.source === "task" && inbound.taskId ? await loadActivity(inbound.taskId) : "";
+      // If this task belongs to a workflow, the iterate step runs with that workflow's
+      // playbook + model (the same the recurring generate step uses).
+      const wf = inbound.source === "task" && inbound.taskId ? await workflowForTask(inbound.taskId) : undefined;
+      const playbook = wf ? await loadPlaybook(wf) : "";
       const res = await runAgent({
-        task: buildWakePrompt(inbound, history, members, activity, schedules),
-        model: MODEL.pm,
+        task: buildWakePrompt(inbound, history, members, activity, schedules, playbook, workflows),
+        model: wf ? modelFor(wf) : MODEL.pm,
         // The app performs every write — block the agent's own posting tools so it
         // can only compose, never (claim to) send.
         disallowTools: inbound.source === "task" ? [CREATE_COMMENT_TOOL] : [SEND_CHAT_TOOL],
@@ -327,6 +359,20 @@ async function loadSchedulesBlock(): Promise<string> {
       .join("\n");
   } catch (err) {
     console.error("[wake] could not load schedules:", (err as Error).message);
+    return "";
+  }
+}
+
+/** Render the agent's current workflows for its prompt (so it can update/remove, not duplicate). */
+async function loadWorkflowsBlock(): Promise<string> {
+  try {
+    const wfs = await listWorkflows();
+    if (wfs.length === 0) return `Your workflows: none yet (you can set up to ${MAX_WORKFLOWS}).`;
+    return ["Your workflows (use the workflow action with an id to update, or workflow.remove to remove):"]
+      .concat(wfs.map((w) => `  - ${describeWorkflow(w)}`))
+      .join("\n");
+  } catch (err) {
+    console.error("[wake] could not load workflows:", (err as Error).message);
     return "";
   }
 }
