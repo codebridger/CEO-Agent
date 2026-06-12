@@ -210,6 +210,47 @@ export interface CommentThread extends TaskComment {
   replies: CommentReply[];
 }
 
+/** A file/link attached to a comment (lives in the `comment` segments, not `comment_text`). */
+export interface CommentAttachment {
+  /** "file" = an uploaded attachment; "link" = an embedded bookmark (e.g. a Drive link). */
+  kind: "file" | "link";
+  /** Display name (file title or the link's service). */
+  title: string;
+  /** Fetchable URL (ClickUp attachment URLs are public; bookmarks point at the source). */
+  url?: string;
+  mimetype?: string;
+}
+
+/**
+ * Pull attachments out of a comment's `comment` segment array. ClickUp puts files in a
+ * `type:"attachment"` segment (with an `attachment` object) and embedded links in a
+ * `type:"bookmark"` segment — neither appears in `comment_text`, so a plain text read
+ * misses them entirely (an attachment-only comment has empty text).
+ */
+export function extractAttachments(segments: Array<Record<string, unknown>>): CommentAttachment[] {
+  const out: CommentAttachment[] = [];
+  for (const s of segments ?? []) {
+    if (s["type"] === "attachment" && s["attachment"]) {
+      const a = s["attachment"] as Record<string, unknown>;
+      out.push({
+        kind: "file",
+        title: String(a["title"] ?? s["text"] ?? "file"),
+        url: a["url"] ? String(a["url"]) : undefined,
+        mimetype: a["mimetype"] ? String(a["mimetype"]) : undefined,
+      });
+    } else if (s["type"] === "bookmark" && s["bookmark"]) {
+      const b = s["bookmark"] as Record<string, unknown>;
+      const url = b["url"] ?? b["id"];
+      out.push({
+        kind: "link",
+        title: b["service"] ? String(b["service"]) : "link",
+        url: url ? String(url) : undefined,
+      });
+    }
+  }
+  return out;
+}
+
 /**
  * The fullest comment history the public API allows: pages `GET /task/{id}/comment`
  * back through `start`/`start_id` (the endpoint returns ~25 newest-first per page)
