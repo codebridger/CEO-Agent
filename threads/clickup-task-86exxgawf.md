@@ -74,3 +74,23 @@ You're the reviewer. Merge it when you're happy and the rule is official.
 ### Aso Dara · 2026-06-11T17:00:11.674Z
 
 Navid, great — the rule is now live in the playbook. The 4 designs are sitting in the **Subturtle → Social Post Illustrations** folder on Canva, ready whenever you want to pick one for the post.
+
+### Navid Shad (founder) · 2026-06-12T18:37:31.593Z
+
+@Aso Dara let's generate 5 illustration idea for this post, use gemini
+
+### Aso Dara · 2026-06-12T18:37:32.045Z
+
+Navid, done — 5 illustration ideas made with Gemini and attached to this task. All square (1:1) for the LinkedIn feed, soft teal/green brand look. In order:
+
+1. **Evening couch** — person watching a video on a laptop, one subtitle word highlighted with a definition popup. Warm, real-life feel.
+2. **Midnight phone** — hand holding a phone late at night, one word glowing with a definition card and a save icon. Ties to the "Reddit thread at midnight" line.
+3. **Textbook vs. screen** — dusty closed textbooks on one side, a glowing screen full of everyday content on the other. The most literal take on the headline.
+4. **Subtitle hero** — clean minimal graphic, one line of text with a word highlighted and a definition card. Simplest, most scroll-stopping.
+5. **Webpage hover** — over-the-shoulder desk view, cursor hovering a word in an article, instant definition card. Shows the webpage use case.
+
+Two honest notes:
+- The small text inside the screens is AI-rendered and a bit garbled up close (fake words in the subtitles/article). Fine as a concept, but whoever finalises should redo the text cleanly in Canva.
+- Idea 4 happens to highlight the word "unlock" — that's a buzzword we avoid in our voice. Easy to swap for a real example word.
+
+My pick for this post is **#1 (couch)** — it matches the cozy, everyday tone best. Tell me which one you want and I'll move it into the **Social Post Illustrations** folder per our playbook rule.

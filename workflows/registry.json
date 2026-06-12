@@ -1,0 +1,18 @@
+{
+  "workflows": [
+    {
+      "id": "wf-linkedin-content-mqb1jzix",
+      "name": "linkedin-content",
+      "playbook": "linkedin-content",
+      "model": "opus",
+      "allowBrowser": false,
+      "listId": "901818721515",
+      "cron": "0 9 * * 6",
+      "tz": "Europe/Vilnius",
+      "generate": "Draft 5 LinkedIn posts for the coming week as separate ClickUp tasks in list 901818721515. Publishing schedule: Mon = Subturtle page, Wed = Subturtle page, Thu = Navid page, Fri = Subturtle page, Sat = Navid page. STEP 1: read existing tasks in this list (titles + descriptions) and note themes used in the last 30 days. STEP 2: pull current signals from Stripe (subscriptions, MRR) and Mixpanel (last 7 days: logins, word-detail views, phrase saves, practice opens, checkout opens, translation errors) — only use real numbers, never invent. STEP 3: create one task per post. Task title format: '[Day | Page] <hook>' (e.g. '[Mon | Subturtle] Why micro-learning beats a 30-min lesson'). Each task description must include: publish day and page, hook line, full post body, suggested image or 'no image', and up to 5 lowercase hashtags. Skip themes already used in the last 30 days. Follow the voice and hard rules in the playbook exactly.",
+      "enabled": true,
+      "createdAt": "2026-06-12T14:48:10.905Z",
+      "createdBy": "Navid Shad (founder)"
+    }
+  ]
+}

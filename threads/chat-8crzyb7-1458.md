@@ -265,3 +265,55 @@ Two ways forward:
 2. I run a manual version now: pick up task 86exwrgpb (the existing draft — headline, About, 5 posts), refine the first 1-2 posts into ready-to-publish shape today, and we wire the real workflow after deploy.
 
 Which do you want? My pick is option 1 — clean setup, no half-built thing to throw away.
+
+### Navid Shad (founder) · 2026-06-12T14:39:38.881Z
+
+now we are on main brach
+
+### Aso Dara · 2026-06-12T14:39:39.478Z
+
+Good — workflow facility is live. One quick decision before I set it up.
+
+The workflow needs a ClickUp list to drop draft posts into each week. Two options:
+
+1. Create a dedicated 'LinkedIn drafts' list (clean separation, easy to scan, drafts don't clutter the main task list)
+2. Drop drafts into the main Subturtle.app list (less setup, but mixes content drafts with engineering tasks)
+
+My pick: option 1.
+
+Here is the rest of the plan, for your check:
+- Cadence: weekly, Monday 09:00 Vilnius. Drafts 2 founder-voice posts + 2 company-page posts per run, each as its own task.
+- Model: Opus (content quality matters).
+- Browser off. Aso drafts in ClickUp, you publish manually. We can flip it on later if/when you want unattended posting.
+- Playbook follows the rules already agreed on task 86exwrgpb: founder voice = first person, honest, building decisions and lessons; company voice = product-confident, features, user proof, language tips.
+- Iterate step: comment on any draft task wakes me to refine it (rewrite, shorten, add hook, etc.).
+
+Reply with '1' or '2' (or a list id you already have in mind) and I will create it.
+
+### Navid Shad (founder) · 2026-06-12T14:48:10.087Z
+
+We already created a specific list and drafted a few content there:
+Subturtle LinkedIn Content ([https://app.clickup.com/9018800487/v/li/901818721515](https://app.clickup.com/9018800487/v/li/901818721515))
+
+Subturtle Page → Monday + WendsDay + Friday
+Navid Page → TursDay + Saturday
+
+we need to prepare contents 2 days before, to have 2 days iteration until publish day. better to setup contens weekly 2 days before the first post of the week
+
+### Aso Dara · 2026-06-12T14:48:10.902Z
+
+Good — got the list and the cadence. Workflow is going up now.
+
+- Cron: Saturday 09:00 Vilnius (0 9 * * 6). Drafts the full week each Saturday — 3 Subturtle page (Mon/Wed/Fri) + 2 Navid page (Thu/Sat).
+- List: Subturtle LinkedIn Content (901818721515).
+- Model: Opus.
+- Browser off — drafts stay in ClickUp, you publish.
+- Iterate: any comment on a draft task wakes me to refine that post.
+
+Playbook covers: voice rules (brand voice for Subturtle, first-person founder voice for your page), hard rules (no AI disclosure, no fabricated metrics, 150-250 words, max 5 hashtags), and a 'read existing tasks first, skip themes used in the last 30 days' rule so I don't repeat what is already drafted in the list.
+
+First auto-run: this coming Saturday. If you want a one-off draft batch sooner, just say so.
+
+### Aso Dara (action) · 2026-06-12T14:48:10.906Z
+
+workflow: created wf-linkedin-content-mqb1jzix — "linkedin-content" — opus · playbook linkedin-content · cron "0 9 * * 6" Europe/Vilnius · list 901818721515
