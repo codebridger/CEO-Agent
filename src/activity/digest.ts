@@ -17,7 +17,7 @@
  */
 
 import { AGENT_NAME, IDENTITY } from "../config.js";
-import { getTaskActivityTail, type CommentThread } from "../clickup/rest.js";
+import { extractAttachments, getTaskActivityTail, type CommentThread } from "../clickup/rest.js";
 import { getTaskGitHubActivity, type GitHubActivity } from "../github/rest.js";
 
 const MAX_TEXT = 500; // per comment/reply, to keep the block bounded
@@ -41,15 +41,26 @@ function clip(s: string): string {
   return t.length > MAX_TEXT ? `${t.slice(0, MAX_TEXT)}…` : t;
 }
 
+/** Render a comment/reply's attachments as indented lines (skipped when there are none). */
+function renderAttachments(segments: Array<Record<string, unknown>>, indent: string): string[] {
+  return extractAttachments(segments).map((a) => {
+    const what = a.kind === "file" ? "attachment" : "link";
+    const meta = a.mimetype ? ` (${a.mimetype})` : "";
+    return `${indent}📎 ${what}: ${a.title}${meta}${a.url ? ` — ${a.url}` : ""}`;
+  });
+}
+
 function renderComments(threads: CommentThread[]): string {
   if (threads.length === 0) return "_No comments on this task._";
   const lines: string[] = [];
   for (const c of threads) {
     const ts = when(c.date);
     lines.push(`- ${ts ? `[${ts}] ` : ""}${label(c.userId)}: ${clip(c.text)}`);
+    lines.push(...renderAttachments(c.segments, "    "));
     for (const r of c.replies) {
       const rts = when(r.date);
       lines.push(`    ↳ ${rts ? `[${rts}] ` : ""}${label(r.userId)}: ${clip(r.text)}`);
+      lines.push(...renderAttachments(r.segments, "        "));
     }
   }
   return lines.join("\n");

@@ -137,6 +137,9 @@ function buildWakePrompt(
     inbound.text.trim(),
     "",
     "Read whatever further ClickUp/Stripe context you need first.",
+    "If a comment or message includes an attachment or link (a 📎 line above, or a URL in the text) that matters for",
+    "the reply, fetch it rather than guessing — download it (e.g. with curl; ClickUp attachment URLs are public) and",
+    "read the file (an image/PDF too: save it and open it). Don't claim to have read a file you didn't actually fetch.",
   ];
 
   if (inbound.source === "chat") {
