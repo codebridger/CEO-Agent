@@ -86,9 +86,21 @@ export async function commitHistory(message: string): Promise<boolean> {
   try {
     await ensureWorktree();
 
-    for (const sub of HISTORY_SUBDIRS) await mirror(sub);
+    // Mirror each subdir, and track which ones actually exist afterwards. A subdir is
+    // absent until its first write (e.g. memory before the first `remember`, workflows
+    // before the first workflow) — passing a missing pathspec makes `git add` fail and
+    // takes the whole commit (threads + beat logs included) down with it.
+    const present: string[] = [];
+    for (const sub of HISTORY_SUBDIRS) {
+      await mirror(sub);
+      if (existsSync(join(DATA_BRANCH_WORKTREE, sub))) present.push(sub);
+    }
+    if (present.length === 0) {
+      console.log("[history] nothing to mirror yet — skipping commit");
+      return true;
+    }
 
-    await git(["add", "-A", "--", ...HISTORY_SUBDIRS], DATA_BRANCH_WORKTREE);
+    await git(["add", "-A", "--", ...present], DATA_BRANCH_WORKTREE);
     // `git diff --cached --quiet` exits non-zero iff something is staged.
     const hasStaged = await git(["diff", "--cached", "--quiet"], DATA_BRANCH_WORKTREE)
       .then(() => false)
