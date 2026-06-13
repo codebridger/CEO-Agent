@@ -407,7 +407,8 @@ function toChatMessage(m: Record<string, unknown>): ChatMessage {
     content: String(m["content"] ?? ""),
     date: Number(m["date"] ?? 0),
     userId: String(m["user_id"] ?? ""),
-    replyCount: m["reply_count"] ? Number(m["reply_count"]) : 0,
+    // ClickUp's chat API uses `replies_count`; tolerate `reply_count`/`has_replies` too.
+    replyCount: Number(m["replies_count"] ?? m["reply_count"] ?? 0) || (m["has_replies"] ? 1 : 0),
   };
 }
 
@@ -447,6 +448,22 @@ export async function sendChatMessage(channelId: string, content: string): Promi
   );
   const id = String(out.data?.id ?? out.id ?? "");
   if (!id) throw new Error(`ClickUp send to channel ${channelId} returned no message id`);
+  return { id };
+}
+
+/**
+ * Post a reply INSIDE a message thread (under the given parent message), so a
+ * conversation that started in-thread stays in-thread instead of jumping to the
+ * channel root. Same verified-send contract as sendChatMessage.
+ */
+export async function sendChatReply(messageId: string, content: string): Promise<{ id: string }> {
+  const out = await req<{ data?: { id?: string | number }; id?: string | number }>(
+    "POST",
+    `${V3}/workspaces/${WORKSPACE_ID}/chat/messages/${messageId}/replies`,
+    { type: "message", content_format: "text/md", content },
+  );
+  const id = String(out.data?.id ?? out.id ?? "");
+  if (!id) throw new Error(`ClickUp reply to message ${messageId} returned no message id`);
   return { id };
 }
 

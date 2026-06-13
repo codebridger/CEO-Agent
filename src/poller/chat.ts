@@ -85,17 +85,19 @@ async function tick(): Promise<void> {
     // agent's messages) is invisible to a top-level-only poll — and its date never
     // advances the cursor. Pull replies for any message that has them and treat
     // them like first-class messages.
-    const items: ChatMessage[] = [...msgs];
+    // Each candidate keeps its parent message id when it came from a thread, so the
+    // agent can reply back into that same thread rather than at the channel root.
+    const items: { m: ChatMessage; parentId?: string }[] = msgs.map((m) => ({ m }));
     for (const m of msgs) {
       if (!m.replyCount) continue;
       try {
-        items.push(...(await getChatMessageReplies(m.id)));
+        for (const r of await getChatMessageReplies(m.id)) items.push({ m: r, parentId: m.id });
       } catch (err) {
         console.error(`[poller] read replies for ${m.id} failed:`, (err as Error).message);
       }
     }
 
-    const maxDate = Math.max(...items.map((m) => m.date));
+    const maxDate = Math.max(...items.map((c) => c.m.date));
     const known = cursors[w.id];
     if (known === undefined) {
       cursors[w.id] = maxDate; // first sight — baseline, don't replay history
@@ -103,12 +105,12 @@ async function tick(): Promise<void> {
     }
 
     const fresh = items
-      .filter((m) => m.date > known && m.userId !== agentId)
-      .sort((a, b) => a.date - b.date);
+      .filter((c) => c.m.date > known && c.m.userId !== agentId)
+      .sort((a, b) => a.m.date - b.m.date);
 
-    for (const m of fresh) {
+    for (const { m, parentId } of fresh) {
       if (!w.isDM && !textMentionsAgent(m.content)) continue; // group: only @mentions
-      console.log(`[poller] new ${w.isDM ? "DM" : "mention"} in ${w.id} from ${m.userId}`);
+      console.log(`[poller] new ${w.isDM ? "DM" : "mention"} in ${w.id} from ${m.userId}${parentId ? " (thread)" : ""}`);
       // Fire-and-forget — handleWake serializes per thread internally.
       void handleWake({
         source: "chat",
@@ -118,6 +120,7 @@ async function tick(): Promise<void> {
         authorUserId: Number(m.userId) || undefined,
         channelId: w.id,
         eventId: m.id,
+        replyToMessageId: parentId,
       });
     }
     cursors[w.id] = Math.max(known, maxDate);

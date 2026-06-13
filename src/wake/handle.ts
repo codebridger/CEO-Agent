@@ -25,6 +25,7 @@ import {
   getWorkspaceMembers,
   replyToComment,
   sendChatMessage,
+  sendChatReply,
   type Member,
 } from "../clickup/rest.js";
 import { buildTaskActivityDigest } from "../activity/digest.js";
@@ -64,6 +65,12 @@ export interface Inbound {
   commentId?: string;
   /** Chat channel id to reply in (source === "chat"). */
   channelId?: string;
+  /**
+   * If this chat wake was triggered by a reply INSIDE a message thread, the id of
+   * that thread's parent (root) message. The agent's reply is posted back into the
+   * same thread rather than at the channel root. Undefined for top-level messages.
+   */
+  replyToMessageId?: string;
   /**
    * Stable id of the underlying event (task comment id / chat message id) used to
    * drop duplicate deliveries. Omit only for synthetic wakes that should always run.
@@ -498,7 +505,13 @@ async function deliverChat(inbound: Inbound, msgs: OutMsg[], members: Member[]):
         targetThreadId = `chat-${dm.id}`;
       }
 
-      const sent = await sendChatMessage(channelId, m.text);
+      // Stay in the thread the human used: if this wake came from an in-thread
+      // reply and we're answering "here", post the reply under the same parent
+      // message instead of at the channel root.
+      const sent =
+        here && inbound.replyToMessageId
+          ? await sendChatReply(inbound.replyToMessageId, m.text)
+          : await sendChatMessage(channelId, m.text);
       // Record under the agent's name in the inbound thread (so the conversation
       // reads naturally), and also in the recipient's own thread when it differs.
       await appendTurn(inbound.threadId, here ? AGENT_NAME : `${AGENT_NAME} → ${who}`, m.text);
