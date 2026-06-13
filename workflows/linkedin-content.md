@@ -1,60 +1,38 @@
 # LinkedIn Content Workflow
 
-## Publishing schedule (Navid publishes manually)
+## Voices and publishing paths
 
-- Mon — Subturtle company page
-- Wed — Subturtle company page
-- Thu — Navid Shad personal page
-- Fri — Subturtle company page
-- Sat — Navid Shad personal page
+- **Founder voice (Navid's personal page)** — publish via the social-engine MCP. Human-gated: I draft, Navid reads, Navid comments 'publish' (or 'publish at <time>') on the task, I call mcp__social-engine__publish_post against his page, then I attach the live URL back on the task and move it to 'published'. No silent posts. Never auto-publish.
+- **Subturtle company page** — API still under review by LinkedIn. PAUSED for now. Do NOT generate Subturtle-page drafts on this workflow. The only path to publish Subturtle stuff today is the browser, and that variant only switches on when Navid asks for it in private DM.
 
-Generate runs Saturday 09:00 Vilnius and prepares all 5 posts for the upcoming week — 2 days of iteration before the first publish on Monday.
+## Cadence
 
-## Generate step
+- Cron run = Saturday 09:00 Europe/Vilnius. Drafts ONE founder-voice post for the upcoming slot.
+- Iterate-on-comment: any comment on a draft task in this list wakes me to refine that specific post.
 
-1. Read every existing task in the list. Note the themes used in the last 30 days. Do NOT draft anything that repeats a theme from that window.
-2. Pull fresh signals: Stripe (active subs, MRR, recent activity) and Mixpanel last 7 days (logins, word-detail views, phrase saves, practice opens, checkout opens, translation errors). Only use these real numbers; never invent.
-3. Create 5 ClickUp tasks in list 901818721515. One task = one post. Title format: '[Day | Page] hook'.
-4. Each task description must include: publish day + page, hook line, full post body, suggested image (or 'no image'), and up to 5 lowercase hashtags.
+## Founder-post rules
 
-## Voice — Subturtle company page (Mon/Wed/Fri)
+- 1st person, conversational, Navid's voice. Plain everyday English at ~IELTS 6. Short sentences.
+- 600–1,200 characters (LinkedIn's sweet spot). Hook in line 1. One idea per post.
+- Topics: building Subturtle in public, what we learned shipping the Chrome extension, language-learning angles that come from the product (not generic), small founder lessons.
+- No fabricated metrics. No AI disclosure. No hashtag soup — max 3 relevant tags at the end.
+- If a hero/illustrative image fits, generate one via mcp__gemini__generate_image (flash) and attach to the task.
+- Before drafting: read the last ~10 published founder posts on Navid's LinkedIn (or the last 10 drafts in this list) and skip overlap.
 
-- Brand voice: 'we', 'our team', 'at Subturtle'. No founder 'I'.
-- Product-confident, not boastful. Show what it does and why it works.
-- Topics: language-learning tips, micro-learning insight, product features that shipped, user-impact stories (only with real numbers), the science of in-context vocabulary acquisition.
-- Open with a concrete observation or tip. Never with 'We are excited to...'.
+## Task shape
 
-## Voice — Navid Shad personal page (Thu/Sat)
+- Title: 'LinkedIn (founder) — <topic>'
+- Description in markdown with `## Heading` sections: ## Hook, ## Body, ## CTA, ## Hashtags, ## Notes.
+- Status: 'approval' on creation.
+- Notify Navid on the task.
 
-- First person, honest, founder voice.
-- Topics: building Subturtle in public, real decisions and tradeoffs, lessons from data (the 3/280 phrase-save story, the translation-error fix from 36% to near zero, the practice-flow drop-off, the checkout-opens-without-conversion gap), tool-not-destination thinking, watch-what-they-do over what-they-say.
-- Conversational, plain English. IELTS 6 level. Short sentences. No buzzwords (synergy, leverage, unlock, game-changer, journey, etc.).
-- Never mention AI authorship. Never imply someone else wrote it.
+## Publish step
 
-## Hard rules (both voices)
+- Triggered by Navid commenting 'publish' or 'publish at <time>' on a task in this list.
+- I call the social-engine MCP, post to Navid's page, attach the live URL on the task, move status to 'published'.
+- If publish fails, I leave status in 'approval' and reply on the task with the error — never claim a post went out unless the MCP confirms it.
 
-- 150-250 words per post. Hook in the first line.
-- Plain English, short sentences.
-- Max 5 hashtags, lowercase, relevant. No hashtag stuffing.
-- Each post stands alone. No 'as I said last week' references.
-- No fabricated metrics, no invented users, no fake quotes or testimonials.
-- No promises for unshipped features. No 'coming soon' unless it is on the active roadmap.
-- No emoji unless the post is explicitly about something light.
-- No cheerleading. Honest tone wins.
+## Subturtle-page (when API clears)
 
-## Iterate step (comment triggers)
-
-When anyone comments on a task in list 901818721515:
-1. Read the comment as feedback on that specific post.
-2. Edit the task description with the revised draft — rewrite, shorten, sharpen hook, swap angle, fix a fact, whatever was asked.
-3. Post a short reply comment summarizing what changed.
-4. Stay in scope. One task = one post. Do not touch other tasks unless the comment asks.
-5. If the comment asks for an image, describe it clearly so the publisher can take it to Canva.
-
-## What NOT to do
-
-- Do not draft more than 5 posts per generate run.
-- Do not duplicate themes used in the last 30 days.
-- Do not publish anywhere. Drafts stay in ClickUp.
-- Do not change tasks outside list 901818721515.
-- Do not invent metrics. If a number is not in Stripe/Mixpanel/shipped product, do not use it.
+- When Navid says the LinkedIn API approval landed, flip on a second draft per run for the Subturtle page using the same flow. Same publish gating.
+- Until then: don't draft Subturtle-page posts on the cron run.

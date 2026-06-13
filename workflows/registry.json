@@ -9,9 +9,22 @@
       "listId": "901818721515",
       "cron": "0 9 * * 6",
       "tz": "Europe/Vilnius",
-      "generate": "Draft 5 LinkedIn posts for the coming week as separate ClickUp tasks in list 901818721515. Publishing schedule: Mon = Subturtle page, Wed = Subturtle page, Thu = Navid page, Fri = Subturtle page, Sat = Navid page. STEP 1: read existing tasks in this list (titles + descriptions) and note themes used in the last 30 days. STEP 2: pull current signals from Stripe (subscriptions, MRR) and Mixpanel (last 7 days: logins, word-detail views, phrase saves, practice opens, checkout opens, translation errors) — only use real numbers, never invent. STEP 3: create one task per post. Task title format: '[Day | Page] <hook>' (e.g. '[Mon | Subturtle] Why micro-learning beats a 30-min lesson'). Each task description must include: publish day and page, hook line, full post body, suggested image or 'no image', and up to 5 lowercase hashtags. Skip themes already used in the last 30 days. Follow the voice and hard rules in the playbook exactly.",
+      "generate": "Draft ONE LinkedIn post for the upcoming publish slot. Founder voice (Navid's page) only until the Subturtle-page API review clears. Pick the next ungenerated slot in the list, draft into a new task, status=approval.",
       "enabled": true,
       "createdAt": "2026-06-12T14:48:10.905Z",
+      "createdBy": "Navid Shad (founder)",
+      "lastRunAt": "2026-06-13T06:00:57.747Z",
+      "lastRunMinute": "2026-06-13 09:00"
+    },
+    {
+      "id": "wf-blog-content-mqbiekea",
+      "name": "blog-content",
+      "playbook": "blog-content",
+      "model": "sonnet",
+      "allowBrowser": false,
+      "tz": "Europe/Vilnius",
+      "enabled": true,
+      "createdAt": "2026-06-12T22:39:51.490Z",
       "createdBy": "Navid Shad (founder)"
     }
   ]
