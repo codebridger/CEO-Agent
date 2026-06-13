@@ -20,7 +20,8 @@ import {
   POLLER_CURSORS_PATH,
   PUBLIC_CHANNEL_ID,
 } from "../config.js";
-import { getChatChannels, getChatMessages } from "../clickup/rest.js";
+import type { ChatMessage } from "../clickup/rest.js";
+import { getChatChannels, getChatMessages, getChatMessageReplies } from "../clickup/rest.js";
 import { textMentionsAgent } from "../agent/identity.js";
 import { handleWake } from "../wake/handle.js";
 
@@ -79,14 +80,29 @@ async function tick(): Promise<void> {
     }
     if (msgs.length === 0) continue;
 
-    const maxDate = Math.max(...msgs.map((m) => m.date));
+    // Expand threaded replies. ClickUp surfaces only top-level messages here, so a
+    // reply sent *inside* a message thread (e.g. someone replying under one of the
+    // agent's messages) is invisible to a top-level-only poll — and its date never
+    // advances the cursor. Pull replies for any message that has them and treat
+    // them like first-class messages.
+    const items: ChatMessage[] = [...msgs];
+    for (const m of msgs) {
+      if (!m.replyCount) continue;
+      try {
+        items.push(...(await getChatMessageReplies(m.id)));
+      } catch (err) {
+        console.error(`[poller] read replies for ${m.id} failed:`, (err as Error).message);
+      }
+    }
+
+    const maxDate = Math.max(...items.map((m) => m.date));
     const known = cursors[w.id];
     if (known === undefined) {
       cursors[w.id] = maxDate; // first sight — baseline, don't replay history
       continue;
     }
 
-    const fresh = msgs
+    const fresh = items
       .filter((m) => m.date > known && m.userId !== agentId)
       .sort((a, b) => a.date - b.date);
 

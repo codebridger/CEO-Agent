@@ -397,6 +397,18 @@ export interface ChatMessage {
   content: string;
   date: number;
   userId: string;
+  /** How many threaded replies hang off this message (0 if none). */
+  replyCount: number;
+}
+
+function toChatMessage(m: Record<string, unknown>): ChatMessage {
+  return {
+    id: String(m["id"]),
+    content: String(m["content"] ?? ""),
+    date: Number(m["date"] ?? 0),
+    userId: String(m["user_id"] ?? ""),
+    replyCount: m["reply_count"] ? Number(m["reply_count"]) : 0,
+  };
 }
 
 /** GET recent messages in a channel (newest first per ClickUp). */
@@ -405,12 +417,20 @@ export async function getChatMessages(channelId: string, limit = 25): Promise<Ch
     "GET",
     `${V3}/workspaces/${WORKSPACE_ID}/chat/channels/${channelId}/messages?limit=${limit}`,
   );
-  return (out.data ?? []).map((m) => ({
-    id: String(m["id"]),
-    content: String(m["content"] ?? ""),
-    date: Number(m["date"] ?? 0),
-    userId: String(m["user_id"] ?? ""),
-  }));
+  return (out.data ?? []).map(toChatMessage);
+}
+
+/**
+ * GET the threaded replies under a single chat message. ClickUp does NOT surface
+ * in-thread replies as top-level channel messages, so the poller must expand them
+ * explicitly or it never sees a reply sent inside a message thread.
+ */
+export async function getChatMessageReplies(messageId: string, limit = 50): Promise<ChatMessage[]> {
+  const out = await req<{ data?: Array<Record<string, unknown>> }>(
+    "GET",
+    `${V3}/workspaces/${WORKSPACE_ID}/chat/messages/${messageId}/replies?limit=${limit}`,
+  );
+  return (out.data ?? []).map(toChatMessage);
 }
 
 /**
