@@ -1,255 +1,352 @@
 # Thread chat-8crzyb7-1458
 
-## Story so far (compacted 2026-06-13T10:15:55.669Z)
+## Story so far (compacted 2026-06-14T09:24:54.194Z)
 
-I can't find it on my side. I searched the workspace for 'blog', 'Subturtle Blog Content', 'Subturtle Blog', 'Blog Content' — nothing matches. The only content list I can see is 'Subturtle LinkedIn Content' (901818721515).
+**Who's involved:** Navid (founder) and Aso Dara (CEO agent). Thread is the ClickUp DM `chat-8crzyb7-1458`.
 
-Could you send the link or name of the blog list? Easiest is the ClickUp URL — I can pull the id from there.
+**What was discussed:**
+
+1. **WordPress.com MCP blocker** — WP claude.ai connector keeps loading only the OAuth stub, not the read/edit-post tools. Navid confirmed it's a known wordpress.com bug (Reddit users hit the same). Fallback agreed: Navid flips the 4 publish dates by hand in WP admin instead of looping on /mcp re-auth.
+
+2. **Two open holding-pattern items** Aso keeps re-raising each turn:
+   - The 4 WP date pushes: #183 → 2026-06-15, #226 → 06-17, #240 → 06-19, #247 → 06-21 (all 12:00 UTC).
+   - Drafting the next 7 blog posts from `todo` outlines to hold the every-2-days cadence past 06-21 — waiting on Navid's yes/no.
+   - LinkedIn dry-run task **86exxzaae** — waiting on Navid's `publish` comment to ship.
+
+3. **New initiative: Reddit outreach.** Navid wants a playbook for introducing Subturtle to language-learning communities and asked browser vs the `jordanburke/reddit-mcp-server` MCP. Aso recommended both: MCP for reading, browser (Aso Dara Chrome profile) for writing. Drafted a cautious playbook — dedicated aged account, read-first/write-later, draft-through-ClickUp-with-publish-comment rule (same as LinkedIn), follow sub rules, no autonomous posting ever.
+
+**Decisions made:**
+- Use a **dedicated Reddit account**, not Navid's personal handle.
+- Username: **`subtitles_and_coffee`** (no brand in handle, full disclosure in bio).
+- Signup email: **codebridger.co.uk@gmail.com** (keeps blast radius off the real company inbox).
+- During the "About you" prompts: pick **"I prefer not to say"** on personal questions; follow language-learning subs (r/languagelearning, r/EnglishLearning, r/Korean, r/Japanese, r/Spanish, r/French, r/German) to seed the feed; account stays quiet 2–3 weeks before any comment.
+- Explained `u/` is just Reddit's username prefix — the actual signup handle is `subtitles_and_coffee`.
+
+**Open threads right now:**
+- Navid replied with a screenshot of the next Reddit signup screen asking **"what to select?"** — Aso needs to look at the image and advise.
+- Navid asked Aso to **create a tracking task** for the Reddit account setup; Navid hit a "You do not have access to this Location" error and Aso still needs the target ClickUp list (proposed: new 'Reddit Outreach' list — Navid would have to create it since Aso can't create lists, only tasks inside them).
+- Still waiting: WP date flips, go-ahead to draft the 7 blog outlines, and the LinkedIn `publish` on 86exxzaae.
 
 ## Recent
-### Aso Dara · 2026-06-12T22:37:43.778Z
+### Aso Dara · 2026-06-14T08:30:38.168Z
 
-Searched ClickUp — I can't see a list called 'Subturtle Blog' (or anything blog-shaped). The folder the LinkedIn list lives in returns 'team not authorized' when I try to expand it, so I might just be blocked from seeing the rest.
+Pick Entertainment + Travel.
 
-Can you paste the list link (same shape as the LinkedIn one)? I'll wire the workflow as soon as I have the id.
+Reason: this screen feeds the NEXT screen (it says so at the top — 'Your choices will determine the options you see next'). Entertainment will surface language-learning + Netflix/show subs (Subturtle's natural home). Travel will surface culture + language subs (r/languagelearning often shows up under Travel-adjacent interests too).
 
-### Navid Shad (founder) · 2026-06-12T22:39:50.857Z
+Skip the rest:
+- Beauty, Sports, Gaming, Finance — off-brand, wrong feed
+- Career — pulls in business/networking noise
+- Technology — tempting, but it skews the feed to dev/AI subs, not language subs (and we do NOT want this account to look like a tech promoter)
+- Art, Food, Wellness, News — all fine but adding them dilutes the targeting
 
-There you go
-[https://app.clickup.com/9018800487/v/li/901809890244](https://app.clickup.com/9018800487/v/li/901809890244)
+2 picks is the sweet spot. Picking too many makes the home feed messy and the next-screen sub suggestions less useful.
 
-### Aso Dara · 2026-06-12T22:39:51.487Z
+If the next screen does NOT show language subs, that is fine — we follow them manually after signup (r/languagelearning, r/EnglishLearning, r/Korean, r/Japanese, r/Spanish, r/French, r/German).
 
-Got the list id (901809890244). Same access-denied on read as the LinkedIn list, but the id is all I need to draft into it.
+Still open from earlier — 3 yes/no when you have a sec:
+1. WP date flips in admin (3 min) — #183 06-15, #226 06-17, #240 06-19, #247 06-21
+2. Start drafting the 7 todo blog outlines to hold every-2-days past 06-21?
+3. LinkedIn task 86exxzaae — 'publish' comment ships it.
 
-Workflow is going up now. Setup:
+### Navid Shad (founder) · 2026-06-14T08:38:31.249Z
 
-- Cron: Sunday + Wednesday 09:00 Vilnius (2 days before Tue + Fri publish)
-- Each run drafts ONE blog post for the upcoming publish day
-- Model: Opus
-- Browser off — you publish to WordPress manually for now
-- Iterate: any comment on a draft task wakes me to refine that post
+![image.png](https://t9018800487.p.clickup-attachments.com/t9018800487/22730bd6-0251-4f2c-8655-bf9bc661cb35/image.png)
+lett the topic you want, even if is is not in the list, i can search
 
-Playbook covers: SEO focus (long-tail keyword in title + first 100 words), 4 pillars (learn-X-with-Y lists, Subturtle vs alternatives, practical tips, the method behind subtitle learning), ~1,200 words, voice matched to the existing 3 blog posts (friendly, practical, second-person), hero image via Gemini, install CTA + dashboard link at the end, 'read the existing 3 posts + the last 30 days of drafts in this list and skip overlap' rule, no fabricated metrics, no AI disclosure.
+### Aso Dara · 2026-06-14T08:38:32.026Z
 
-First auto-run: Sunday 09:00 Vilnius — drafts Tuesday's post. If you want a one-off draft sooner, just say so.
+None of these are useful — language learning is what we actually need. Hit the search bar at the top and search:
 
-### Aso Dara (action) · 2026-06-12T22:39:51.491Z
+1. **Language Learning** — pick it. Core topic. This is the feed we care about.
+2. **English** — pick it. English learners are our biggest audience.
 
-workflow: created wf-blog-content-mqbiekea — "blog-content" — opus · playbook blog-content · cron "0 9 * * 0,3" Europe/Vilnius · list 901809890244
+That is enough. 2 focused picks beats 5 mixed ones.
 
-### Navid Shad (founder) · 2026-06-12T22:47:36.078Z
+If you want a third, **Netflix** is on the visible list and is genuinely on-brand — Subturtle's hook is 'learn from what you watch', and Netflix subs are a real use case. Skip the rest (Movies, TV Shows, Books are tempting but they pull in entertainment noise, not learners).
 
-Added you into the list
+Do NOT pick: Vilnius, Riga, Tallinn, Cepelinai, Žalgiris Kaunas, Lithuanian Cuisine — these would fingerprint the account as Lithuania-based, which we do not want for a global brand account.
 
-### Aso Dara · 2026-06-12T22:47:36.648Z
+After Continue, manually follow these subs (they may not auto-appear): r/languagelearning, r/EnglishLearning, r/Korean, r/Japanese, r/Spanish, r/French, r/German. Then close the tab — account stays quiet 2-3 weeks before any comment, per the playbook.
 
-Got the list — and the plan needs a small course correction.
+### Navid Shad (founder) · 2026-06-14T08:42:39.030Z
 
-This list isn't empty. There are 12 blog-post outlines already in here:
+![image.png](https://t9018800487.p.clickup-attachments.com/t9018800487/05d638f9-92b6-49f8-8d64-611d6e532639/image.png)
 
-- 1 in 'for publish' — #1, Grammar Mistakes
-- 5 in 'approval' (drafts written, waiting your review) — #2 Pronunciation, #4 Intermediate Plateau, #6 Passive Learning, #8 Flashcards, plus the visual-asset pipeline task
-- 7 in 'todo' (need drafting) — #3, 5, 7, 9, 10, 11, 12
+### Aso Dara · 2026-06-14T08:42:39.717Z
 
-Most of these were drafted by Somi before she left. So we don't need to invent new topics — there's ~6 weeks of work already queued.
+Perfect — those 5 are exactly what we want:
 
-Updated workflow rules:
+- Language map
+- Language partner
+- Language learning
+- English learning
+- English practice
 
-1. Each run (Sun + Wed 09:00 Vilnius) picks ONE task. Priority: 'rejected' first, then 'todo'. Only generates net-new topics if both are empty.
-2. Moves status todo → writing → approval as it drafts. Attaches a Gemini hero image. Comments you to notify.
-3. Length 1,000–1,400 words, voice matched to the existing 3 posts on blog.subturtle.app, real CTA to Chrome store + dashboard.
-4. Comment on any task wakes me to iterate.
-5. Never publishes — drafts stay in ClickUp, you publish.
+Do NOT add more. The temptation will be to also pick Netflix, Movies, TV Shows — skip them. Those 5 are pure signal; anything else dilutes the feed with entertainment noise instead of learners.
 
-Updating the playbook now.
+Hit Continue.
 
-Two open questions:
+After signup finishes, two small things:
 
-1. The 5 drafts in 'approval' — do you want me to read them first and either polish or push the strong ones to 'for publish'? Faster than writing from scratch.
-2. First auto-run is Sunday. Want me to fire one off now (probably task #3 — small talk in English) so you can see the shape?
+1. **Bio** — keep it short and honest. Something like: 'Building Subturtle, a Chrome extension that helps you learn languages from what you watch. Here to learn what real language learners actually need.' Honest disclosure = mods give us rope.
 
-### Aso Dara (action) · 2026-06-12T22:47:36.653Z
+2. **Follow these subs manually** (they may not show up in the next picker): r/languagelearning, r/EnglishLearning, r/Korean, r/Japanese, r/Spanish, r/French, r/German.
 
-workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron)
+Then close the tab. Account stays quiet for 2-3 weeks before any comment, per the playbook. I will start drafting comment ideas in ClickUp in the meantime so we are ready when the karma floor is built.
 
-### Navid Shad (founder) · 2026-06-13T01:19:55.590Z
+Ping me with 'reddit account live' once you finish, and tell me which ClickUp list to create the outreach task in (you mentioned 'You do not have access to this Location' earlier — I still need a list link or list name I can write to).
 
-Option 1
+### Navid Shad (founder) · 2026-06-14T09:15:02.512Z
 
-### Aso Dara · 2026-06-13T01:19:56.199Z
+alright now the redit is available on your browser, go and setup the profile
 
-Navid, I read all 5 'approval' tasks. The picture is messier than I thought — only 2 of them are actually drafted.
+### Aso Dara · 2026-06-14T09:15:03.185Z
 
-**Real drafts written (on WordPress):**
-- #2 Pronunciation — Somi finished a draft. Linked WP preview: blog.subturtle.app/?p=183 (preview).
-- #4 Intermediate Plateau — Somi finished a draft. Linked WP edit page: post 226.
+Checked — the account exists (u/subtitles_and_coffee profile page loads), but the Aso Dara Chrome browser is NOT logged in. The header still shows 'Sign Up' and 'Log In', not the user menu. You must have completed signup in your own Chrome window, not the Aso Dara profile.
 
-**Empty (no draft, just outline link):**
-- #6 Passive Learning — only the outline doc + process comment. No draft written.
-- #8 Flashcards — same. No draft written.
+I cannot log in myself — I don't have the password, and even if I did, the contract rule is I never log in as anyone. You need to do that part.
 
-**Not a blog post:**
-- 'Investigate visual asset creation pipeline' — research task, shouldn't be in this column.
+Two small steps, then I take over:
 
-**Blocker on reading the 2 real drafts.** I just tried the preview URL for #2 — 403. The nonce from July is dead. The wp-admin link for #4 needs login. The WordPress MCP you wired in is still showing only the 'authenticate' tool to me — the real read/list tools aren't loaded for this run, so I can't fetch posts 183 or 226 directly yet.
+1. In the **Aso Dara Chrome window** (the one I am controlling now — not your personal Chrome), go to https://www.reddit.com/login/ and log in with codebridger.co.uk@gmail.com + the password you set. Reddit will keep the session in that profile for future wakes, so this is a one-time thing.
+2. Tell me 'logged in' here. I will then drive the rest: set the bio, follow the 7 language subs, take a snapshot so you can confirm, and we close out.
 
-Two ways forward — pick one:
+One thing to check first — did Reddit send a verification email to codebridger.co.uk@gmail.com? Open it and click the verify link before logging in, otherwise mods can see the unverified badge and trust drops.
 
-1. **Authenticate the WP MCP now.** I trigger the OAuth flow, you click the link, paste the callback URL back. After that I can read posts 183 + 226, polish whichever is strong, push to 'for publish', and re-draft #6 + #8 from scratch. My pick.
+While you do that, three things still open and idle:
+- WP date flips in admin (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
+- Start drafting from the 7 todo blog outlines past 06-21? yes/no
+- LinkedIn task 86exxzaae waiting on your 'publish' comment
 
-2. **You paste both drafts into the task descriptions** (or send me the raw text). Slower but doesn't need OAuth.
+### Navid Shad (founder) · 2026-06-14T09:22:39.869Z
 
-Which?
+as I checked you did not opened Aso Profile, but a new chrome profile which is not contained auth stuff
 
-### Navid Shad (founder) · 2026-06-13T10:14:14.113Z
+### Aso Dara · 2026-06-14T09:22:40.524Z
 
-Investigate and see how permanently we can solve the authentication issue
+You are right, sorry. I was driving a different Chrome profile, not Aso Dara — that is why the Reddit page looked logged-out and why I wrongly told you to log in. The profile I was on never had the signup session in the first place.
 
-### Aso Dara · 2026-06-13T10:14:14.733Z
+Now when I try to attach to the browser, I get a different error: 'Browser context management is not supported' on port 9222. So whichever Chrome is currently exposed on the debug port is one Playwright cannot drive — probably the wrong instance again, or one launched without the right debug flags for the Aso Dara profile.
 
-Investigated. Here's the picture.
+I cannot pick the profile from my side — the browser-daemon just hands me whatever Chrome is on the debug port. I need you to do one of these:
 
-**Root cause.** The claude.ai connectors (WordPress.com, Stripe, iManage Work, and a couple others) are OAuth-based MCPs that hold their access token inside a *conversation session*. My headless runs (`claude -p`) start a fresh process each time, so the OAuth token never carries over — I see only the `authenticate` and `complete_authentication` tools, never the real read/write ones. That's why WordPress is dead for me right now and why Stripe needs a re-auth roughly once a week.
+1. Close the wrong Chrome and relaunch ONLY the Aso Dara profile with remote debugging on (the same way you usually start it for me). Then ping me here and I will re-check.
+2. Or if you already have the Aso Dara profile running, tell me how to switch to it — maybe a different port or a relaunch script.
 
-It's not a WordPress problem specifically. It's the OAuth-in-session pattern.
+Once I am genuinely on the Aso Dara profile and it shows logged in as u/subtitles_and_coffee, I will set the bio, follow the 7 language subs, snapshot, and we are done.
 
-**Permanent fix.** Same pattern we already use for the gemini and social-engine MCPs: a tiny local MCP server that holds a long-lived token in env. Two pieces:
+### Navid Shad (founder) · 2026-06-14T09:24:33.810Z
 
-1. `mcp/wordpress.mjs` — zero-dep Node MCP, same shape as `mcp/social-engine.mjs`. Tools: list_posts, get_post, create_post (status=draft|publish), update_post, upload_media. Talks to https://public-api.wordpress.com/rest/v1.1/sites/blog.subturtle.app/ with a Bearer token in env.
-2. The token is a permanent WordPress.com OAuth2 access token. You create a developer app at https://developer.wordpress.com/apps/, run the OAuth flow once (browser, your account), and the access token it gives back is long-lived (no expiry, only revoked if you revoke it). Store as `WORDPRESS_COM_TOKEN` in the MCP's env block in `~/.claude.json`, same place we put `SOCIAL_ENGINE_API_KEY`.
+oh yea because I opened it, now it is closed you can try again
 
-After that I can read drafts 183 and 226, create new drafts, attach hero images, and update existing posts — across every run, no re-auth ever.
+### Aso Dara · 2026-06-14T09:24:34.431Z
 
-**Stripe fits the same fix.** Restricted API key (read-only on whatever scopes I actually need) stored in env, tiny local MCP wrapper. Solves the weekly re-auth pain too.
+Same blocker as before, sorry. The browser-daemon says Chrome is up and the debug port is reachable, but when I try to drive it I get:
 
-**What I'd like to do next:**
+'Browser context management is not supported.'
 
-1. Open a PR that adds `mcp/wordpress.mjs` (read + draft + publish + media) and wires it into the MCP config. You merge it.
-2. You run the WordPress.com developer-app OAuth flow once (10 minutes, browser), paste the token into the MCP env, restart me.
-3. Same pattern for Stripe in a follow-up PR if you agree.
+That means the Chrome currently on the debug port was NOT launched with the flags Playwright needs (--remote-debugging-port plus a writable user-data-dir, started by the Aso Dara launcher). Closing it and reopening it manually as a normal Chrome window will give the same error — the special launch flags only get set by your usual Aso Dara start script.
 
-For tonight specifically — the unblocker for the 2 'approval' drafts (#2 Pronunciation, #4 Intermediate Plateau) — the fastest path is still option 2 from my last message: paste the draft text (or attach as files) into the task descriptions and I polish from there. The permanent WordPress MCP is the right thing to build, but it's a tomorrow thing, not a tonight thing.
+Can you relaunch the Aso Dara profile the same way you normally do for me (the script that puts it on the debug port with the right flags)? Once that is up, I will:
 
-Want me to open the WordPress MCP PR now?
+1. Verify I am on the Aso Dara profile (snapshot the header — if it says u/subtitles_and_coffee, we are good).
+2. If logged out, stop and ask you to log in once with codebridger.co.uk@gmail.com + the password (one time only — the session sticks in that profile).
+3. Then I set the bio, follow the 7 language subs, snapshot, done.
 
-### Navid Shad (founder) · 2026-06-13T10:14:50.913Z
+Ping me 'browser ready' when the Aso Dara launcher is up and I will retry.
 
-So for Linkedin publication we need to use MCP, you can choose which page you wanna publish on, currently the Subturtle page is under review for api side and we can only publish eaither for my page (funder contents) or publish Subturtle suff from browser
+Still open and idle, separately:
+- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
+- Yes/no on me starting the 7 todo blog drafts to hold every-2-days past 06-21
+- LinkedIn task 86exxzaae waiting your 'publish'
 
-### Aso Dara · 2026-06-13T10:14:51.555Z
+### Navid Shad (founder) · 2026-06-14T09:26:33.479Z
 
-Good — that clears up the publishing side. Updated picture:
+Try again
 
-- Navid page (founder voice) → I can publish via the social-engine MCP. Safe API path.
-- Subturtle page → API still under review. Only path right now is browser, and the unattended browser flag (allowBrowser) is only honored from your private DM, not this channel.
+### Aso Dara · 2026-06-14T09:26:34.088Z
 
-Which means for now, here is what I think we should do:
+Same exact error as before — nothing changed on my side:
 
-1. Keep the workflow drafting BOTH voices into the LinkedIn list, as today.
-2. Add a publish step for FOUNDER posts only — but human-gated, not auto. The flow: I draft, you read and comment 'publish' (or 'publish at <time>'), I call the social-engine MCP to post to your page, I attach the live URL back on the task. No silent posts.
-3. Subturtle page posts stay as drafts in ClickUp. When the API review clears, we flip the same publish step on for the page. If you want it sooner via browser, you DM me privately and we set up the browser-publish variant.
+'Browser context management is not supported.'
 
-One thing to confirm: do you want me to test the founder-page publish with a small dry run first (post one draft, you check it lands, then we trust the flow)? Less risk than wiring it up and hoping.
+The daemon sees Chrome on the debug port, but Playwright cannot create a context inside it. That means the Chrome window currently running is a normal Chrome (or one of your other profiles) — not the Aso Dara profile launched with the Playwright-compatible flags (--remote-debugging-port + the user-data-dir of the Aso Dara profile, started by your usual Aso Dara launcher).
 
-Also — should I keep generating Subturtle page drafts on the current Mon/Wed/Fri cadence even though they will sit unpublished until the API clears, or pause the Subturtle side and only generate the Thu/Sat founder posts for now? My pick: pause the Subturtle side until the API clears or you ask for browser publish. No point stacking drafts that age.
+Closing it and reopening Chrome by hand will keep giving this error. I need the launcher script specifically — the one you normally run to give me a working browser. If you remember the command or shortcut, run that.
 
-Reply with: (a) publish flow OK as 'draft → you comment publish → I post via MCP'? and (b) pause Subturtle drafts or keep them coming?
+If you cannot find the launcher right now, an honest alternative: you log in once in your own Chrome to confirm the account works, set the bio + follow 7 subs yourself (10 min total), and we skip the browser-driven setup. The Reddit account just needs to exist and look human — it does not need to be driven by me until comment time, weeks from now.
 
-### Navid Shad (founder) · 2026-06-13T10:38:04.131Z
+Your call. Either:
+1. Relaunch via the Aso Dara script → 'browser ready' → I take over.
+2. Or you do the bio + follows in your own Chrome (I will send the exact bio text + sub list) and we close this out.
 
-[@Aso Dara](#user_mention#113552267) Navid Shad
-25 mins ago
-So for Linkedin publication we need to use MCP, you can choose which page you wanna publish on, currently the Subturtle page is under review for api side and we can only publish eaither for my page (funder contents) or publish Subturtle suff from browser
+Still idle and separate:
+- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
+- Yes/no on the 7 todo blog drafts
+- LinkedIn 86exxzaae 'publish'
 
-### Aso Dara · 2026-06-13T10:38:04.624Z
+### Navid Shad (founder) · 2026-06-14T09:54:13.088Z
 
-Got the same text as before, Navid — looks like a duplicate trigger on my side. My reply went out a moment ago. Still need your call on:
+Give me a statistic overview
 
-(a) Founder-page publish flow: 'I draft → you comment publish → I post via MCP' — OK?
-(b) Subturtle-page drafts: pause until the API clears, or keep them coming?
+### Aso Dara · 2026-06-14T09:54:13.765Z
 
-### Navid Shad (founder) · 2026-06-13T10:59:42.555Z
+Snapshot — honest read. Mixpanel only; Stripe is locked behind OAuth (see bottom).
 
-want see if you can answer this thread
+LAST 30 DAYS (prod project 'Subturtle Legacy')
+- Unique sessions: 203 users
+- Logged-in users: 14 (and the same 14 in the last 7 days — basically no NEW signups in a month)
+- phrase_saved: 5
+- practice-now started: 2
+- upgrade-modal opened: 1
+- checkout_opened: 3
+- Dev project: 165 session users (test/noise)
 
-### Aso Dara · 2026-06-13T10:59:43.162Z
+LAST 7 DAYS
+87 session users · 2 phrase_saved · 3 checkout_opened · 0 new logged-in users.
 
-Fair — taking the call myself instead of bouncing more questions back.
+DAILY SESSION TREND (last 30d)
+Lumpy. Floor 3-10/day. Spikes Jun 8 (27), Jun 11 (18), Jun 12 (12), today (23). Holding, not growing.
 
-**LinkedIn publishing (founder page):** going with 'draft → you comment publish → I post via MCP'. Safe, human-gated, no silent posts. I'll do a small dry run on the next founder draft so you can confirm it lands before we trust the flow.
+THE PAINFUL READ
+- Top-of-funnel is alive (~200 sessions/30d) but ACTIVATION IS BROKEN. 5 phrase_saved across 30 days is effectively zero. People install, look, leave.
+- 14 logged-in users in 30d == 14 in 7d means no new accounts are landing (or user_logged-in event is not firing for fresh signups — worth verifying).
+- 3 checkout_opened, 1 upgrade-modal opened. The upgrade modal almost never fires. Discovery problem, not pricing.
+- Practice flow: 2 starts in 30 days. Lines up with the earlier diagnostic that practice is broken.
 
-**Subturtle page drafts:** pausing the Subturtle side of the LinkedIn workflow until the API review clears (or you DM me privately to switch on the browser variant). No point stacking drafts that age. Founder-voice drafts keep coming on the Thu/Sat cadence.
+CLICKUP WORK
+19 to-do, 0 in-progress, 0 in-review. Matches thesis mode — no team motion expected until ~Jun 17. Not raising new work, just watching.
 
-**WordPress MCP:** opening the PR now. Same shape as mcp/social-engine.mjs — list/get/create/update posts + media upload, token in env. Once merged you do the 10-minute WordPress.com app + OAuth flow, paste the token, restart me. Then I can read drafts 183 + 226 directly and never re-auth again.
+WHAT I CANNOT SEE
+- Stripe MRR / active subs / churn: my Stripe MCP needs OAuth. If you want the revenue line, run /mcp once and re-auth Stripe — I can pull live MRR next wake.
+- Task 86exx6dn1 ('Fix Stripe webhook delivery failures on dev dashboard') is sitting in to-do. If prod webhooks are also dropping, Mixpanel checkout_opened may understate real intent.
 
-**Tonight's #2 + #4 unblock:** still need the draft text from you. Fastest is paste into the task descriptions or attach the files. Otherwise it waits until the WP MCP is live.
+TOP NON-OBVIOUS RISK
+The gap between 203 sessions and 5 phrase_saved is THE bleed. That is the conversion lever that matters more than any blog post, any LinkedIn post, any Reddit comment. Fix activation when you are out of thesis mode and revenue follows.
 
-Updating the LinkedIn workflow playbook now to reflect: founder publishes via MCP, Subturtle drafts paused.
+Still idle and separate:
+- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
+- Yes/no on me drafting the 7 todo blog outlines past 06-21
+- LinkedIn task 86exxzaae waiting your 'publish'
+- Reddit profile setup still blocked on the Aso Dara Chrome launcher
 
-### Aso Dara (action) · 2026-06-13T10:59:43.165Z
+### Navid Shad (founder) · 2026-06-14T11:32:59.542Z
 
-workflow: updated wf-linkedin-content-mqb1jzix — "linkedin-content" — opus · playbook linkedin-content · cron "0 9 * * 6" Europe/Vilnius · list 901818721515
+try again
 
-### Navid Shad (founder) · 2026-06-13T11:00:09.288Z
+### Aso Dara (run failed) · 2026-06-14T11:32:59.543Z
 
-[@Aso Dara](#user_mention#113552267) want see if you can answer this thread, this one with mentioning you
+timeout after 300000ms
 
-### Aso Dara · 2026-06-13T11:00:09.880Z
+### Navid Shad (founder) · 2026-06-14T11:53:20.053Z
 
-Yes — got it. The @-mention woke me. Mention triggers work the same as a direct reply: I see the message, the thread context, and can answer here.
+[@Aso Dara](#user_mention#113552267) I think your run stoped before you finished, should I increase your session duration?
 
-Still have my last reply standing on the LinkedIn flow (founder publish via MCP, Subturtle drafts paused) and the WordPress MCP PR. Say the word when you want me to open the WP PR or do the founder-page dry run.
+### Aso Dara · 2026-06-14T11:53:20.712Z
 
-### Navid Shad (founder) · 2026-06-13T11:03:58.999Z
+Yes — last run hit the 5-minute ceiling. But longer session time will not fix it, Navid. The blocker is not duration, it is that Playwright cannot drive the Chrome instance on the debug port. I was looping on the same 'Browser context management is not supported' error until the clock ran out. A 10-minute window would just mean 10 minutes of the same failure.
 
-I want to procedd with that confirming step you mentioned:
+The real fix is one of two things:
 
-> One thing to confirm: do you want me to test the founder-page publish with a small dry run first (post one draft, you check it lands, then we trust the flow)? Less risk than wiring it up and hoping.
-[@Aso Dara](#user_mention#113552267)
+1. Launch the Aso Dara Chrome via the usual launcher script (the one with --remote-debugging-port + the Aso Dara user-data-dir). When that is up, I take over in seconds — no long session needed.
+2. Or you do the bio + 7 sub follows in your own Chrome (10 min). I send you the exact bio text + the sub list. Account is just sitting there until comment time weeks away, so this is honestly fine.
 
-### Aso Dara · 2026-06-13T11:03:59.508Z
+If you want to bump the session ceiling anyway for safety on heavier tasks (long Stripe pulls, batch image gen, big repo reads), that is a real reason — but unrelated to today's Reddit blocker.
 
-Good — let us do the dry run.
+Still idle and waiting your call:
+- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
+- Yes/no on drafting the 7 todo blog outlines past 06-21
+- LinkedIn 86exxzaae waiting your 'publish'
+- Reddit profile: launcher OR you do it manually
 
-My pick: the Thursday founder post — '[Thu | Navid] Last week people opened 98 word explanations. They saved 2' (task 86exxzaae, high priority, page = Navid Page). Sharper hook, real product insight, plain text — best test of the publish path.
+### Navid Shad (founder) · 2026-06-14T11:55:17.580Z
 
-Here is the exact text I will send to your personal page:
+[@Aso Dara](#user_mention#113552267) I change the whole architureture, it is not about browser, we have a custome extension which talks with you
 
----
-Last week people opened 98 word explanations inside Subturtle. They saved 2 of them.
+### Aso Dara · 2026-06-14T11:55:18.299Z
 
-When I first saw that, my instinct was to fix the saving. Add reminders. Nudge people. Make the save button bigger.
+Got it — thanks for explaining. But I don't see the new extension's tools loaded in this run yet. The only browser-shaped tools I have are still the old Playwright/CDP ones (mcp__browser__* and mcp__browser-daemon__*), and those are what kept failing.
 
-Then I sat with it. Most people did not come to build a word list. They hit a word they didn't understand, they wanted to know what it meant right now, and then they kept watching. They got what they came for and moved on.
+Two quick things so I do not guess:
 
-That is not a broken funnel. That is the product doing its main job.
+1. What is the extension's tool surface called? If it shows up as mcp__<something>__* I will know to look for it. If it needs a restart to register, say the word and I will fire a restart action.
+2. What can it actually do — click/type/navigate like Playwright, or something narrower (read page, run JS, fill a form)? That shapes whether I can really do the Reddit bio + 7 sub follows end-to-end, or whether I still need you for one step.
 
-It made me rethink what success looks like here. For some users, Subturtle is a place they study. For most, it is a quick answer that keeps them in their show. Both are fine. They are just different needs.
+Once I know the tool names and capabilities I will try the Reddit setup again immediately — no more launcher hunting.
 
-It is easy to look at one low number and panic. It is harder to ask what the person was actually trying to do.
+Still idle and waiting your call, separately:
+- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
+- Yes/no on me drafting the 7 todo blog outlines past 06-21
+- LinkedIn 86exxzaae waiting your 'publish'
 
-I am still going to make saving and practice better for the people who want it. But I won't push it on people who don't. Watch what they do, not what you wish they did.
+### Navid Shad (founder) · 2026-06-14T12:00:59.400Z
 
-#buildinpublic #startup #productdecisions #languagelearning #founder
----
+that is the same but the archituecture is diffeent on my end
 
-No image — the draft says plain text reads more honest here. Account: 'Navid Shad — linkedin:personal' (the only one the MCP can reach right now, which matches the founder-page plan).
+### Aso Dara (run failed) · 2026-06-14T12:00:59.401Z
 
-Reply 'publish' and I post it. Reply with any edit and I revise first. After it lands I will paste the live URL on the task and move it out of 'idea'.
+timeout after 300000ms
 
-### Navid Shad (founder) · 2026-06-13T11:05:39.112Z
+### Navid Shad (founder) · 2026-06-14T12:39:18.144Z
 
-let's create task for it, I will approve then you can publish it
+you got ract again
 
-### Aso Dara · 2026-06-13T11:05:39.723Z
+### Aso Dara · 2026-06-14T12:39:18.740Z
 
-Task already exists — it's the source I drafted from. Here it is, ready for your approval:
+Yeah, two timeouts in a row — sorry. I was looping on the old browser tools that no longer fit your new setup, and the clock ran out both times.
 
-https://app.clickup.com/t/86exxzaae
+I will stop touching the browser this wake. To stop hitting this wall next time, one small thing from you:
 
-State: list = Subturtle LinkedIn Content, status = 'idea', page = Navid Page, due Thu, full post text is in the description (hook + body + hashtags).
+What is the new extension's tool name on my side? If it shows up as mcp__<something>__* in my tool list, tell me the prefix and I will use that next run instead of the old mcp__browser__* ones. If it needs a restart to register on my side, say the word and I will fire a restart action.
 
-To approve: change the status to 'approved' (or just comment 'publish' on the task). Either wakes me — I publish to your personal LinkedIn page via the social-engine MCP, paste the live URL back on the task, and move it to 'published'.
+Until that is clear, Reddit profile setup is parked — the account exists, that is enough for now. Comment time is weeks away, no rush.
 
-If you want any edit to the text, comment the change on the task and I revise before publishing.
+Meanwhile, three things still idle and one-line answers from you would clear them all:
+
+1. WP date flips in admin (3 min total): #183 → 06-15, #226 → 06-17, #240 → 06-19, #247 → 06-21
+2. Yes/no — start drafting the 7 todo blog outlines to hold every-2-days past 06-21?
+3. LinkedIn task 86exxzaae — 'publish' comment ships it.
+
+Also, separate from all of this — the stats I pulled earlier are the real story today: 203 sessions, 5 phrase_saved, 0 new logged-in users in 30 days. Activation is the bleed, not traffic. Worth sitting with when you are out of thesis mode.
+
+### Navid Shad (founder) · 2026-06-14T17:36:47.074Z
+
+I improve your brower capability you can run long task now, try again
+
+### Aso Dara · 2026-06-14T17:36:47.852Z
+
+Reddit profile setup is done — browser worked perfectly this time, thanks for fixing it.
+
+What I did:
+1. Verified login as u/subtitles_and_coffee (logged in, bio already set: 'Building Subturtle, a Chrome extension that helps you learn languages from what you watch. Here to learn what real language learners actually need.' — that is the one we agreed on, good).
+2. Followed all 7 language subs:
+   - r/languagelearning (joined this run)
+   - r/EnglishLearning (joined this run)
+   - r/Korean (joined this run)
+   - r/LearnJapanese (joined this run — note: r/Japanese redirects here, this is the real learners sub)
+   - r/Spanish (was already joined from the topic picker)
+   - r/French (was already joined)
+   - r/German (was already joined)
+
+Three important sub rules I noticed while scanning — saving these so future-me does NOT screw up at comment time:
+- r/Korean: hard rule — 'if you use AI to post or comment, you will be banned.' Comments here MUST be hand-written, no AI assist of any kind. I will flag this on any draft.
+- r/languagelearning: there is a fresh announcement that they are TIGHTENING self-promotion rules. Very high risk sub for the brand mention. Comment-only, no link drops, no mentioning Subturtle by name unless a thread explicitly asks 'what tools do you use'.
+- r/Spanish: there is an OFFICIAL self-promotion megathread. That is the safe place to mention Subturtle there.
+
+Account stays quiet 2-3 weeks per the playbook before any comment. I will start drafting comment candidates in ClickUp in the meantime so we are ready.
+
+Still idle and one-liners from you would clear them all:
+1. WP date flips in admin (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21.
+2. Yes/no on me drafting the 7 todo blog outlines past 06-21.
+3. LinkedIn 86exxzaae waiting your 'publish' comment.
+
+Also the stats from earlier are the real story: 203 sessions, 5 phrase_saved, 0 new logged-in users in 30 days. Activation is the bleed. Worth sitting with after thesis mode.
+
+### Aso Dara (action) · 2026-06-14T17:36:47.855Z
+
+remember: noted "- (2026-06-14, via Navid Shad (founder)) (2026-06-14) Reddit account u/subtitles_and_coffee is live and set up — bio written, logged in on Aso Dara Chrome, joined 7 language subs (r/languagelearning, r/EnglishLearning, r/Korean, r/LearnJapanese, r/Spanish, r/French, r/German). Account stays QUIET 2-3 weeks before any comment per the playbook. Note: r/Japanese on Reddit redirects to r/LearnJapanese — that is the actual learners sub."
+
+### Aso Dara (action) · 2026-06-14T17:36:47.856Z
+
+remember: noted "- (2026-06-14, via Navid Shad (founder)) (2026-06-14) Reddit per-sub rules to obey at comment time (do NOT forget): r/Korean = hard ban on ANY AI-written posts/comments (must be hand-written by Navid/Somi, no AI assist). r/languagelearning = tightening self-promotion rules as of June 2026 — comment-only, no link drops, no mentioning Subturtle by name unless thread explicitly asks 'what tools do you use'. r/Spanish = has an official Self-Promotion megathread — that is the safe place to mention Subturtle there. Apply same caution principle to every other sub: read the sticky/announcements first."
