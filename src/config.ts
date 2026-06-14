@@ -107,6 +107,16 @@ export const MODEL = {
   heartbeat: optionalEnv("MODEL_HEARTBEAT", "opus"),
 } as const;
 
+/**
+ * Wall-clock budget for a LONG JOB — work the agent explicitly chose to take on
+ * (browser tasks, multi-step external work) instead of answering in the quick
+ * interactive run. The normal interactive run keeps the 5-min default in
+ * runner.ts; a long job's second run (and the unattended workflow generate step)
+ * runs up to this so a real browser task isn't SIGKILL'd mid-flight. Finite on
+ * purpose — it's a hang backstop, not "run forever". Default 20 min.
+ */
+export const LONG_JOB_TIMEOUT_MS = optionalIntEnv("LONG_JOB_TIMEOUT_MS", 20 * 60 * 1000);
+
 // --- M2: webhook listener + chat poller ----------------------------------
 
 /**
