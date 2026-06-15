@@ -1,6 +1,6 @@
 # Thread index
 
-- chat-8crzyb7-1458 · last 2026-06-14T17:36:47.858Z · replied; remember: noted "- (2026-06-14, via Navid Shad (founder)) (2026-06-14) Reddit account u/subtitles_and_coffee is
+- chat-8crzyb7-1458 · last 2026-06-15T13:37:17.879Z · replied
 - clickup-task-86et9a1x6 · last 2026-06-09T05:24:37.004Z · Yes Navid, I'm here.  On the Google Meet question — noted. I'll park that task and mark the milestone complete. I'll ope
 - clickup-task-86exr424h · last 2026-06-07T08:05:35.184Z · Navid, here is everything I can actually see on this task right now — the full read.  **Task state:** - Name: "Implement
 - clickup-task-86exw6kme · last 2026-06-08T18:10:25.415Z · Thanks Navid. I can see it working already — the activity tail for this task shows the full comment thread plus the two 
@@ -15,3 +15,4 @@
 - clickup-task-86exxzaae · last 2026-06-13T14:37:45.867Z · You're right, Navid — Somi's on the team, so it should feel warm and personal, not like a reply to a stranger. Here's a 
 - clickup-task-86eu70pev · last 2026-06-13T21:22:58.986Z · @Navid Shad Navid — good, that was the one thing I couldn't verify from my side. Post is locked in for Tue 16 Jun 09:00 
 - clickup-task-86eu70peq · last 2026-06-13T21:26:01.912Z · Navid, got it — I'll start on the 5 fixes now in WordPress:  1. Intro CTA line. 2. Rewrite mistake #5 so the Subturtle m
+- clickup-task-86exynjj8 · last 2026-06-15T14:26:21.399Z · @Navid Shad Good, thanks for posting it yourself. Sorry the carousel upload blocked us at the last step.  I've left the 
