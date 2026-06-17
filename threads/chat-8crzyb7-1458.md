@@ -178,3 +178,28 @@ Still idle, separate:
 1. WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
 2. Yes/no on me drafting the 7 todo blog outlines past 06-21
 3. LinkedIn 86exxzaae waiting your 'publish' (the older Reddit-comparison post)
+
+### Navid Shad (founder) · 2026-06-17T09:54:43.771Z
+
+![image.png](https://t9018800487.p.clickup-attachments.com/t9018800487/eb6d3cce-731f-4fa8-bc6c-1ec159fcd9a5/image.png)
+We need to fix this on extension side, the selector is a componen from [https://github.com/codebridger/lib-vue-components](https://github.com/codebridger/lib-vue-components) repo, which might need a fix from there → a PR to dev and main → update the PilotUI version from extension side. and then publish it as soon as possible.
+
+### Aso Dara · 2026-06-17T09:54:44.368Z
+
+Task made: https://app.clickup.com/t/86exzbh61
+
+Priority: high. Screenshot attached. Fix chain spelled out in the description:
+
+1. Patch component in codebridger/lib-vue-components (restore outside-click close, constrain list to wrapper).
+2. PR to dev → main on lib-vue-components.
+3. Bump PilotUI version in subturtle-extension.
+4. Publish extension build.
+
+Why this matters more than the usual bug: saving phrases IS the activation event, and the last 30 days show 5 phrase_saved across 203 prod sessions. A broken save selector directly suppresses the one metric we are bleeding on. Worth shipping fast.
+
+One ask — you defend tomorrow. Who owns this?
+- A) I post it in the public Subturtle.app channel on the next wake and let Somi claim it (contract path, no nag).
+- B) You want to take it yourself today before defense (do not recommend — defense first).
+- C) Park until after defense (safe, but the activation bleed keeps bleeding).
+
+My vote is A. One word back and I will queue it.
