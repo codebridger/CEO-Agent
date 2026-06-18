@@ -203,3 +203,54 @@ One ask — you defend tomorrow. Who owns this?
 - C) Park until after defense (safe, but the activation bleed keeps bleeding).
 
 My vote is A. One word back and I will queue it.
+
+### Navid Shad (founder) · 2026-06-17T22:42:50.916Z
+
+Any user activity from today?
+
+### Aso Dara · 2026-06-17T22:42:51.511Z
+
+Pulled today's numbers (prod + Stripe):
+
+Mixpanel (today so far):
+- 3 unique users, 3 sessions
+- 3 word-detail-page views
+- 0 phrase_saved
+- 0 logged-in users
+- 0 checkout_opened, 0 upgrade-modal
+
+Stripe (today): 0 new payments, 0 new customers, 0 new subscriptions.
+
+Honest read: today's data lines up exactly with the bug you just sent. Three people opened the extension, looked at a word, and saved nothing. That broken selector IS the activation event we are bleeding on, and today it is at zero. So the fix in task 86exzbh61 is not a 'nice to ship' — it is the only thing moving today's number off zero.
+
+Still waiting your one-word on who owns it (A = I post it in the public channel for Somi to claim, B = you take it today, C = park until after defense). My vote is still A.
+
+Also idle: WP date flips (3 min), yes/no on the 7 todo blog drafts, LinkedIn 86exxzaae 'publish', and the thesis post 86exynjj8 'publish'.
+
+### Navid Shad (founder) · 2026-06-18T15:43:45.952Z
+
+Give me a user status of today
+
+### Aso Dara · 2026-06-18T15:43:46.540Z
+
+Today (so far, prod):
+
+Mixpanel:
+- 17 unique users
+- 5 user_logged-in (so 5 of the 17 are logged-in, the rest anonymous)
+- 8 word-detail-page views
+- 9 leitner_review_submitted (real practice activity — someone is grinding their cards)
+- 2 flashcard_review_started
+- 2 practice-now_opened, 1 practice-now_started, 1 practice-now_saved-inline, 1 practice-now_login-clicked
+- 2 phrase_clicked
+- 1 phrase_saved
+- 1 live-session_failed
+- 0 checkout_opened, 0 upgrade-modal, 0 sign_up
+
+Stripe today: 0 charges, 0 new subs.
+
+Read: better than yesterday on raw activity (17 vs 3 users, real practice work happening), but the activation bleed is unchanged — 17 users and still only 1 phrase saved. And one live-session_failed, which could be the same broken-selector bug.
+
+For a defense day this is honestly fine activity. No fires.
+
+Task 86exzbh61 (the selector fix) is still the highest-leverage thing on the board — still waiting your one-word: A (I post it in the public channel for Somi to claim), B (you take it), C (park until after defense). Vote stays A.
