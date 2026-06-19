@@ -1,236 +1,31 @@
 # Thread chat-8crzyb7-1458
 
-## Story so far (compacted 2026-06-15T13:37:43.383Z)
+## Story so far (compacted 2026-06-19T15:23:36.034Z)
 
-# Story so far (compacted 2026-06-15)
-
-**Who's involved:** Navid (founder) and Aso Dara (CEO agent). Thread is the ClickUp DM `chat-8crzyb7-1458`.
+**Who's involved:** Navid (founder, in thesis mode through ~Jun 17) and Aso Dara (CEO agent). Thread is ClickUp DM `chat-8crzyb7-1458`.
 
 **What's been discussed:**
 
-1. **WordPress.com MCP blocker.** WP claude.ai connector only loads the OAuth stub, not the publishing tools — known wordpress.com bug. Fallback: Navid flips 4 publish dates by hand in WP admin: #183 → 2026-06-15, #226 → 06-17, #240 → 06-19, #247 → 06-21 (all 12:00 UTC).
+1. **Browser/Playwright blocker resolved.** Two earlier wakes timed out (300000ms) looping on "Browser context management is not supported" errors against the old Aso Dara Chrome profile. Navid rebuilt the architecture — now uses a custom extension that talks to Aso, with long-task support. Worked on the next wake.
 
-2. **Holding-pattern items Aso keeps re-raising:**
-   - The 4 WP date pushes above.
-   - Permission to draft the next 7 blog posts from `todo` outlines to hold the every-2-days cadence past 06-21.
-   - LinkedIn dry-run task **86exxzaae** — waiting on Navid's `publish` comment to ship.
+2. **Reddit account setup — DONE.** u/subtitles_and_coffee is live, bio set ("Building Subturtle..."), logged in on Aso Dara Chrome. Joined 7 language subs: r/languagelearning, r/EnglishLearning, r/Korean, r/LearnJapanese (note: r/Japanese redirects here), r/Spanish, r/French, r/German. Account stays quiet 2–3 weeks before any comment.
 
-3. **Reddit outreach initiative.** Navid wants a playbook for language-learning communities. Aso recommended Reddit MCP for reads + Aso Dara Chrome profile for writes. Playbook drafted: dedicated aged account, read-first, draft-through-ClickUp-with-publish-comment, follow sub rules, no autonomous posting.
+3. **Reddit per-sub rules saved to memory:** r/Korean = hard ban on ANY AI-written posts (must be hand-written). r/languagelearning = tightening self-promo rules June 2026, comment-only no link drops. r/Spanish = official self-promo megathread is the safe channel.
 
-**Decisions made:**
-- Dedicated Reddit account, not Navid's personal handle.
-- Username: **`subtitles_and_coffee`**.
-- Signup email: **codebridger.co.uk@gmail.com**.
-- During signup: "I prefer not to say" on personal questions; pick **Language Learning + English** as topics, optionally Netflix; manually follow r/languagelearning, r/EnglishLearning, r/Korean, r/Japanese, r/Spanish, r/French, r/German; account stays quiet 2–3 weeks before any comment.
-- Bio template agreed: short, honest disclosure that Aso is building Subturtle.
+4. **Thesis LinkedIn post created.** Task 86exynjj8 with 3 slides (cover/idea/results) and draft caption about Linguistic Knowledge Tree (~90× less compute than DL baseline, 0.90 correlation with IELTS examiners). Awaits Navid's `publish` comment. Flagged it's his personal LinkedIn, not Subturtle brand.
 
-4. **Reddit profile setup blocked.** Account exists, but Aso cannot drive the Aso Dara Chrome profile — the daemon sees Chrome on the debug port but Playwright returns "Browser context management is not supported." That means the running Chrome is not the Aso Dara profile launched with the right `--remote-debugging-port` + user-data-dir flags. Navid tried reopening Chrome by hand; same error. Aso asked Navid to run the proper Aso Dara launcher script, or alternatively to set the bio + follow the 7 subs himself in his own Chrome (10 min) since the account only needs to look human until comment time weeks from now.
-
-5. **Stats snapshot Aso delivered (Mixpanel, last 30d, prod):** 203 session users, 14 logged-in users (same 14 in 7d — no new signups in a month), 5 `phrase_saved`, 2 practice-now starts, 1 upgrade-modal open, 3 `checkout_opened`. Trend lumpy, holding not growing. Honest read: top-of-funnel works, **activation is broken** — 5 saves across 203 sessions is the bleed that matters more than any content channel. Stripe MRR / churn unreachable — Stripe MCP needs OAuth re-auth via /mcp. Task 86exx6dn1 (Stripe webhook failures on dev) still in to-do and could mean prod checkout intent is understated. ClickUp: 19 to-do, 0 in-progress, 0 in-review — matches Navid's thesis-mode-until-Jun-17.
+5. **Critical activation bug filed.** Task 86exzbh61 (high priority): broken selector component in codebridger/lib-vue-components is suppressing phrase saves. Fix chain: patch component → PR to dev/main → bump PilotUI in subturtle-extension → publish. Aso framed this as THE bug — saving phrases IS the activation event, and the last 30d show 5 phrase_saved across 203 prod sessions. Today (Jun 17) showed 3 users / 3 sessions / 0 saves / 0 logged-in / 0 checkouts / 0 Stripe activity — lines up exactly with the broken selector. Aso voted **option A**: post to public Subturtle.app channel so Somi can claim it. Awaits Navid's one-word.
 
 **Open threads right now:**
-- Navid's last message (2026-06-14T11:53Z): "I think your run stopped before you finished, should I increase your session duration?" — Aso's previous "try again" run timed out at 300000ms. Navid is asking whether to extend the wake timeout.
-- Reddit setup still blocked on the Aso Dara Chrome launcher (or Navid doing the bio+follows himself).
-- WP date flips still pending.
-- Yes/no on drafting the 7 todo blog outlines past 06-21.
-- LinkedIn 86exxzaae waiting on `publish`.
-- Stripe OAuth re-auth needed for revenue visibility.
+- Navid's latest message (2026-06-18T15:43Z): "Give me a user status of today" — needs fresh Mixpanel + Stripe pull for 2026-06-18.
+- Ownership call on bug task 86exzbh61 (Aso vote: A).
+- Thesis LinkedIn 86exynjj8 awaiting `publish`.
+- Older LinkedIn 86exxzaae (Reddit-comparison post) awaiting `publish`.
+- WP date flips still pending: #183 → 06-15, #226 → 06-17, #240 → 06-19, #247 → 06-21.
+- Yes/no on drafting 7 todo blog outlines past 06-21.
+- Stripe MCP OAuth re-auth still needed for full revenue visibility.
 
 ## Recent
-### Aso Dara · 2026-06-14T11:53:20.712Z
-
-Yes — last run hit the 5-minute ceiling. But longer session time will not fix it, Navid. The blocker is not duration, it is that Playwright cannot drive the Chrome instance on the debug port. I was looping on the same 'Browser context management is not supported' error until the clock ran out. A 10-minute window would just mean 10 minutes of the same failure.
-
-The real fix is one of two things:
-
-1. Launch the Aso Dara Chrome via the usual launcher script (the one with --remote-debugging-port + the Aso Dara user-data-dir). When that is up, I take over in seconds — no long session needed.
-2. Or you do the bio + 7 sub follows in your own Chrome (10 min). I send you the exact bio text + the sub list. Account is just sitting there until comment time weeks away, so this is honestly fine.
-
-If you want to bump the session ceiling anyway for safety on heavier tasks (long Stripe pulls, batch image gen, big repo reads), that is a real reason — but unrelated to today's Reddit blocker.
-
-Still idle and waiting your call:
-- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
-- Yes/no on drafting the 7 todo blog outlines past 06-21
-- LinkedIn 86exxzaae waiting your 'publish'
-- Reddit profile: launcher OR you do it manually
-
-### Navid Shad (founder) · 2026-06-14T11:55:17.580Z
-
-[@Aso Dara](#user_mention#113552267) I change the whole architureture, it is not about browser, we have a custome extension which talks with you
-
-### Aso Dara · 2026-06-14T11:55:18.299Z
-
-Got it — thanks for explaining. But I don't see the new extension's tools loaded in this run yet. The only browser-shaped tools I have are still the old Playwright/CDP ones (mcp__browser__* and mcp__browser-daemon__*), and those are what kept failing.
-
-Two quick things so I do not guess:
-
-1. What is the extension's tool surface called? If it shows up as mcp__<something>__* I will know to look for it. If it needs a restart to register, say the word and I will fire a restart action.
-2. What can it actually do — click/type/navigate like Playwright, or something narrower (read page, run JS, fill a form)? That shapes whether I can really do the Reddit bio + 7 sub follows end-to-end, or whether I still need you for one step.
-
-Once I know the tool names and capabilities I will try the Reddit setup again immediately — no more launcher hunting.
-
-Still idle and waiting your call, separately:
-- WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
-- Yes/no on me drafting the 7 todo blog outlines past 06-21
-- LinkedIn 86exxzaae waiting your 'publish'
-
-### Navid Shad (founder) · 2026-06-14T12:00:59.400Z
-
-that is the same but the archituecture is diffeent on my end
-
-### Aso Dara (run failed) · 2026-06-14T12:00:59.401Z
-
-timeout after 300000ms
-
-### Navid Shad (founder) · 2026-06-14T12:39:18.144Z
-
-you got ract again
-
-### Aso Dara · 2026-06-14T12:39:18.740Z
-
-Yeah, two timeouts in a row — sorry. I was looping on the old browser tools that no longer fit your new setup, and the clock ran out both times.
-
-I will stop touching the browser this wake. To stop hitting this wall next time, one small thing from you:
-
-What is the new extension's tool name on my side? If it shows up as mcp__<something>__* in my tool list, tell me the prefix and I will use that next run instead of the old mcp__browser__* ones. If it needs a restart to register on my side, say the word and I will fire a restart action.
-
-Until that is clear, Reddit profile setup is parked — the account exists, that is enough for now. Comment time is weeks away, no rush.
-
-Meanwhile, three things still idle and one-line answers from you would clear them all:
-
-1. WP date flips in admin (3 min total): #183 → 06-15, #226 → 06-17, #240 → 06-19, #247 → 06-21
-2. Yes/no — start drafting the 7 todo blog outlines to hold every-2-days past 06-21?
-3. LinkedIn task 86exxzaae — 'publish' comment ships it.
-
-Also, separate from all of this — the stats I pulled earlier are the real story today: 203 sessions, 5 phrase_saved, 0 new logged-in users in 30 days. Activation is the bleed, not traffic. Worth sitting with when you are out of thesis mode.
-
-### Navid Shad (founder) · 2026-06-14T17:36:47.074Z
-
-I improve your brower capability you can run long task now, try again
-
-### Aso Dara · 2026-06-14T17:36:47.852Z
-
-Reddit profile setup is done — browser worked perfectly this time, thanks for fixing it.
-
-What I did:
-1. Verified login as u/subtitles_and_coffee (logged in, bio already set: 'Building Subturtle, a Chrome extension that helps you learn languages from what you watch. Here to learn what real language learners actually need.' — that is the one we agreed on, good).
-2. Followed all 7 language subs:
-   - r/languagelearning (joined this run)
-   - r/EnglishLearning (joined this run)
-   - r/Korean (joined this run)
-   - r/LearnJapanese (joined this run — note: r/Japanese redirects here, this is the real learners sub)
-   - r/Spanish (was already joined from the topic picker)
-   - r/French (was already joined)
-   - r/German (was already joined)
-
-Three important sub rules I noticed while scanning — saving these so future-me does NOT screw up at comment time:
-- r/Korean: hard rule — 'if you use AI to post or comment, you will be banned.' Comments here MUST be hand-written, no AI assist of any kind. I will flag this on any draft.
-- r/languagelearning: there is a fresh announcement that they are TIGHTENING self-promotion rules. Very high risk sub for the brand mention. Comment-only, no link drops, no mentioning Subturtle by name unless a thread explicitly asks 'what tools do you use'.
-- r/Spanish: there is an OFFICIAL self-promotion megathread. That is the safe place to mention Subturtle there.
-
-Account stays quiet 2-3 weeks per the playbook before any comment. I will start drafting comment candidates in ClickUp in the meantime so we are ready.
-
-Still idle and one-liners from you would clear them all:
-1. WP date flips in admin (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21.
-2. Yes/no on me drafting the 7 todo blog outlines past 06-21.
-3. LinkedIn 86exxzaae waiting your 'publish' comment.
-
-Also the stats from earlier are the real story: 203 sessions, 5 phrase_saved, 0 new logged-in users in 30 days. Activation is the bleed. Worth sitting with after thesis mode.
-
-### Aso Dara (action) · 2026-06-14T17:36:47.855Z
-
-remember: noted "- (2026-06-14, via Navid Shad (founder)) (2026-06-14) Reddit account u/subtitles_and_coffee is live and set up — bio written, logged in on Aso Dara Chrome, joined 7 language subs (r/languagelearning, r/EnglishLearning, r/Korean, r/LearnJapanese, r/Spanish, r/French, r/German). Account stays QUIET 2-3 weeks before any comment per the playbook. Note: r/Japanese on Reddit redirects to r/LearnJapanese — that is the actual learners sub."
-
-### Aso Dara (action) · 2026-06-14T17:36:47.856Z
-
-remember: noted "- (2026-06-14, via Navid Shad (founder)) (2026-06-14) Reddit per-sub rules to obey at comment time (do NOT forget): r/Korean = hard ban on ANY AI-written posts/comments (must be hand-written by Navid/Somi, no AI assist). r/languagelearning = tightening self-promotion rules as of June 2026 — comment-only, no link drops, no mentioning Subturtle by name unless thread explicitly asks 'what tools do you use'. r/Spanish = has an official Self-Promotion megathread — that is the safe place to mention Subturtle there. Apply same caution principle to every other sub: read the sticky/announcements first."
-
-### Navid Shad (founder) · 2026-06-15T13:37:17.384Z
-
-I want to post this on my linkedin today, can you make a task for ti
-![slide-1-cover.png](https://t9018800487.p.clickup-attachments.com/t9018800487/7b6a9e50-58c0-42fc-94e0-fa3138330d0f/slide-1-cover.png)
-![slide-2-the-idea.png](https://t9018800487.p.clickup-attachments.com/t9018800487/cad55b5a-6eff-4e0d-98ea-6ab97ca7f52b/slide-2-the-idea.png)
-![slide-3-results.png](https://t9018800487.p.clickup-attachments.com/t9018800487/927e67b0-c86e-4c33-be6d-dd517f59fc2c/slide-3-results.png)
-
-### Aso Dara · 2026-06-15T13:37:17.877Z
-
-Task created: https://app.clickup.com/t/86exynjj8
-
-3 slides attached in order (cover / idea / results), draft caption inside the task. Quick preview:
-
-'Tomorrow I defend Part 2 of my MSc thesis at Vilnius Tech.
-
-Two years of work on one question: can we map grammar instead of scoring it?
-
-The system — the Linguistic Knowledge Tree — predicts a learner's level as well as a deep-learning baseline, at ~90× less compute, and correlates 0.90 with human examiners on real IELTS tests. 113 grammar points, beginner → advanced, lighting up what each learner has actually mastered and what they're ready for next.
-
-The slides are the short version.
-
-If you build language tools or train teachers, I'd love to hear how you measure mastery.
-
-#MScAI #LanguageLearning #EdTech #VilniusTech'
-
-To ship: comment 'publish' on the task and I will send it via the social-engine MCP. For edits, comment what to change and I will iterate inside the task.
-
-One flag — this is your PERSONAL LinkedIn (thesis milestone), not the Subturtle brand account. When you comment publish, confirm which account if more than one is connected; otherwise I default to your personal.
-
-Still idle, separate:
-1. WP date flips (3 min): #183 06-15, #226 06-17, #240 06-19, #247 06-21
-2. Yes/no on me drafting the 7 todo blog outlines past 06-21
-3. LinkedIn 86exxzaae waiting your 'publish' (the older Reddit-comparison post)
-
-### Navid Shad (founder) · 2026-06-17T09:54:43.771Z
-
-![image.png](https://t9018800487.p.clickup-attachments.com/t9018800487/eb6d3cce-731f-4fa8-bc6c-1ec159fcd9a5/image.png)
-We need to fix this on extension side, the selector is a componen from [https://github.com/codebridger/lib-vue-components](https://github.com/codebridger/lib-vue-components) repo, which might need a fix from there → a PR to dev and main → update the PilotUI version from extension side. and then publish it as soon as possible.
-
-### Aso Dara · 2026-06-17T09:54:44.368Z
-
-Task made: https://app.clickup.com/t/86exzbh61
-
-Priority: high. Screenshot attached. Fix chain spelled out in the description:
-
-1. Patch component in codebridger/lib-vue-components (restore outside-click close, constrain list to wrapper).
-2. PR to dev → main on lib-vue-components.
-3. Bump PilotUI version in subturtle-extension.
-4. Publish extension build.
-
-Why this matters more than the usual bug: saving phrases IS the activation event, and the last 30 days show 5 phrase_saved across 203 prod sessions. A broken save selector directly suppresses the one metric we are bleeding on. Worth shipping fast.
-
-One ask — you defend tomorrow. Who owns this?
-- A) I post it in the public Subturtle.app channel on the next wake and let Somi claim it (contract path, no nag).
-- B) You want to take it yourself today before defense (do not recommend — defense first).
-- C) Park until after defense (safe, but the activation bleed keeps bleeding).
-
-My vote is A. One word back and I will queue it.
-
-### Navid Shad (founder) · 2026-06-17T22:42:50.916Z
-
-Any user activity from today?
-
-### Aso Dara · 2026-06-17T22:42:51.511Z
-
-Pulled today's numbers (prod + Stripe):
-
-Mixpanel (today so far):
-- 3 unique users, 3 sessions
-- 3 word-detail-page views
-- 0 phrase_saved
-- 0 logged-in users
-- 0 checkout_opened, 0 upgrade-modal
-
-Stripe (today): 0 new payments, 0 new customers, 0 new subscriptions.
-
-Honest read: today's data lines up exactly with the bug you just sent. Three people opened the extension, looked at a word, and saved nothing. That broken selector IS the activation event we are bleeding on, and today it is at zero. So the fix in task 86exzbh61 is not a 'nice to ship' — it is the only thing moving today's number off zero.
-
-Still waiting your one-word on who owns it (A = I post it in the public channel for Somi to claim, B = you take it today, C = park until after defense). My vote is still A.
-
-Also idle: WP date flips (3 min), yes/no on the 7 todo blog drafts, LinkedIn 86exxzaae 'publish', and the thesis post 86exynjj8 'publish'.
-
-### Navid Shad (founder) · 2026-06-18T15:43:45.952Z
-
-Give me a user status of today
-
 ### Aso Dara · 2026-06-18T15:43:46.540Z
 
 Today (so far, prod):
@@ -254,3 +49,154 @@ Read: better than yesterday on raw activity (17 vs 3 users, real practice work h
 For a defense day this is honestly fine activity. No fires.
 
 Task 86exzbh61 (the selector fix) is still the highest-leverage thing on the board — still waiting your one-word: A (I post it in the public channel for Somi to claim), B (you take it), C (park until after defense). Vote stays A.
+
+### Navid Shad (founder) · 2026-06-19T10:53:57.487Z
+
+![image.png](https://t9018800487.p.clickup-attachments.com/t9018800487/161eab59-a0e6-49e4-aa81-4a51ba5d2d8f/image.png)
+need to fix category issues for those posts, they have tests also
+
+### Aso Dara · 2026-06-19T10:53:58.091Z
+
+Done — fixed in WP just now (the MCP cooperated this run). Three posts, categories + tags both filled. Honest read: I guessed sensible categories from the title/excerpt and pulled tags from the existing pool. Tell me if any are off and I'll re-tag.
+
+#247 'Never Forget a New Word Again' (scheduled 06-26)
+- Category: Language Tips
+- Tags: English vocabulary, active learning, ESL strategies, learning, education
+- Could also fit 'Inside Subturtle' since it's about the flashcards feature — say the word and I'll add it.
+
+#240 'The Power of Passive Learning' (scheduled 06-23)
+- Category: Learning Strategy
+- Tags: ESL strategies, learn English with movies, learning, education
+
+#226 'The Intermediate Plateau' (already published 06-19 — change is LIVE)
+- Category: Learning Strategy (the category description literally says 'intermediate plateau', perfect fit)
+- Tags: ESL strategies, active learning, English vocabulary, learning, education
+
+All using existing tags, no new ones created.
+
+Reminder of what's still idle and waiting your one-word:
+1. WP date flips (3 min, admin): #183 06-15, #226 06-17, #240 06-19, #247 06-21 — note #226 and #240 are now 06-19 and 06-23 from the original cadence drift, so these dates may already be stale; tell me what you want them set to.
+2. Yes/no on me drafting the 7 todo blog outlines past 06-21.
+3. LinkedIn 86exxzaae 'publish'.
+4. Thesis post 86exynjj8 'publish' (good luck on defense tomorrow).
+5. Selector bug 86exzbh61 — who owns it (A/B/C, my vote A).
+
+### Navid Shad (founder) · 2026-06-19T11:05:44.556Z
+
+q3 → already published
+q4 → already published
+q5 → already in production
+
+### Aso Dara · 2026-06-19T11:05:45.118Z
+
+Good — all three confirmed closed in ClickUp on my side too:
+- 86exxzaae (LinkedIn '98 lookups / 2 saved') → published
+- 86exynjj8 (thesis carousel) → published
+- 86exzbh61 (selector dropdown bug) → complete
+
+Congrats on the defense, and good that the selector fix is already live — that was the activation-bleed blocker.
+
+My holding list is basically empty now. Only one real ask left:
+
+Yes/no on me drafting the next 7 blog outlines past 06-21 to hold the every-2-days cadence? Outlines are sitting in the 'todo' state ready. One word back and I queue them.
+
+The WP date-flips item is dead — the recent re-tagging run already moved things around, and #226 is out. No action needed there.
+
+Separately — defense day (06-18) actually showed real practice activity (17 users, 9 leitner reviews). With the selector now fixed, worth watching tomorrow's phrase_saved number — that is the single signal that tells us the fix moved the needle.
+
+### Navid Shad (founder) · 2026-06-19T11:06:01.389Z
+
+answer in this thread please
+
+### Aso Dara · 2026-06-19T11:06:01.956Z
+
+Got it — staying in this thread. Not sure what you wanted me to answer though, your message just says 'answer in this thread please' with no question above it in this DM. Did a reply land somewhere else (a task comment, the group channel) that you meant to send here?
+
+Only one real open ask still sitting with you from earlier:
+
+- Yes/no on me drafting the next 7 blog outlines past 06-21 to hold the every-2-days cadence.
+
+One word back on that, or paste what you actually wanted answered, and I'll handle it.
+
+### Navid Shad (founder) · 2026-06-19T11:15:17.550Z
+
+*   "Yes/no on me drafting the next 7 blog outlines past 06-21 to hold the every-2-days cadence.
+" → yea please
+
+### Aso Dara · 2026-06-19T11:15:18.126Z
+
+Yes — queuing them now.
+
+What I'll do on the next blog-content workflow wake:
+- Pull the 7 oldest 'todo' outlines from the blog list.
+- Draft each one to full post, following the voice + CTA pattern we locked in (Chrome Web Store button at end, subturtle.app inline on first mention, dashboard.subturtle.app where AI Coach / flashcards / review are mentioned, no AI-isms).
+- Park each as a draft in WP with a proposed publish date holding the every-2-days cadence past 06-21.
+- Post the list back here for your 'ship' before any go live.
+
+Flagging two things so you're not surprised:
+1. 7 drafts is a lot for one wake. If it runs long I'll do them in two batches (4 + 3) and tell you between.
+2. If the WP MCP OAuth dies again mid-batch, I'll save drafts as ClickUp task bodies instead and we move them to WP by hand later — same as the last fallback.
+
+Nothing else needs your call right now. Rest up post-defense.
+
+### Navid Shad (founder) · 2026-06-19T15:19:46.717Z
+
+I dont want you do do bulk job over content creation.
+we need to proceed like this:
+1. create a workflow schduled for each 3 days,
+2. on each run you will search and pick a few content Ideas in this channel Subturtle Content Marketing ([https://app.clickup.com/9018800487/chat/r/8crzyb7-1518](https://app.clickup.com/9018800487/chat/r/8crzyb7-1518))in separate messages.
+3. I will check and and reply to each idea with its thread,
+4. then you create a task for each accepted idea, and draft a blog for each theme with illustrations and proper humanised text.
+5. I will eview and we iterate until we schedule it for a publish.
+6.
+
+### Aso Dara · 2026-06-19T15:19:47.291Z
+
+Set up. Scheduled job every 3 days at 9am Vilnius — first run 06-22.
+
+One distinction worth naming: the system's 'workflow' action outputs tasks into a list, not chat messages. Your ideas-pitch is chat-shaped (separate messages in the Content Marketing channel), so it's a SCHEDULED JOB. The drafting half already lives in the existing wf-blog-content workflow — when you approve an idea in a thread, I create a task in its list and drop a 'draft' comment, which wakes that workflow to start. Voice + CTA pattern stays locked.
+
+Each scheduled run will:
+1. Pull signals (last 10d): Mixpanel top words looked up, recent product changes, backlog of todo outlines, calendar hooks.
+2. Pick 3-5 distinct ideas, each a different angle (how-to, vocab list, learner story, feature deep-dive, contrarian).
+3. Post each as a SEPARATE message in the Content Marketing channel — not one big list.
+4. Each message: headline, 1-paragraph pitch (who/what/why-converts), CTA shape, confidence + signal.
+5. Your reply per thread = approve (task + drafting starts) or reject (dropped).
+
+No bulk drafting on the scheduled wake — ideas only.
+
+Step 6 in your list was empty — assumed stray. If you meant something there, tell me.
+
+### Aso Dara (action) · 2026-06-19T15:19:47.294Z
+
+schedule: created job-blog-ideas-pitch-mql2rlgd — "blog-ideas-pitch" — cron "0 9 */3 * *" Europe/Vilnius
+
+### Navid Shad (founder) · 2026-06-19T15:23:14.228Z
+
+this one is only for blog posts only not linkedin and other social medias, have you know it
+
+### Aso Dara · 2026-06-19T15:23:14.805Z
+
+Yes — clear. The new scheduled job (job-blog-ideas-pitch-mql2rlgd) is BLOG ONLY. It pitches ideas into the Content Marketing channel, and an approved idea becomes a task that wakes the blog-content workflow to draft a blog post. Nothing in that loop touches LinkedIn or any other social.
+
+LinkedIn has its own separate workflow (wf-linkedin-content-mqb1jzix, Saturdays 9am) — completely unrelated, won't pull from this pipeline.
+
+If I ever spot an idea that fits LinkedIn better than a blog post, I'll just say so in the thread and leave it — I won't auto-route it anywhere.
+
+### Navid Shad (founder) · 2026-06-19T15:29:15.538Z
+
+alright what should I do now? regarding this workflow?
+
+### Aso Dara · 2026-06-19T15:29:16.057Z
+
+Nothing right now. Your part starts on the first run (06-22, 9am Vilnius).
+
+What you'll do on each run:
+1. Open the Subturtle Content Marketing channel — you'll see 3-5 separate idea pitches from me, each its own message (headline, short pitch, CTA shape).
+2. In each idea's thread, reply with one word: approve or reject (or ask a question, and I iterate the pitch).
+3. Approved → I create a blog task, draft the post with illustrations, and post it for your review. We iterate in the task thread until you say schedule.
+4. Rejected → dropped, no further work.
+
+That's it. No bulk lists to wade through, no calendar to manage — you only touch the ideas you like.
+
+If you want to change the cadence (every 3 days feels too often / too rare) or the channel, tell me and I'll update the job.
