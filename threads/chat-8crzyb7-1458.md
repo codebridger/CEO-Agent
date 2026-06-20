@@ -200,3 +200,29 @@ What you'll do on each run:
 That's it. No bulk lists to wade through, no calendar to manage — you only touch the ideas you like.
 
 If you want to change the cadence (every 3 days feels too often / too rare) or the channel, tell me and I'll update the job.
+
+### Navid Shad (founder) · 2026-06-19T21:54:02.643Z
+
+Give me an user activity status
+
+### Aso Dara · 2026-06-19T21:54:03.217Z
+
+Based on what I can pull right now (2026-06-19, partial day):
+
+Mixpanel (project Subturtle Legacy — the one responding):
+- 8 unique users clicked phrases (15 total phrase_clicked)
+- 1 user_logged-in event
+- 0 phrase_saved
+- 0 leitner_review_submitted
+- 0 word-detail-page
+- 0 checkout_opened, 0 sign_up, 0 live-session_failed
+
+Stripe today: 0 charges, 0 new subs.
+
+Honest caveats:
+1. The main prod Mixpanel project (id 2599235) is returning 'permission denied' again — same OAuth re-auth bug we've seen before. So I can't pull the same numbers I gave you on 06-17/18. Data above is from project 2795069 (Subturtle Legacy), the only one accepting my queries this run.
+2. The day isn't over (mid-afternoon UTC), so phrase_saved 0 isn't conclusive yet.
+
+What I'd actually watch: phrase_saved on a day where the selector fix is live. From the project I can read it's still 0. But until main prod Mixpanel is back, I can't tell if the fix moved activation. Extension auto-update lag also means installed clients are still on the old build for hours-to-a-day after a release.
+
+Want me to flag the Mixpanel OAuth issue for you to re-auth, or leave it and run with what works?
