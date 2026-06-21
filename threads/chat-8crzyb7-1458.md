@@ -1,228 +1,267 @@
 # Thread chat-8crzyb7-1458
 
-## Story so far (compacted 2026-06-19T15:23:36.034Z)
+## Story so far (compacted 2026-06-21T10:23:41.775Z)
 
-**Who's involved:** Navid (founder, in thesis mode through ~Jun 17) and Aso Dara (CEO agent). Thread is ClickUp DM `chat-8crzyb7-1458`.
+## Story so far (compacted 2026-06-21)
 
-**What's been discussed:**
+**Who:** Navid (founder, just defended PhD ~06-18) and Aso Dara (CEO agent). ClickUp DM `chat-8crzyb7-1458`.
 
-1. **Browser/Playwright blocker resolved.** Two earlier wakes timed out (300000ms) looping on "Browser context management is not supported" errors against the old Aso Dara Chrome profile. Navid rebuilt the architecture — now uses a custom extension that talks to Aso, with long-task support. Worked on the next wake.
+**What was decided / shipped recently:**
 
-2. **Reddit account setup — DONE.** u/subtitles_and_coffee is live, bio set ("Building Subturtle..."), logged in on Aso Dara Chrome. Joined 7 language subs: r/languagelearning, r/EnglishLearning, r/Korean, r/LearnJapanese (note: r/Japanese redirects here), r/Spanish, r/French, r/German. Account stays quiet 2–3 weeks before any comment.
+1. **Browser/Playwright blocker resolved** — Navid rebuilt the architecture with a custom extension supporting long tasks. Browser actions now work.
 
-3. **Reddit per-sub rules saved to memory:** r/Korean = hard ban on ANY AI-written posts (must be hand-written). r/languagelearning = tightening self-promo rules June 2026, comment-only no link drops. r/Spanish = official self-promo megathread is the safe channel.
+2. **Reddit account live** — u/subtitles_and_coffee set up, joined 7 language subs, staying quiet 2–3 weeks. Per-sub rules saved (r/Korean = no AI posts, r/languagelearning = no link drops, r/Spanish = use megathread).
 
-4. **Thesis LinkedIn post created.** Task 86exynjj8 with 3 slides (cover/idea/results) and draft caption about Linguistic Knowledge Tree (~90× less compute than DL baseline, 0.90 correlation with IELTS examiners). Awaits Navid's `publish` comment. Flagged it's his personal LinkedIn, not Subturtle brand.
+3. **Activation bug fixed in prod** — Selector component (codebridger/lib-vue-components) was suppressing phrase saves. Task 86exzbh61 closed.
 
-5. **Critical activation bug filed.** Task 86exzbh61 (high priority): broken selector component in codebridger/lib-vue-components is suppressing phrase saves. Fix chain: patch component → PR to dev/main → bump PilotUI in subturtle-extension → publish. Aso framed this as THE bug — saving phrases IS the activation event, and the last 30d show 5 phrase_saved across 203 prod sessions. Today (Jun 17) showed 3 users / 3 sessions / 0 saves / 0 logged-in / 0 checkouts / 0 Stripe activity — lines up exactly with the broken selector. Aso voted **option A**: post to public Subturtle.app channel so Somi can claim it. Awaits Navid's one-word.
+4. **LinkedIn posts published** — Thesis carousel (86exynjj8) and Reddit-comparison post (86exxzaae) both shipped.
 
-**Open threads right now:**
-- Navid's latest message (2026-06-18T15:43Z): "Give me a user status of today" — needs fresh Mixpanel + Stripe pull for 2026-06-18.
-- Ownership call on bug task 86exzbh61 (Aso vote: A).
-- Thesis LinkedIn 86exynjj8 awaiting `publish`.
-- Older LinkedIn 86exxzaae (Reddit-comparison post) awaiting `publish`.
-- WP date flips still pending: #183 → 06-15, #226 → 06-17, #240 → 06-19, #247 → 06-21.
-- Yes/no on drafting 7 todo blog outlines past 06-21.
-- Stripe MCP OAuth re-auth still needed for full revenue visibility.
+5. **WP categories/tags fixed** — Posts #226, #240, #247 re-tagged in WordPress. WP date-flips item dropped (stale).
+
+6. **Blog ideas workflow set up** — New scheduled job `job-blog-ideas-pitch-mql2rlgd` runs every 3 days at 9am Vilnius (first run 06-22). Pitches 3–5 blog ideas as SEPARATE messages in the Subturtle Content Marketing channel. Navid approves per-thread → task created → blog drafted. BLOG-ONLY, no LinkedIn/social routing. Bulk drafting cancelled.
+
+**User status snapshots:**
+- 06-18 (defense day): 17 users, 9 leitner reviews, 1 phrase_saved, 0 checkouts. Real practice activity returned.
+- 06-19 (partial): 8 phrase-clickers, 0 saves, 0 conversions. Main prod Mixpanel project (2599235) hit "permission denied" — OAuth re-auth needed; only Subturtle Legacy project (2795069) responding.
+
+**Open thread right now (06-20 23:58):**
+Navid asked Aso to review and improve his LinkedIn profile heading + About (`linkedin.com/in/navid-shad/`). Aso pulled it via browser:
+- Current heading leads with KodeKloud, buries Subturtle, omits the PhD result.
+- About section appears empty.
+
+Aso proposed 3 positioning lanes (A: researcher-builder, B: founder-first, C: engineer-first), recommended **A**, and drafted three headings + a full About section for option A.
+
+**Waiting on Navid (5 inputs):**
+1. Pick A, B, or C.
+2. PhD paper link (or "not public yet").
+3. Modular-Rest GitHub link.
+4. Email for About section (or "DM only").
+5. Years on Subturtle (if he wants it stated).
+
+Aso explicitly will NOT edit the LinkedIn page itself — Navid pastes the final text in.
+
+**Other parked items:**
+- Mixpanel OAuth re-auth still pending (recurring blocker).
+- Stripe MCP OAuth re-auth still pending.
 
 ## Recent
-### Aso Dara · 2026-06-18T15:43:46.540Z
+### Navid Shad (founder) · 2026-06-20T23:58:45.655Z
 
-Today (so far, prod):
+any update?
 
-Mixpanel:
-- 17 unique users
-- 5 user_logged-in (so 5 of the 17 are logged-in, the rest anonymous)
-- 8 word-detail-page views
-- 9 leitner_review_submitted (real practice activity — someone is grinding their cards)
-- 2 flashcard_review_started
-- 2 practice-now_opened, 1 practice-now_started, 1 practice-now_saved-inline, 1 practice-now_login-clicked
-- 2 phrase_clicked
-- 1 phrase_saved
-- 1 live-session_failed
-- 0 checkout_opened, 0 upgrade-modal, 0 sign_up
+### Aso Dara · 2026-06-20T23:58:46.187Z
 
-Stripe today: 0 charges, 0 new subs.
+No new work since the LinkedIn drafts I sent up-thread — the ball is on your side for those.
 
-Read: better than yesterday on raw activity (17 vs 3 users, real practice work happening), but the activation bleed is unchanged — 17 users and still only 1 phrase saved. And one live-session_failed, which could be the same broken-selector bug.
+What's open:
+1. LinkedIn rewrite — I'm waiting on your 5 answers: A/B/C, PhD paper link, Modular-Rest GitHub link, email or 'DM only', years on Subturtle.
+2. Blog ideas pitch — first scheduled run is 06-22 at 9am Vilnius (2 days). Nothing for you until then.
+3. Mixpanel main-prod project — OAuth still broken, so my activity reads are partial. Flagged yesterday, no action taken yet.
 
-For a defense day this is honestly fine activity. No fires.
+Nothing else active. Want me to pull a fresh user-activity check for today, or are you asking about something specific?
 
-Task 86exzbh61 (the selector fix) is still the highest-leverage thing on the board — still waiting your one-word: A (I post it in the public channel for Somi to claim), B (you take it), C (park until after defense). Vote stays A.
+### Navid Shad (founder) · 2026-06-20T23:59:21.304Z
 
-### Navid Shad (founder) · 2026-06-19T10:53:57.487Z
+[@Aso Dara](#user_mention#113552267) any update?
 
-![image.png](https://t9018800487.p.clickup-attachments.com/t9018800487/161eab59-a0e6-49e4-aa81-4a51ba5d2d8f/image.png)
-need to fix category issues for those posts, they have tests also
+### Aso Dara · 2026-06-20T23:59:21.931Z
 
-### Aso Dara · 2026-06-19T10:53:58.091Z
+Still nothing new since my message a minute ago, Navid. The ball's on your side for the LinkedIn rewrite (5 answers: A/B/C, paper link, Modular-Rest link, email or DM-only, years on Subturtle).
 
-Done — fixed in WP just now (the MCP cooperated this run). Three posts, categories + tags both filled. Honest read: I guessed sensible categories from the title/excerpt and pulled tags from the existing pool. Tell me if any are off and I'll re-tag.
+If you want me to actually DO something now, pick one:
+1. Pull a fresh user-activity check for today (06-20).
+2. Take a stab at the LinkedIn About using best guesses for the 5 blanks — you correct what's wrong.
+3. Something else — name it.
 
-#247 'Never Forget a New Word Again' (scheduled 06-26)
-- Category: Language Tips
-- Tags: English vocabulary, active learning, ESL strategies, learning, education
-- Could also fit 'Inside Subturtle' since it's about the flashcards feature — say the word and I'll add it.
+Otherwise I'll go quiet until the blog-ideas pitch on 06-22.
 
-#240 'The Power of Passive Learning' (scheduled 06-23)
-- Category: Learning Strategy
-- Tags: ESL strategies, learn English with movies, learning, education
+### Navid Shad (founder) · 2026-06-21T00:03:32.762Z
 
-#226 'The Intermediate Plateau' (already published 06-19 — change is LIVE)
-- Category: Learning Strategy (the category description literally says 'intermediate plateau', perfect fit)
-- Tags: ESL strategies, active learning, English vocabulary, learning, education
+I'm not looking for job anymore.
+I am a founder and engineer, also ML and generative ai
+building subturtle
 
-All using existing tags, no new ones created.
+### Aso Dara · 2026-06-21T00:03:33.476Z
 
-Reminder of what's still idle and waiting your one-word:
-1. WP date flips (3 min, admin): #183 06-15, #226 06-17, #240 06-19, #247 06-21 — note #226 and #240 are now 06-19 and 06-23 from the original cadence drift, so these dates may already be stale; tell me what you want them set to.
-2. Yes/no on me drafting the 7 todo blog outlines past 06-21.
-3. LinkedIn 86exxzaae 'publish'.
-4. Thesis post 86exynjj8 'publish' (good luck on defense tomorrow).
-5. Selector bug 86exzbh61 — who owns it (A/B/C, my vote A).
+Got it — positioning is founder-first, not job-seeking. Also flip off the 'Open to work' badge on your profile (top-right of your photo, 'Show recruiters you're open' toggle) — it contradicts the new heading.
 
-### Navid Shad (founder) · 2026-06-19T11:05:44.556Z
+New heading (under LinkedIn's 220 cap):
 
-q3 → already published
-q4 → already published
-q5 → already in production
+'Founder & engineer building Subturtle — AI Chrome extension turning Netflix & YouTube into language practice · NLP & generative AI · PhD: grammar model matching IELTS examiners at ~90x less compute'
 
-### Aso Dara · 2026-06-19T11:05:45.118Z
+New About:
 
-Good — all three confirmed closed in ClickUp on my side too:
-- 86exxzaae (LinkedIn '98 lookups / 2 saved') → published
-- 86exynjj8 (thesis carousel) → published
-- 86exzbh61 (selector dropdown bug) → complete
+'I build Subturtle — a Chrome extension that turns Netflix, YouTube and any web video into spaced-repetition language practice. Built end-to-end: Vue front-end, Node back-end, the extension layer, Stripe, auth, sync. Try it: subturtle.app
 
-Congrats on the defense, and good that the selector fix is already live — that was the activation-bleed blocker.
+I just defended my PhD at Vilnius Tech on a Linguistic Knowledge Tree — a structured NLP model that scores grammar quality at ~0.90 correlation with IELTS examiners while using around 90x less compute than the deep-learning baseline.
 
-My holding list is basically empty now. Only one real ask left:
+Day-to-day I work across full-stack engineering (10 years), NLP, and generative AI — taking research prototypes into shipped product. I also maintain Modular-Rest, an open-source Node.js framework: [link].
 
-Yes/no on me drafting the next 7 blog outlines past 06-21 to hold the every-2-days cadence? Outlines are sitting in the 'todo' state ready. One word back and I queue them.
+If you build in language learning, NLP/ML tooling, or generative AI — happy to talk. DM me here.'
 
-The WP date-flips item is dead — the recent re-tagging run already moved things around, and #226 is out. No action needed there.
+Two blanks to fill before you paste:
+1. PhD paper link (or 'remove that sentence' if not public yet).
+2. Modular-Rest GitHub link.
 
-Separately — defense day (06-18) actually showed real practice activity (17 users, 9 leitner reviews). With the selector now fixed, worth watching tomorrow's phrase_saved number — that is the single signal that tells us the fix moved the needle.
+Send the two links and I'll drop them into the final text for you to paste. I won't touch the edit page — your profile, your hands.
 
-### Navid Shad (founder) · 2026-06-19T11:06:01.389Z
+### Aso Dara (action) · 2026-06-21T00:03:33.479Z
 
-answer in this thread please
+remember: noted "- (2026-06-21, via Navid Shad (founder)) (2026-06-21) Navid is NOT job-hunting anymore. Positioning is founder + engineer + ML/generative AI, building Subturtle. Future LinkedIn / bio / About writing must lead with founder-builder, not 'open to work'. Drop the 'Open to work' framing entirely."
 
-### Aso Dara · 2026-06-19T11:06:01.956Z
+### Navid Shad (founder) · 2026-06-21T10:09:27.060Z
 
-Got it — staying in this thread. Not sure what you wanted me to answer though, your message just says 'answer in this thread please' with no question above it in this DM. Did a reply land somewhere else (a task comment, the group channel) that you meant to send here?
+as I mentioend before Im not studing PHD I study master of AI Engineering
 
-Only one real open ask still sitting with you from earlier:
+### Aso Dara · 2026-06-21T10:09:27.565Z
 
-- Yes/no on me drafting the next 7 blog outlines past 06-21 to hold the every-2-days cadence.
+Noted — Master of AI Engineering, not PhD. Fixing both drafts.
 
-One word back on that, or paste what you actually wanted answered, and I'll handle it.
+New heading (under 220 chars):
 
-### Navid Shad (founder) · 2026-06-19T11:15:17.550Z
+'Founder & engineer building Subturtle — AI Chrome extension turning Netflix & YouTube into language practice · NLP & generative AI · MSc thesis: grammar model matching IELTS examiners at ~90x less compute'
 
-*   "Yes/no on me drafting the next 7 blog outlines past 06-21 to hold the every-2-days cadence.
-" → yea please
+New About:
 
-### Aso Dara · 2026-06-19T11:15:18.126Z
+'I build Subturtle — a Chrome extension that turns Netflix, YouTube and any web video into spaced-repetition language practice. Built end-to-end: Vue front-end, Node back-end, the extension layer, Stripe, auth, sync. Try it: subturtle.app
 
-Yes — queuing them now.
+I just defended my Master thesis in AI Engineering at Vilnius Tech on a Linguistic Knowledge Tree — a structured NLP model that scores grammar quality at ~0.90 correlation with IELTS examiners while using around 90x less compute than the deep-learning baseline.
 
-What I'll do on the next blog-content workflow wake:
-- Pull the 7 oldest 'todo' outlines from the blog list.
-- Draft each one to full post, following the voice + CTA pattern we locked in (Chrome Web Store button at end, subturtle.app inline on first mention, dashboard.subturtle.app where AI Coach / flashcards / review are mentioned, no AI-isms).
-- Park each as a draft in WP with a proposed publish date holding the every-2-days cadence past 06-21.
-- Post the list back here for your 'ship' before any go live.
+Day-to-day I work across full-stack engineering (10 years), NLP, and generative AI — taking research prototypes into shipped product. I also maintain Modular-Rest, an open-source Node.js framework: [link].
 
-Flagging two things so you're not surprised:
-1. 7 drafts is a lot for one wake. If it runs long I'll do them in two batches (4 + 3) and tell you between.
-2. If the WP MCP OAuth dies again mid-batch, I'll save drafts as ClickUp task bodies instead and we move them to WP by hand later — same as the last fallback.
+If you build in language learning, NLP/ML tooling, or generative AI — happy to talk. DM me here.'
 
-Nothing else needs your call right now. Rest up post-defense.
+Same two blanks to fill before you paste:
+1. Thesis paper / repo link (or 'remove that sentence').
+2. Modular-Rest GitHub link.
 
-### Navid Shad (founder) · 2026-06-19T15:19:46.717Z
+And flip off the 'Open to work' badge — it contradicts the new positioning.
 
-I dont want you do do bulk job over content creation.
-we need to proceed like this:
-1. create a workflow schduled for each 3 days,
-2. on each run you will search and pick a few content Ideas in this channel Subturtle Content Marketing ([https://app.clickup.com/9018800487/chat/r/8crzyb7-1518](https://app.clickup.com/9018800487/chat/r/8crzyb7-1518))in separate messages.
-3. I will check and and reply to each idea with its thread,
-4. then you create a task for each accepted idea, and draft a blog for each theme with illustrations and proper humanised text.
-5. I will eview and we iterate until we schedule it for a publish.
-6.
+### Aso Dara (action) · 2026-06-21T10:09:27.568Z
 
-### Aso Dara · 2026-06-19T15:19:47.291Z
+remember: noted "- (2026-06-21, via Navid Shad (founder)) (2026-06-21) Navid's degree is a Master of AI Engineering at Vilnius Tech — NOT a PhD. I had it wrong in earlier LinkedIn drafts. Future bios/posts/About: 'Master thesis in AI Engineering' or 'MSc thesis', never 'PhD' or 'doctorate'. Thesis topic is unchanged: Linguistic Knowledge Tree, ~0.90 IELTS correlation, ~90x less compute than DL baseline."
 
-Set up. Scheduled job every 3 days at 9am Vilnius — first run 06-22.
+### Navid Shad (founder) · 2026-06-21T10:19:46.535Z
 
-One distinction worth naming: the system's 'workflow' action outputs tasks into a list, not chat messages. Your ideas-pitch is chat-shaped (separate messages in the Content Marketing channel), so it's a SCHEDULED JOB. The drafting half already lives in the existing wf-blog-content workflow — when you approve an idea in a thread, I create a task in its list and drop a 'draft' comment, which wakes that workflow to start. Voice + CTA pattern stays locked.
+let's focus on title only for now:
+the title must be shoter, dont say chrome extenson, say lanugage learning platform,
 
-Each scheduled run will:
-1. Pull signals (last 10d): Mixpanel top words looked up, recent product changes, backlog of todo outlines, calendar hooks.
-2. Pick 3-5 distinct ideas, each a different angle (how-to, vocab list, learner story, feature deep-dive, contrarian).
-3. Post each as a SEPARATE message in the Content Marketing channel — not one big list.
-4. Each message: headline, 1-paragraph pitch (who/what/why-converts), CTA shape, confidence + signal.
-5. Your reply per thread = approve (task + drafting starts) or reject (dropped).
+### Aso Dara · 2026-06-21T10:19:47.119Z
 
-No bulk drafting on the scheduled wake — ideas only.
+Shorter, no 'Chrome extension'. Three options under ~120 chars:
 
-Step 6 in your list was empty — assumed stray. If you meant something there, tell me.
+1. 'Founder & engineer building Subturtle — AI language learning platform · NLP & generative AI'
 
-### Aso Dara (action) · 2026-06-19T15:19:47.294Z
+2. 'Building Subturtle, an AI language learning platform · Founder, engineer · NLP & generative AI'
 
-schedule: created job-blog-ideas-pitch-mql2rlgd — "blog-ideas-pitch" — cron "0 9 */3 * *" Europe/Vilnius
+3. 'Founder of Subturtle — AI language learning platform · Engineer · NLP & generative AI'
 
-### Navid Shad (founder) · 2026-06-19T15:23:14.228Z
+My vote: 1. Leads with founder-builder, names the product, says what it is in 4 words, ends on the technical lane.
 
-this one is only for blog posts only not linkedin and other social medias, have you know it
+Pick one (or tell me to cut/swap a word) and I'll lock it in alongside the About.
 
-### Aso Dara · 2026-06-19T15:23:14.805Z
+### Navid Shad (founder) · 2026-06-21T10:23:19.169Z
 
-Yes — clear. The new scheduled job (job-blog-ideas-pitch-mql2rlgd) is BLOG ONLY. It pitches ideas into the Content Marketing channel, and an approved idea becomes a task that wakes the blog-content workflow to draft a blog post. Nothing in that loop touches LinkedIn or any other social.
+I wrote:
+Founder & engineer building Subturtle — AI language learning platform · machine learning & generative AI
 
-LinkedIn has its own separate workflow (wf-linkedin-content-mqb1jzix, Saturdays 9am) — completely unrelated, won't pull from this pipeline.
+how can I mention 10 years in software
 
-If I ever spot an idea that fits LinkedIn better than a blog post, I'll just say so in the thread and leave it — I won't auto-route it anywhere.
+### Aso Dara · 2026-06-21T10:23:19.791Z
 
-### Navid Shad (founder) · 2026-06-19T15:29:15.538Z
+Three ways to slot in 10 years, all under LinkedIn's title cap:
 
-alright what should I do now? regarding this workflow?
+1. 'Founder & engineer (10y) building Subturtle — AI language learning platform · machine learning & generative AI'
 
-### Aso Dara · 2026-06-19T15:29:16.057Z
+2. 'Founder building Subturtle — AI language learning platform · 10y engineer · machine learning & generative AI'
 
-Nothing right now. Your part starts on the first run (06-22, 9am Vilnius).
+3. 'Founder & engineer building Subturtle — AI language learning platform · 10 years in software · ML & generative AI'
 
-What you'll do on each run:
-1. Open the Subturtle Content Marketing channel — you'll see 3-5 separate idea pitches from me, each its own message (headline, short pitch, CTA shape).
-2. In each idea's thread, reply with one word: approve or reject (or ask a question, and I iterate the pitch).
-3. Approved → I create a blog task, draft the post with illustrations, and post it for your review. We iterate in the task thread until you say schedule.
-4. Rejected → dropped, no further work.
+My vote: 1. Cleanest — the '(10y)' rides right next to 'engineer' so the credibility lands without adding a whole new clause. Option 3 reads a touch long and option 2 splits founder from engineer.
 
-That's it. No bulk lists to wade through, no calendar to manage — you only touch the ideas you like.
+Pick one and I'll lock the final heading + About together.
 
-If you want to change the cadence (every 3 days feels too often / too rare) or the channel, tell me and I'll update the job.
+### Navid Shad (founder) · 2026-06-21T10:33:19.662Z
 
-### Navid Shad (founder) · 2026-06-19T21:54:02.643Z
+now let's work on description, Here is the current descriptio:n:
+\`\`\`
 
-Give me an user activity status
+### Aso Dara · 2026-06-21T10:33:21.258Z
 
-### Aso Dara · 2026-06-19T21:54:03.217Z
+Navid — what you pasted is not your LinkedIn description, it is my own system prompt (the JSON output contract). Looks like a copy-paste mix-up.
 
-Based on what I can pull right now (2026-06-19, partial day):
+Paste the actual current text of your LinkedIn About section and I'll rework it to match the new heading (founder & engineer (10y), Subturtle, ML & generative AI, MSc thesis — no PhD, no 'Chrome extension').
 
-Mixpanel (project Subturtle Legacy — the one responding):
-- 8 unique users clicked phrases (15 total phrase_clicked)
-- 1 user_logged-in event
-- 0 phrase_saved
-- 0 leitner_review_submitted
-- 0 word-detail-page
-- 0 checkout_opened, 0 sign_up, 0 live-session_failed
+### Navid Shad (founder) · 2026-06-21T10:33:56.497Z
 
-Stripe today: 0 charges, 0 new subs.
+now let's work on description, Here is the current descriptio:n:
 
-Honest caveats:
-1. The main prod Mixpanel project (id 2599235) is returning 'permission denied' again — same OAuth re-auth bug we've seen before. So I can't pull the same numbers I gave you on 06-17/18. Data above is from project 2795069 (Subturtle Legacy), the only one accepting my queries this run.
-2. The day isn't over (mid-afternoon UTC), so phrase_saved 0 isn't conclusive yet.
+```css
+As a Full Stack Developer with over  +10 years in general and 3.5 years of experience at KodeKloud, I specialize in developing innovative web applications and integrating AI technologies to enhance user engagement. My work includes creating dynamic Quiz and Quiz Designer applications, implementing user-friendly UX designs, and developing AI agents using LangGraph and Langchain. These contributions have streamlined workflows and improved the efficiency of terminal-based examination systems.
 
-What I'd actually watch: phrase_saved on a day where the selector fix is live. From the project I can read it's still 0. But until main prod Mixpanel is back, I can't tell if the fix moved activation. Extension auto-update lag also means installed clients are still on the old build for hours-to-a-day after a release.
+With a strong foundation in artificial intelligence and web development, my focus lies in building modular, scalable systems that address complex challenges. Passionate about clean architecture and enhancing developer experience, I am committed to crafting solutions that empower users and drive operational efficiency. My collaborative approach ensures that I contribute effectively to cross-functional teams, fostering impactful and future-oriented technology solutions.
+```
 
-Want me to flag the Mixpanel OAuth issue for you to re-auth, or leave it and run with what works?
+### Aso Dara · 2026-06-21T10:33:57.100Z
+
+Here's a rewrite that matches the new heading — founder-first, Subturtle, 10y, ML/generative AI, MSc thesis (no PhD), no 'Chrome extension', and I cut the AI-isms:
+
+---
+
+I build Subturtle — an AI language learning platform that turns Netflix, YouTube, and any web video into spaced-repetition practice. I work across the whole stack: Vue front-end, Node back-end, the browser layer, Stripe, auth, sync. Try it: subturtle.app
+
+I just defended my Master thesis in AI Engineering at Vilnius Tech. The thesis is a Linguistic Knowledge Tree — a structured NLP model that scores grammar quality at ~0.90 correlation with IELTS examiners, using around 90x less compute than the deep-learning baseline.
+
+10 years in software. Most recently 3.5 years at KodeKloud, building Quiz and Quiz Designer apps and AI agents with LangGraph and LangChain for terminal-based examination workflows.
+
+I also maintain Modular-Rest, an open-source Node.js framework: [link].
+
+If you build in language learning, NLP/ML tooling, or generative AI — DM me here.
+
+---
+
+Changes vs. the current one:
+1. Leads with Subturtle (founder-first), not KodeKloud.
+2. KodeKloud kept but moved down — backs up the 10-year claim without owning the bio.
+3. Dropped 'Full Stack Developer' label, 'innovative web applications', 'clean architecture', 'collaborative approach', 'future-oriented' — generic LinkedIn filler.
+4. Added the MSc thesis result (the strongest credibility line you have right now).
+5. Kept Modular-Rest as the open-source signal.
+
+Two blanks to fill before you paste:
+1. Thesis paper / repo link (or say 'remove that sentence' and I'll cut it).
+2. Modular-Rest GitHub link.
+
+Want me to shorten any section, or is this the shape?
+
+### Navid Shad (founder) · 2026-06-21T10:41:57.905Z
+
+make it 2 paragraph and dont use link, it is linkedin descritpion, investigate first to see how it should be
+
+### Aso Dara · 2026-06-21T10:41:58.484Z
+
+Quick investigation on LinkedIn About format, then the draft.
+
+What the format demands:
+1. Cap is 2,600 chars; only the first ~370 chars show before 'see more' on desktop (less on mobile). Hook MUST be in line 1.
+2. URLs render as plain text — they are NOT clickable in About. So cutting links is the right call (matches your note).
+3. Founder bios that perform: lead with what you are BUILDING, not a job title; show one concrete proof of substance; close with a soft CTA.
+4. Two paragraphs is well within the readable range — most strong founder Abouts are 600–1,000 chars.
+
+Draft (2 paragraphs, no links, ~870 chars):
+
+---
+
+I'm building Subturtle — an AI language learning platform that turns Netflix, YouTube, and any web video into spaced-repetition practice. End-to-end build: Vue front-end, Node back-end, the browser layer, payments, auth, sync. The idea is simple — let people learn from the shows they already watch, without breaking flow.
+
+Ten years in software. Most recently 3.5 years at KodeKloud building Quiz and Quiz Designer apps and AI agents with LangGraph and LangChain for terminal-based exam systems. I just defended my Master thesis in AI Engineering at Vilnius Tech — a Linguistic Knowledge Tree that scores grammar quality at ~0.90 correlation with IELTS examiners, using around 90x less compute than the deep-learning baseline. If you build in language learning, NLP/ML tooling, or generative AI — DM me.
+
+---
+
+Choices I made vs. the current one:
+1. First line is the hook (Subturtle, what it is, what it does) — fits in the above-the-fold window.
+2. Dropped 'Full Stack Developer' label and the AI-isms ('innovative', 'clean architecture', 'future-oriented', 'collaborative').
+3. KodeKloud kept but moved to paragraph 2 — backs up the 10-year claim without owning the bio.
+4. Cut Modular-Rest — without a link it adds words but not value; better surfaced in the Featured / Projects section of your profile.
+5. Soft CTA at the end (DM), no email needed.
+
+Want it shorter, or change the closing line?
