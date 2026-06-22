@@ -96,3 +96,57 @@ printf '%s\n' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
   | node mcp/social-engine.mjs
 ```
+
+## `wordpress.mjs` — WordPress media upload (featured images)
+
+Zero-dependency stdio MCP server (same shape as the others). Uploads image
+**bytes** to the blog's own WordPress REST API (`/wp/v2/media`) using an
+application password, then optionally sets a post's featured image.
+
+Why it exists: the claude.ai WordPress.com MCP's `media.create` only accepts the
+image as inline **base64**, which is ~260K tokens for a normal hero — every blog
+featured-image attempt timed out emitting it (and it rode the claude.ai
+connector's headless-OAuth flakiness). This server takes a **file path** instead,
+so the bytes never enter the agent's token stream. **Media only** — post
+text/category/tags/publish stay on the claude.ai WordPress.com MCP.
+
+Two tools:
+
+- **`set_featured_image`** — `{ post_id, file_path, alt_text?, title? }`. Uploads
+  the file and sets it as the post's featured image (leaves status unchanged).
+  Returns the media id, image URL, and edit/preview links.
+- **`upload_media`** — `{ file_path, alt_text?, title? }`. Uploads to the media
+  library and returns the media id + URL (for inline post images).
+
+### Register it
+
+Add to the `mcpServers` block of `~/.claude.json`:
+
+```json
+"wordpress": {
+  "type": "stdio",
+  "command": "node",
+  "args": ["/home/ubuntu/CEO-Agent/mcp/wordpress.mjs"],
+  "env": {
+    "WORDPRESS_API_URL": "https://blog.subturtle.app/wp-json",
+    "WORDPRESS_APP_USER": "<wp.com username the app password belongs to>",
+    "WORDPRESS_APP_PASSWORD": "<application password>"
+  }
+}
+```
+
+Generate the application password at
+`https://blog.subturtle.app/wp-admin/authorize-application.php` (or wp-admin →
+Users → Profile → Application Passwords) on an account with editor/admin caps.
+Restart the agent (`pm2 restart ceo-agent`) so new wakes load the server. The
+agent reaches the tools as `mcp__wordpress__set_featured_image` and
+`mcp__wordpress__upload_media`.
+
+### Smoke test (no config needed — exercises the protocol)
+
+```bash
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{}}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | node mcp/wordpress.mjs
+```

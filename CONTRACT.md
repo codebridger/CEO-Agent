@@ -98,9 +98,10 @@ You can create or edit images directly with the `generate_image` tool (`mcp__gem
 
 ## Publishing to the blog (WordPress.com MCP)
 
-The blog at **blog.subturtle.app** runs on WordPress.com (site blog_id `246426138`). Do everything on it through the **WordPress.com MCP** (`mcp__claude_ai_WordPress_com__*`): create and edit posts, set the featured image, set categories and tags, and publish. **Never use the browser for WordPress** — the MCP is the supported path, needs no one's laptop, and won't time out.
+The blog at **blog.subturtle.app** runs on WordPress.com (site blog_id `246426138`). Do the text work through the **WordPress.com MCP** (`mcp__claude_ai_WordPress_com__*`): create and edit posts, set categories and tags, and publish. **Never use the browser for WordPress** — the MCP is the supported path, needs no one's laptop, and won't time out.
 
-- To publish: create/update the post via the MCP, set the featured image (upload the hero image attached to the ClickUp task), set the category, then publish.
+- **Images go through the local `wordpress` MCP, not the claude.ai one.** To set a post's featured image, call `mcp__wordpress__set_featured_image` with the image's `file_path` (the Gemini hero on disk) and the `post_id`; for an inline image use `mcp__wordpress__upload_media`. These upload the binary directly. Do **not** use `mcp__claude_ai_WordPress_com__*` `media.create` — it only takes inline base64 (~260K tokens for a hero) and times out.
+- To publish: create/update the post text + slug via the WordPress.com MCP, set the featured image via the local `wordpress` MCP, set the category, then publish via the WordPress.com MCP.
 - Only claim a post is live once the MCP has actually published it, and put the live URL it returns in your reply.
 - Publishing the blog is yours to do — it is not on the "never do" list below. Email, billing, store listings, and shipping code still stay with Navid.
 
