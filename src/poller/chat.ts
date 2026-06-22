@@ -3,8 +3,9 @@
  * the agent's channels with the REST token (cheap) and wake it on new messages.
  *
  *  - DM channels: every new message from someone other than the agent wakes it.
- *  - The public group channel: only messages that @mention the agent wake it (ambient
- *    group chatter is left alone).
+ *  - Every other channel in the workspace: only messages that @mention the agent
+ *    wake it (ambient group chatter is left alone). New channels are discovered
+ *    each tick, so an @mention anywhere wakes the agent with no per-channel config.
  *
  * Per-channel cursors (last seen message timestamp) persist in
  * data/poller/cursors.json. On first sight of a channel we baseline to the
@@ -45,12 +46,21 @@ async function saveCursors(): Promise<void> {
   await writeFile(POLLER_CURSORS_PATH, JSON.stringify(cursors, null, 2) + "\n", "utf8");
 }
 
-/** All DM channels (discovered) plus the configured DM + public channels. */
+/**
+ * Every channel in the workspace. DMs wake on any message; non-DM channels
+ * (groups like "Subturtle Content Marketing") wake only on an @mention of the
+ * agent — same rule as the public channel. The list is rebuilt every tick, so
+ * channels created after startup are picked up automatically with no config.
+ *
+ * Note: ClickUp has no chat webhook, so this poll is the *only* way the agent
+ * hears chat. Registering more webhooks cannot cover channels — webhooks carry
+ * task events only.
+ */
 async function buildWatchList(): Promise<Watch[]> {
   const isDM = new Map<string, boolean>();
   try {
     for (const ch of await getChatChannels()) {
-      if (ch.type === "DM") isDM.set(ch.id, true);
+      isDM.set(ch.id, ch.type === "DM");
     }
   } catch (err) {
     console.error("[poller] could not list channels:", (err as Error).message);
