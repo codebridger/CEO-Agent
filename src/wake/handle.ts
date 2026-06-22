@@ -276,7 +276,7 @@ export function handleWake(inbound: Inbound): Promise<void> {
       // current scheduled jobs (so it can reference/replace them, not duplicate).
       const members = inbound.source === "chat" ? await loadDirectory() : [];
       const schedules = inbound.source === "chat" ? await loadSchedulesBlock() : "";
-      const workflows = inbound.source === "chat" ? await loadWorkflowsBlock() : "";
+      const workflows = inbound.source === "chat" ? await loadWorkflowsBlock(inbound.text) : "";
       const history = await loadThread(inbound.threadId);
       // Task wakes get the full activity tail (comments + replies + linked GitHub),
       // assembled here so the agent never has to reconstruct it (and can't miss it).
@@ -374,13 +374,38 @@ async function loadSchedulesBlock(): Promise<string> {
 }
 
 /** Render the agent's current workflows for its prompt (so it can update/remove, not duplicate). */
-async function loadWorkflowsBlock(): Promise<string> {
+async function loadWorkflowsBlock(messageText = ""): Promise<string> {
   try {
     const wfs = await listWorkflows();
     if (wfs.length === 0) return `Your workflows: none yet (you can set up to ${MAX_WORKFLOWS}).`;
-    return ["Your workflows (use the workflow action with an id to update, or workflow.remove to remove):"]
-      .concat(wfs.map((w) => `  - ${describeWorkflow(w)}`))
-      .join("\n");
+    // Only inline the full playbook bodies when the message is actually about a
+    // workflow (editing one needs the current text — the workflow action replaces
+    // the file wholesale, no merge). Otherwise just the summary, so an unrelated
+    // chat message doesn't drag every playbook into context. The task wake always
+    // loads the relevant body via loadPlaybook.
+    const t = messageText.toLowerCase();
+    const wantsBodies =
+      /\b(workflow|playbook)\b/.test(t) || wfs.some((w) => t.includes(w.name.toLowerCase()));
+    if (!wantsBodies) {
+      return [
+        "Your workflows (ask about a workflow/playbook to see its full text; use the workflow action with an id to update, or workflow.remove to remove):",
+        ...wfs.map((w) => `  - ${describeWorkflow(w)}`),
+      ].join("\n");
+    }
+    const blocks = await Promise.all(
+      wfs.map(async (w) => {
+        const body = (await loadPlaybook(w)).trim();
+        const playbook = body
+          ? `\n    playbook (${w.playbook}.md):\n${body.replace(/^/gm, "      ")}`
+          : `\n    playbook (${w.playbook}.md): (empty)`;
+        return `  - ${describeWorkflow(w)}${playbook}`;
+      }),
+    );
+    return [
+      "Your workflows (use the workflow action with an id to update, or workflow.remove to remove).",
+      "To edit a playbook, send the workflow action with the FULL new playbook text — it replaces the file wholesale, so splice into the current text below; omit playbook to keep it unchanged.",
+      ...blocks,
+    ].join("\n");
   } catch (err) {
     console.error("[wake] could not load workflows:", (err as Error).message);
     return "";
