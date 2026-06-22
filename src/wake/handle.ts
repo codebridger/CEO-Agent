@@ -378,9 +378,23 @@ async function loadWorkflowsBlock(): Promise<string> {
   try {
     const wfs = await listWorkflows();
     if (wfs.length === 0) return `Your workflows: none yet (you can set up to ${MAX_WORKFLOWS}).`;
-    return ["Your workflows (use the workflow action with an id to update, or workflow.remove to remove):"]
-      .concat(wfs.map((w) => `  - ${describeWorkflow(w)}`))
-      .join("\n");
+    const blocks = await Promise.all(
+      wfs.map(async (w) => {
+        const body = (await loadPlaybook(w)).trim();
+        // Include the full playbook text so an edit can be done from a chat wake (the
+        // workflow action replaces the whole file — no merge — so we need the current
+        // text to splice into). The task wake already loads this via loadPlaybook.
+        const playbook = body
+          ? `\n    playbook (${w.playbook}.md):\n${body.replace(/^/gm, "      ")}`
+          : `\n    playbook (${w.playbook}.md): (empty)`;
+        return `  - ${describeWorkflow(w)}${playbook}`;
+      }),
+    );
+    return [
+      "Your workflows (use the workflow action with an id to update, or workflow.remove to remove).",
+      "To edit a playbook, send the workflow action with the FULL new playbook text — it replaces the file wholesale, so splice into the current text below; omit playbook to keep it unchanged.",
+      ...blocks,
+    ].join("\n");
   } catch (err) {
     console.error("[wake] could not load workflows:", (err as Error).message);
     return "";
