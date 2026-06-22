@@ -17,7 +17,7 @@
  *     resolves/creates that person's DM channel, so the agent can message anyone.
  */
 
-import { AGENT_NAME, HEARTBEAT_TZ, IDENTITY, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
+import { AGENT_NAME, HEARTBEAT_TZ, IDENTITY, LONG_JOB_TIMEOUT_MS, MODEL, NAVID_DM_CHANNEL_ID } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import {
   createTaskComment,
@@ -147,10 +147,25 @@ function buildWakePrompt(
     "If a comment or message includes an attachment or link (a 📎 line above, or a URL in the text) that matters for",
     "the reply, fetch it rather than guessing — download it (e.g. with curl; ClickUp attachment URLs are public) and",
     "read the file (an image/PDF too: save it and open it). Don't claim to have read a file you didn't actually fetch.",
+    "",
+    "TWO WAYS TO HANDLE THIS — pick the one that fits:",
+    "  1) ANSWER NOW (the usual case) — anything you can finish in this one run: a question, a quick edit, a short lookup.",
+    "     Do it now and reply as instructed below.",
+    "  2) TAKE IT AS A LONG JOB — choose this if the work needs the browser, hits an external site, is multi-step, or will",
+    "     plausibly take more than a minute. This run has a short time limit and WILL be killed mid-task (losing your work)",
+    "     if you try to cram a long job into it. So do NOT start the work here. Instead OUTPUT ONLY this JSON (no prose, no",
+    "     code fence, nothing else):",
+    '       {"longJob": {"ack": "<a short note telling them you are on it>", "task": "<full, self-contained description of the work to do>"}}',
+    "     The system sends your ack immediately, then runs you AGAIN with a long time budget and the browser available to",
+    '     actually do the work, and posts your result back into this thread. Put everything that second run needs into "task"',
+    "     (it also sees this thread's history). When in doubt for real, hands-on work, choose the long job — it's the",
+    "     difference between finishing and timing out.",
   ];
 
   if (inbound.source === "chat") {
     head.push(
+      "If you are TAKING IT AS A LONG JOB (option 2 above): output ONLY the longJob JSON and nothing else — not the",
+      "messages directive below. Otherwise, to ANSWER NOW (option 1):",
       "Do NOT send anything yourself — you have no send tool on this run. Decide what to send and to whom,",
       "then OUTPUT ONLY a JSON object (no prose before or after it, no code fence), exactly this shape:",
       '  {"messages": [ {"to": "<target>", "text": "<message>"} ]}',
@@ -206,9 +221,10 @@ function buildWakePrompt(
     // Task: compose only. The app posts it as a threaded reply (the agent has no
     // tool that can, and posting stays server-side for the guardrails).
     head.push(
-      "Do NOT post anything yourself. Compose your reply and OUTPUT ONLY the exact reply text —",
-      `no preamble, no "I posted…", just the message. The system will post it as a threaded reply`,
-      `under ${inbound.author}'s comment and notify them. Address them by name in the text.`,
+      "If you are ANSWERING NOW (option 1): do NOT post anything yourself. Compose your reply and OUTPUT ONLY the exact",
+      `reply text — no preamble, no "I posted…", just the message. The system will post it as a threaded reply under`,
+      `${inbound.author}'s comment and notify them. Address them by name in the text.`,
+      "If instead you are TAKING IT AS A LONG JOB (option 2): output ONLY the longJob JSON and nothing else.",
     );
   }
 
@@ -231,6 +247,128 @@ async function postTaskReply(inbound: Inbound, text: string): Promise<string> {
   }
   const r = await createTaskComment(inbound.taskId ?? "", opts);
   return `root comment ${r.id} on task ${inbound.taskId}`;
+}
+
+interface LongJob {
+  /** The short note sent to the user immediately, while the work runs. */
+  ack: string;
+  /** Self-contained description of the work the second (long) run should do. */
+  task: string;
+}
+
+/**
+ * Detect a long-job directive in the agent's output: {"longJob": {"ack","task"}}.
+ * Works for both branches — chat output is JSON already, and a task reply is plain
+ * text that simply won't parse (→ null, normal reply). Tries the whole string, a
+ * fenced block, then the first {...} span, mirroring parseChatDirective's leniency.
+ */
+function parseLongJob(raw: string): LongJob | null {
+  const tryParse = (s: string): LongJob | null => {
+    try {
+      const o = JSON.parse(s) as { longJob?: { ack?: unknown; task?: unknown } };
+      const lj = o?.longJob;
+      if (!lj) return null;
+      const ack = String(lj.ack ?? "").trim();
+      const task = String(lj.task ?? "").trim();
+      return ack && task ? { ack, task } : null;
+    } catch {
+      return null;
+    }
+  };
+  const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const brace = raw.match(/\{[\s\S]*\}/);
+  return (
+    tryParse(raw.trim()) ||
+    (fence?.[1] ? tryParse(fence[1].trim()) : null) ||
+    (brace?.[0] ? tryParse(brace[0]) : null)
+  );
+}
+
+/** Post one message into the thread the wake came from (threaded reply / in-thread chat). */
+async function postInThread(inbound: Inbound, text: string): Promise<void> {
+  if (inbound.source === "task") {
+    await postTaskReply(inbound, text);
+    return;
+  }
+  if (inbound.replyToMessageId) {
+    await sendChatReply(inbound.replyToMessageId, text);
+  } else if (inbound.channelId) {
+    await sendChatMessage(inbound.channelId, text);
+  } else {
+    throw new Error("no channel id for this chat thread");
+  }
+}
+
+/** Prompt for the second (long) run: do the work end to end, then report back. */
+function buildLongRunPrompt(
+  inbound: Inbound,
+  ctx: { history: string; activity: string; playbook: string },
+  task: string,
+): string {
+  return [
+    `You decided this needs real work with a time budget, and ${inbound.author} has already been told you're on it.`,
+    "Now do it, end to end. You have your FULL toolset including the browser, and a generous time budget — there's no",
+    "rush, just finish it correctly.",
+    "",
+    ctx.playbook.trim() ? "Workflow playbook (the rules to follow):\n---\n" + ctx.playbook.trim() + "\n---" : "",
+    "",
+    ctx.history.trim() ? "Conversation so far (this thread):\n---\n" + ctx.history.trim() + "\n---" : "",
+    "",
+    ctx.activity.trim() ? "Task activity tail:\n---\n" + ctx.activity.trim() + "\n---" : "",
+    "",
+    "The job to do now:",
+    task,
+    "",
+    `When finished, OUTPUT ONLY your final report to ${inbound.author} — plain text in your normal voice (per your`,
+    'contract), no preamble, no JSON, no "I posted…". Say what you did and the result. If you could NOT finish, say',
+    "what you got done and exactly what blocked you. The system posts your report into this same thread — do not try",
+    "to post it yourself.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/**
+ * Execute a long job (Design A): send the agent's ack now as the in-thread placeholder,
+ * run the real work with a long budget + the browser, then post the outcome back into
+ * the same thread. A failed/timed-out run posts an honest "couldn't finish" rather than
+ * leaving the thread hanging on the ack.
+ */
+async function runLongJob(
+  inbound: Inbound,
+  ctx: { history: string; activity: string; playbook: string; model: string },
+  job: LongJob,
+): Promise<void> {
+  // 1) Acknowledge immediately — this is what the user sees while the work runs.
+  try {
+    await postInThread(inbound, job.ack);
+    await appendTurn(inbound.threadId, `${AGENT_NAME} (on it)`, job.ack);
+  } catch (err) {
+    console.error(`[wake] long-job ack failed for ${inbound.threadId}:`, (err as Error).message);
+  }
+
+  // 2) Do the work — long budget, browser allowed, posting tools still blocked (the app posts).
+  const res = await runAgent({
+    task: buildLongRunPrompt(inbound, ctx, job.task),
+    model: ctx.model,
+    timeoutMs: LONG_JOB_TIMEOUT_MS,
+    disallowTools: inbound.source === "task" ? [CREATE_COMMENT_TOOL] : [SEND_CHAT_TOOL],
+  });
+
+  // 3) Post the outcome (or an honest failure) into the same thread.
+  const outcome =
+    res.ok && res.text.trim()
+      ? res.text.trim()
+      : `❌ Couldn't finish that one — ${res.error ?? "no output"}. Want me to retry, or take a different approach?`;
+  try {
+    await postInThread(inbound, outcome);
+    await appendTurn(inbound.threadId, res.ok ? AGENT_NAME : `${AGENT_NAME} (long job failed)`, outcome);
+    await upsertIndex(inbound.threadId, outcome.slice(0, 200));
+  } catch (err) {
+    console.error(`[wake] long-job result post failed for ${inbound.threadId}:`, (err as Error).message);
+    await appendTurn(inbound.threadId, `${AGENT_NAME} (post failed)`, outcome);
+  }
+  console.log(`[wake] long job for ${inbound.threadId}: ${res.ok ? "done" : `FAILED ${res.error}`}`);
 }
 
 /**
@@ -285,9 +423,10 @@ export function handleWake(inbound: Inbound): Promise<void> {
       // playbook + model (the same the recurring generate step uses).
       const wf = inbound.source === "task" && inbound.taskId ? await workflowForTask(inbound.taskId) : undefined;
       const playbook = wf ? await loadPlaybook(wf) : "";
+      const jobModel = wf ? modelFor(wf) : MODEL.pm;
       const res = await runAgent({
         task: buildWakePrompt(inbound, history, members, activity, schedules, playbook, workflows),
-        model: wf ? modelFor(wf) : MODEL.pm,
+        model: jobModel,
         // The app performs every write — block the agent's own posting tools so it
         // can only compose, never (claim to) send.
         disallowTools: inbound.source === "task" ? [CREATE_COMMENT_TOOL] : [SEND_CHAT_TOOL],
@@ -303,6 +442,17 @@ export function handleWake(inbound: Inbound): Promise<void> {
       }
 
       const replyText = res.text.trim();
+
+      // The agent may have decided this is a LONG JOB rather than an answer-now reply.
+      // If so, acknowledge immediately and do the real work in a second run with a long
+      // budget + the browser available (Design A). The thread stays serialized — this
+      // still runs inside the per-thread lock — so nothing else races on it meanwhile.
+      const longJob = parseLongJob(replyText);
+      if (longJob) {
+        await runLongJob(inbound, { history, activity, playbook, model: jobModel }, longJob);
+        await maybeCompact(inbound.threadId);
+        return;
+      }
       let summary = replyText;
       if (inbound.source === "task") {
         let delivered = true;

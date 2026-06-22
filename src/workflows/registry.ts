@@ -21,10 +21,10 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { MODEL, WORKFLOWS_DIR, WORKFLOWS_PATH } from "../config.js";
+import { LONG_JOB_TIMEOUT_MS, MODEL, NAVID_DM_CHANNEL_ID, WORKFLOWS_DIR, WORKFLOWS_PATH } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import { BROWSER_TOOLS } from "../agent/policy.js";
-import { getTaskListId } from "../clickup/rest.js";
+import { getTaskListId, sendChatMessage } from "../clickup/rest.js";
 import { occurrenceDue } from "../rhythms/cronDue.js";
 import { minuteKey } from "../rhythms/time.js";
 
@@ -263,12 +263,27 @@ export async function runWorkflowGenerate(w: Workflow, now: Date = new Date()): 
   const res = await runAgent({
     task,
     model: modelFor(w),
+    // The generate step is unattended and can be a real (browser) job, so it gets the
+    // long-job budget rather than the 5-min interactive default — otherwise a workflow
+    // that drives the browser would be SIGKILL'd mid-task on a timer.
+    timeoutMs: LONG_JOB_TIMEOUT_MS,
     disallowTools: w.allowBrowser ? [] : BROWSER_TOOLS,
   });
   console.log(
     `[workflow] ran ${w.id} (${w.name}): ${res.ok ? "ok" : `FAILED ${res.error}`}` +
       (res.ok && res.text ? ` — ${res.text.slice(0, 160)}` : ""),
   );
+  // A browser-enabled generate step is an unattended LONG job with no thread to show a
+  // placeholder in — so it would otherwise run (and fail) invisibly. Give Navid a short
+  // finish/fail note in his DM so it isn't blind. Read-only/Canva-only workflows stay quiet.
+  if (w.allowBrowser) {
+    const note = res.ok
+      ? `Workflow "${w.name}" ran${res.text ? ` — ${res.text.slice(0, 200)}` : "."}`
+      : `❌ Workflow "${w.name}" failed: ${res.error ?? "no output"}`;
+    await sendChatMessage(NAVID_DM_CHANNEL_ID, note).catch((e) =>
+      console.error(`[workflow] could not DM Navid the ${w.name} note:`, (e as Error).message),
+    );
+  }
 }
 
 /** One-line human description of a workflow, for the agent's context and outcome strings. */
