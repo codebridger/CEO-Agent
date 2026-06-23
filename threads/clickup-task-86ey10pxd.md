@@ -188,3 +188,156 @@ Navid, here's where it landed.
 - Preview: https://blog.subturtle.app/?p=474&preview=true
 
 One thing worth a look when you have time: the blog's media upload looks broken at the host level (that wp-content write error). If it stays broken, every future post hero will need a manual upload too. Might be worth a 5-minute check on the WordPress.com side.
+
+### Navid Shad (founder) · 2026-06-22T20:16:07.565Z
+
+we need another image for this post,
+the hero image is only for blog list, inside the post there is not showing it.
+need a shorter title as you see in the screenshot it is too long.
+image.png
+
+### Aso Dara (on it) · 2026-06-22T20:16:08.102Z
+
+On it, Navid. Two things: a new in-post image (the hero only shows on the blog list, not inside the body) and a shorter title for draft #474. I'll generate the image, shorten the title, wire both into the post via the WordPress MCP, keep it a draft, and report back here.
+
+### Aso Dara · 2026-06-22T20:20:08.685Z
+
+Navid, both done, and the media upload that was failing this morning worked clean this time.
+
+**Title:** shortened to **"The Pause-Rewind Rule"** (was the long "...Smallest Habit That Turns Watching Into Learning"). I also set a clean URL slug, `pause-rewind-rule`. Nothing was linked publicly yet, so no link breaks.
+
+**In-post image:** done and verified in the body. I made a simple 3-step graphic (Pause → Rewind 3s → Listen again, teal and amber to match the hero) and dropped it right under the "3-step micro-routine" heading, so now there is an image inside the post, not only on the blog list. The hero you set stays the featured image for the list view.
+
+Two extra notes:
+- The blog's media write path is healthy now. The "Unable to create directory wp-content" error from earlier did not come back, the image uploaded on the first try.
+- While I was in the body anyway, I took out the em-dashes (our humanize rule) and replaced them with commas, in the post and the excerpt. No other wording changed.
+
+It is still a **draft. Nothing went live.**
+- Edit: https://blog.subturtle.app/wp-admin/post.php?post=474&action=edit
+- Preview: https://blog.subturtle.app/?p=474&preview=true
+
+Read it in preview. If the title or the image placement isn't what you pictured, tell me and I'll adjust.
+
+### Navid Shad (founder) · 2026-06-22T20:36:00.696Z
+
+@Aso Dara there is only one image in the blog text
+
+### Aso Dara (on it) · 2026-06-22T20:36:01.114Z
+
+On it, Navid. You're right — the body only has the one 3-step graphic. I'll add more images inside the post: a top-of-post hero (the featured image only shows in the list view, so I'll place a matching one at the top of the body) plus one more illustrative image lower down, all in the same teal/amber style. I'll wire them in via the WordPress MCP, keep #474 a draft, and report back here.
+
+### Aso Dara · 2026-06-22T20:37:59.896Z
+
+Done and verified. The update returned the full body with all three images and `status: draft`.
+
+Navid, done. The post body now has three images instead of one, and it's still a draft, nothing went live.
+
+What I added:
+1. **Top hero inside the body** — a cozy night scene of someone on the sofa pausing a show with the subtitle frozen on the TV. Sits right after the opening line, so the post no longer looks bare at the top (the featured image only shows on the blog list, not in the body).
+2. **A lower-half image** — a warm "one click saves the phrase to a flashcard" graphic, placed in the "Where Subturtle fits" section, right where the post talks about saving and review.
+3. The original 3-step graphic stays exactly where it was, under "The 3-step micro-routine".
+
+Both new images match the existing look: soft teal and amber, evening mood, clean and simple. The upload went through clean on the first try, no repeat of this morning's wp-content error.
+
+Nothing else changed: same title ("The Pause-Rewind Rule"), same slug, same category (Learning Strategy), same tags, same wording, no em-dashes.
+
+- Edit: https://blog.subturtle.app/wp-admin/post.php?post=474&action=edit
+- Preview: https://blog.subturtle.app/?p=474&preview=true
+
+Take a look in preview. If you want either new image moved, swapped, or a different style, tell me and I'll adjust.
+
+### Navid Shad (founder) · 2026-06-22T22:08:06.177Z
+
+Looks goos for when should we schedule it?
+
+### Aso Dara · 2026-06-22T22:08:06.619Z
+
+Navid, good. The post is ready, no reason to sit on it.
+
+My pick: **tomorrow (Tuesday) morning, around 9:00 Vilnius.** Tue–Thu mornings get the best reads, and it gives the draft a night to settle so you can glance at it once more before it goes out.
+
+One thing to be clear about: I can't publish it myself. When you're happy, you flip it to Published in WP admin (or schedule it there for Tue 09:00). Say the word and I'll do a final CTA + link check right before, so nothing ships broken.
+
+Want me to set the WP schedule to Tue 09:00 now (still not live, just queued), or leave it fully in your hands?
+
+### Navid Shad (founder) · 2026-06-22T22:36:09.352Z
+
+Please schedule it
+
+### Aso Dara (on it) · 2026-06-22T22:36:09.922Z
+
+On it, Navid. Scheduling draft #474 for Tuesday 23 June, 09:00 Vilnius via the WordPress MCP. I'll run a final CTA + link check first, then queue it (not publish now), and report back here with the scheduled time confirmed.
+
+### Aso Dara · 2026-06-22T22:37:08.471Z
+
+Done. Confirmed: status `future`, date 2026-06-23 09:00, featured image and category intact.
+
+Navid, it's scheduled.
+
+**The Pause-Rewind Rule** (#474) will go live **Tuesday 23 June at 09:00 Vilnius time**. I set it via the WordPress MCP, not the browser, and read it back to confirm: status is now "future" with that exact date. Nothing is live yet, it's queued.
+
+Final check before scheduling, all clean:
+- Title "The Pause-Rewind Rule", slug `pause-rewind-rule`
+- Links all resolve: subturtle.app on first mention, dashboard.subturtle.app on the AI Coach line, and the Chrome Web Store button at the end
+- No em-dashes
+- Category "Learning Strategy", all 10 tags, featured/hero image still set
+- All three body images present (top hero, the 3-step graphic, the save-to-flashcard image)
+
+One small note on timing: the site runs on UTC+3, same as Vilnius in June, so 09:00 lines up exactly. If we ever schedule for winter, I'll watch the offset.
+
+- Edit: https://blog.subturtle.app/wp-admin/post.php?post=474&action=edit
+- Preview: https://blog.subturtle.app/?p=474&preview=true
+
+If you want to move the time or pull it back to a draft, just say so.
+
+### Navid Shad (founder) · 2026-06-22T22:40:16.758Z
+
+paste_2c95c3cb-bce7-4aa3-8a4b-57f15a6435e3.png
+We have these schedules , is that correct?
+
+### Aso Dara · 2026-06-22T22:40:17.197Z
+
+@Navid Shad Yes, that's the right list, and #474 is set correctly. Here's what's actually scheduled on the blog right now:
+
+- **Tue 23 Jun, 09:00** — The Pause-Rewind Rule (#474) ← the one we just set
+- **Tue 23 Jun, 12:00** — The Power of Passive Learning (#240)
+- **Thu 26 Jun, 12:00** — Never Forget a New Word Again (#247)
+
+No duplicates from this morning's failed retries, I checked. Only one #474, and it's queued for Tue 09:00 as agreed.
+
+**One thing to fix:** two posts land on the same Tuesday, just 3 hours apart (#474 at 09:00 and #240 at 12:00). That's too close, they'll fight each other for the same readers and the second one gets buried.
+
+My pick: keep #474 on Tue 09:00, and move #240 to **Wed 24 Jun, 09:00**. Then it's one post a day, Tue / Wed / Thu, nicely spaced.
+
+Want me to move #240 to Wednesday? Say yes and I'll do it (still scheduled, nothing goes live early).
+
+### Navid Shad (founder) · 2026-06-23T19:33:06.688Z
+
+@Aso Dara we need 2 images, put both inimage inside the blog, hero sectin is not enouph
+
+### Aso Dara (on it) · 2026-06-23T19:33:07.141Z
+
+On it, Navid. I'll make two images and place both inside the body of post #488 (not just the hero, which only shows on the list). Same teal/amber style. I'll wire them in via the WordPress MCP, keep it a draft, and report back here with where each one sits.
+
+### Aso Dara · 2026-06-23T19:35:21.073Z
+
+Both images are now in the body and verified in the returned content. Status is still `draft`. Here's my report.
+
+---
+
+Navid, done. Both images are now inside the post body of #488, and it's still a draft, nothing went live.
+
+What I added:
+
+1. **Top image, the sofa scene** — sits right after the opening line ("wait, what did she just say"), so the post no longer looks bare at the top. It's the cozy night view: someone on the sofa with the remote, the show paused, and a subtitle frozen on the TV. This is the in-body version, since the featured/hero image only shows on the blog list.
+
+2. **The 4-step graphic** — sits inside the "3-Second Micro-Routine" section, right after the numbered steps. It shows the loop clearly: Pause → Rewind 3s → Listen again → Check subtitle, in the same teal and amber style.
+
+Both uploaded clean on the first try (media ids 491 and 492). I read the body back after the update and confirmed both images are actually in it, and the status is still `draft`.
+
+Nothing else changed: same title, slug (`pause-rewind-rule-2`), category, tags, links (subturtle.app, dashboard.subturtle.app, Chrome Web Store button), and no em-dashes.
+
+- Edit: https://blog.subturtle.app/wp-admin/post.php?post=488&action=edit
+- Preview: https://blog.subturtle.app/?p=488&preview=true
+
+Take a look in preview. If you want either image moved, swapped, or a different style, tell me and I'll adjust.
