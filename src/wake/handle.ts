@@ -204,6 +204,8 @@ function buildWakePrompt(
       '      {"continue": {"state": "<what you finished + what is left + where you are>", "summary": "<one line>"}} to',
       '      checkpoint, and {"done": {"summary": "..."}} when the whole job is complete. The next run resumes from your',
       "      saved state (a long job's browser session stays open), so heavy work finishes across chunks instead of being cut off.",
+      "      For a LONG job the app automatically posts your start / each checkpoint / done back into the thread this was asked",
+      "      from, and keeps a detailed step log — so do NOT post your own progress updates; just do the work and checkpoint.",
       '  - {"type": "unschedule", "id": "<job id>"}  → remove one of your jobs. Allowed anytime.',
       '  - {"type": "workflow", "name": "<name>", "playbook": "<the rules, as markdown>", "model": "sonnet"|"opus",',
       '       "listId": "<clickup list>", "cron": "<m h dom mon dow, optional>", "tz": "<IANA, optional>",',

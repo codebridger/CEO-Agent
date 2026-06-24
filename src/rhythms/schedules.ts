@@ -10,11 +10,13 @@
  * separate browser/credential decision.
  */
 
+import { appendFileSync, mkdirSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
-import { LONG_JOB_TIMEOUT_MS, MODEL, SCHEDULES_PATH } from "../config.js";
-import { runAgent } from "../agent/runner.js";
+import { dirname, resolve } from "node:path";
+import { DATA_DIR, LONG_JOB_TIMEOUT_MS, MODEL, SCHEDULES_PATH } from "../config.js";
+import { runAgent, type StepEvent } from "../agent/runner.js";
 import { BROWSER_TOOLS } from "../agent/policy.js";
+import { createTaskComment, replyToComment, sendChatMessage, sendChatReply } from "../clickup/rest.js";
 import { occurrenceDue } from "./cronDue.js";
 import { minuteKey } from "./time.js";
 
@@ -66,6 +68,20 @@ export interface Job {
     /** ISO time the current multi-run task started (for logging / staleness). */
     startedAt: string;
   };
+  /**
+   * Where the job was asked from, so a `long` job can post its progress footprints back
+   * into that same thread / channel / task while it runs unattended. Captured from the
+   * triggering message at creation; absent for jobs created before this existed.
+   */
+  origin?: {
+    source: "task" | "chat";
+    channelId?: string;
+    replyToMessageId?: string;
+    taskId?: string;
+    commentId?: string;
+    author?: string;
+    authorUserId?: number;
+  };
   createdAt: string;
   createdBy?: string;
   lastRunAt?: string;
@@ -115,6 +131,7 @@ export interface UpsertInput {
   task: string;
   enabled?: boolean;
   long?: boolean;
+  origin?: Job["origin"];
   createdBy?: string;
 }
 
@@ -137,6 +154,7 @@ export async function upsertJob(input: UpsertInput): Promise<{ job?: Job; error?
     existing.task = input.task;
     if (input.enabled !== undefined) existing.enabled = input.enabled;
     if (input.long !== undefined) existing.long = input.long;
+    if (input.origin) existing.origin = input.origin; // refresh footprints to wherever it was just edited
     await write(store);
     return { job: existing };
   }
@@ -150,6 +168,7 @@ export async function upsertJob(input: UpsertInput): Promise<{ job?: Job; error?
     task: input.task,
     enabled: input.enabled ?? true,
     long: input.long ?? false,
+    origin: input.origin,
     createdAt: new Date().toISOString(),
     createdBy: input.createdBy,
   };
@@ -297,6 +316,60 @@ function buildScheduledPrompt(job: Job, budgetLabel: string, lastChunk: boolean)
 }
 
 /**
+ * Post a progress footprint back to wherever the job was asked from (chat thread/channel
+ * or task comment). Best-effort: a posting failure is logged, never thrown — footprints
+ * must not be able to break the actual job run.
+ */
+async function postJobMilestone(job: Job, text: string): Promise<void> {
+  const o = job.origin;
+  if (!o) return; // pre-origin job, or no known place to post — step log file still captures it
+  try {
+    if (o.source === "chat") {
+      if (o.replyToMessageId) await sendChatReply(o.replyToMessageId, text);
+      else if (o.channelId) await sendChatMessage(o.channelId, text);
+    } else {
+      const opts = { text, notifyAll: false };
+      if (o.commentId) await replyToComment(o.commentId, opts);
+      else if (o.taskId) await createTaskComment(o.taskId, opts);
+    }
+  } catch (err) {
+    console.error(`[schedule] milestone post failed for ${job.id}:`, (err as Error).message);
+  }
+}
+
+/**
+ * A per-job step log under data/logs/job-<id>.log: every tool the agent calls and each
+ * chunk of its text, appended live as the run streams. This is the fine-grained footprint
+ * (the chat milestones are the glanceable one). Writes are sync + best-effort so a log
+ * failure never disturbs the run; returns the onEvent sink for runAgent and the path.
+ */
+function makeStepLogger(job: Job): { path: string; onEvent: (ev: StepEvent) => void; header: (label: string) => void } {
+  const path = resolve(DATA_DIR, "logs", `job-${job.id}.log`);
+  const write = (line: string): void => {
+    try {
+      appendFileSync(path, line + "\n", "utf8");
+    } catch {
+      /* best-effort */
+    }
+  };
+  return {
+    path,
+    header(label: string) {
+      try {
+        mkdirSync(dirname(path), { recursive: true });
+      } catch {
+        /* best-effort */
+      }
+      write(`\n=== ${new Date().toISOString()} — ${label} ===`);
+    },
+    onEvent(ev: StepEvent) {
+      const ts = new Date().toISOString().slice(11, 19);
+      write(ev.kind === "tool" ? `${ts} 🔧 ${ev.label}${ev.detail ? `  ${ev.detail}` : ""}` : `${ts} 💬 ${ev.label}`);
+    },
+  };
+}
+
+/**
  * Run one chunk of a scheduled job: stamp it (so a crash mid-run doesn't re-fire it next
  * tick), run the agent with the job's task (resuming from saved state if this is a
  * continuation), then read the agent's checkpoint directive:
@@ -318,11 +391,23 @@ export async function runScheduledJob(job: Job, now: Date = new Date()): Promise
   const timeoutMs = job.long ? LONG_JOB_TIMEOUT_MS : undefined;
   const budgetLabel = job.long ? `${Math.round((timeoutMs ?? 0) / 60_000)} minutes` : "5 minutes";
 
+  // Footprints — only for `long` jobs (the heavy, otherwise-invisible ones). A live step
+  // log file captures every action; chat milestones give a glanceable pulse in the thread
+  // the job was asked from.
+  const logger = job.long ? makeStepLogger(job) : null;
+  if (logger) {
+    logger.header(`${job.title}${job.continuation ? ` (resume ${iterations})` : ""}`);
+    if (!job.continuation) {
+      await postJobMilestone(job, `🏃 Starting scheduled job "${job.title}". I'll post progress here as I go.`);
+    }
+  }
+
   const res = await runAgent({
     task: buildScheduledPrompt(job, budgetLabel, lastChunk),
     model: MODEL.pm,
     timeoutMs,
     disallowTools: job.long ? [] : BROWSER_TOOLS,
+    onEvent: logger?.onEvent,
   });
 
   const tag = `${job.id} (${job.title})${job.long ? " [long]" : ""}${job.continuation ? ` [resume ${iterations}]` : ""}`;
@@ -335,12 +420,15 @@ export async function runScheduledJob(job: Job, now: Date = new Date()): Promise
       if (failures >= MAX_CHUNK_FAILURES) {
         await setContinuation(job.id, null);
         console.log(`[schedule] ran ${tag}: GAVE UP after ${failures} failed resumes — ${res.error}`);
+        await postJobMilestone(job, `⚠️ "${job.title}" — gave up after ${failures} failed resumes: ${res.error}`);
       } else {
         await setContinuation(job.id, { ...job.continuation, failures });
         console.log(`[schedule] ran ${tag}: FAILED ${res.error} (resume ${failures}/${MAX_CHUNK_FAILURES})`);
+        await postJobMilestone(job, `⚠️ "${job.title}" — a run failed (${failures}/${MAX_CHUNK_FAILURES}); will retry from the last checkpoint.`);
       }
     } else {
       console.log(`[schedule] ran ${tag}: FAILED ${res.error}`);
+      await postJobMilestone(job, `⚠️ "${job.title}" — run failed: ${res.error}`);
     }
     return;
   }
@@ -354,13 +442,20 @@ export async function runScheduledJob(job: Job, now: Date = new Date()): Promise
       startedAt: job.continuation?.startedAt ?? now.toISOString(),
     });
     console.log(`[schedule] ran ${tag}: CONTINUE (${iterations + 1}/${MAX_CONTINUATIONS}) — ${step.summary || "…"}`);
+    await postJobMilestone(
+      job,
+      `⏸️ "${job.title}" — checkpoint ${iterations + 1}/${MAX_CONTINUATIONS}: ${step.summary || "more to do"} (resuming next run)`,
+    );
     return;
   }
 
   // done, plain completion, or the cap was hit — clear the checkpoint either way.
   await setContinuation(job.id, null);
-  const why = step?.status === "continue" && lastChunk ? "DONE (continuation cap hit)" : "DONE";
-  console.log(`[schedule] ran ${tag}: ${why} — ${step?.summary || res.text.slice(0, 160) || "ok"}`);
+  const capHit = step?.status === "continue" && lastChunk;
+  const why = capHit ? "DONE (continuation cap hit)" : "DONE";
+  const summary = step?.summary || res.text.slice(0, 160) || "ok";
+  console.log(`[schedule] ran ${tag}: ${why} — ${summary}`);
+  await postJobMilestone(job, `✅ "${job.title}" — done${capHit ? " (hit the run cap)" : ""}: ${summary}`);
 }
 
 /** One-line human description of a job, for the agent's context and outcome strings. */

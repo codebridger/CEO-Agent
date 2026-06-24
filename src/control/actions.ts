@@ -196,6 +196,16 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
           tz: action.tz || HEARTBEAT_TZ,
           enabled: action.enabled,
           long: action.long,
+          // Remember where this was asked from so a long job can post its progress back here.
+          origin: {
+            source: inbound.source,
+            channelId: inbound.channelId,
+            replyToMessageId: inbound.replyToMessageId,
+            taskId: inbound.taskId,
+            commentId: inbound.commentId,
+            author: inbound.author,
+            authorUserId: inbound.authorUserId,
+          },
           createdBy: inbound.author,
         });
         outcomes.push(job ? `schedule: ${action.id ? "updated" : "created"} ${describeJob(job)}` : `schedule FAILED — ${error}`);
