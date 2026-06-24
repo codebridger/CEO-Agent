@@ -13,7 +13,7 @@ import { runExclusive } from "./lock.js";
 import { runPmCheck } from "./pmCheck.js";
 import { readState, setLastDataPush, setLastPmCheck } from "./state.js";
 import { isWeekday, localParts } from "./time.js";
-import { dueJobs, runScheduledJob } from "./schedules.js";
+import { continuingJobs, dueJobs, runScheduledJob } from "./schedules.js";
 import { dueWorkflows, runWorkflowGenerate } from "../workflows/registry.js";
 
 const TICK_MS = 60_000;
@@ -63,6 +63,12 @@ export async function startScheduler(): Promise<() => void> {
         await runExclusive("heartbeat", runHeartbeat);
       } else if (await pmCheckDue(now)) {
         await runExclusive("pm-check", runPmCheck);
+      }
+      // Resume any job that checkpointed mid-flight last time, BEFORE starting fresh
+      // cron-due ones — so a long, chunked task keeps making progress each tick. dueJobs
+      // skips jobs with a live continuation, so a job is never both resumed and restarted.
+      for (const job of await continuingJobs()) {
+        await runExclusive(`schedule:${job.id}`, () => runScheduledJob(job, now));
       }
       // Agent-owned recurring jobs (the generic scheduler). Each runs under the same
       // exclusive lock so it never overlaps a rhythm or another job.

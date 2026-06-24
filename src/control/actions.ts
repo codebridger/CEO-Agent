@@ -33,7 +33,7 @@ export type Action =
   | { type: "restart"; at?: number; reason?: string }
   | { type: "self-improve"; topic: string; summary: string; files: ProposeFile[] }
   | { type: "remember"; text: string }
-  | { type: "schedule"; id?: string; title: string; cron: string; task: string; tz?: string; enabled?: boolean }
+  | { type: "schedule"; id?: string; title: string; cron: string; task: string; tz?: string; enabled?: boolean; long?: boolean }
   | { type: "unschedule"; id: string }
   | {
       type: "workflow";
@@ -84,6 +84,7 @@ export function coerceActions(raw: unknown): Action[] {
           task,
           tz: o["tz"] ? String(o["tz"]) : undefined,
           enabled: typeof o["enabled"] === "boolean" ? (o["enabled"] as boolean) : undefined,
+          long: o["long"] === true,
         });
       }
     } else if (type === "unschedule") {
@@ -181,6 +182,12 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
           outcomes.push(`schedule REJECTED — ${safe.reason}: "${action.cron}"`);
           continue;
         }
+        // A "long" job runs unattended with the browser + a 20-min budget — the same
+        // sensitive capability a browser workflow has, so it needs Navid's authority.
+        if (action.long && !fromNavidDM(inbound)) {
+          outcomes.push("schedule DENIED — a long (browser-enabled) job can only be set up from Navid's private DM");
+          continue;
+        }
         const { job, error } = await upsertJob({
           id: action.id,
           title: action.title,
@@ -188,6 +195,7 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
           task: action.task,
           tz: action.tz || HEARTBEAT_TZ,
           enabled: action.enabled,
+          long: action.long,
           createdBy: inbound.author,
         });
         outcomes.push(job ? `schedule: ${action.id ? "updated" : "created"} ${describeJob(job)}` : `schedule FAILED — ${error}`);
