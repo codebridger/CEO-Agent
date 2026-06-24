@@ -1,6 +1,6 @@
 # Thread index
 
-- chat-8crzyb7-1458 · last 2026-06-23T15:30:25.095Z · Sweep done. Headlines:  **Cron tz is not the bug.** schedules.json for job-pm-check-mqqf85q7 shows it last ran 13:00 UTC
+- chat-8crzyb7-1458 · last 2026-06-24T11:24:39.299Z · replied
 - clickup-task-86et9a1x6 · last 2026-06-09T05:24:37.004Z · Yes Navid, I'm here.  On the Google Meet question — noted. I'll park that task and mark the milestone complete. I'll ope
 - clickup-task-86exr424h · last 2026-06-07T08:05:35.184Z · Navid, here is everything I can actually see on this task right now — the full read.  **Task state:** - Name: "Implement
 - clickup-task-86exw6kme · last 2026-06-08T18:10:25.415Z · Thanks Navid. I can see it working already — the activity tail for this task shows the full comment thread plus the two 
@@ -18,6 +18,7 @@
 - clickup-task-86exynjj8 · last 2026-06-15T14:26:21.399Z · @Navid Shad Good, thanks for posting it yourself. Sorry the carousel upload blocked us at the last step.  I've left the 
 - clickup-task-86exzbh61 · last 2026-06-19T10:47:21.532Z · Thanks Navid — good to see it shipped. PRs #36/#37/#38 all in, commit 646094e merged 2026-06-17. Closing the task now.
 - clickup-task-86ey0dhce · last 2026-06-20T23:51:04.038Z · It's live, Navid. The post is on your LinkedIn page:  https://www.linkedin.com/feed/update/urn%3Ali%3Ashare%3A7474247433
-- chat-8crzyb7-1518 · last 2026-06-23T19:14:50.674Z · Draft is live on WP and the ClickUp task has the link. Reporting back.  Draft is on WordPress, status = draft (not publi
+- chat-8crzyb7-1518 · last 2026-06-23T20:27:50.087Z · Done. Redrafted the right topic this time.  New task: https://app.clickup.com/t/86ey1knxc Edit: https://blog.subturtle.a
 - clickup-task-86ey10pxd · last 2026-06-23T19:35:21.075Z · Both images are now in the body and verified in the returned content. Status is still `draft`. Here's my report.  ---  N
 - clickup-task-86exqazkq · last 2026-06-23T19:05:10.836Z · Thanks Navid — got it. I'll keep this in ready-for-prod and close it once the next PR lands on prod.
+- clickup-task-86ey1knxc · last 2026-06-23T21:04:31.927Z · Draft is live as WP post 498 with hero set, inline image embedded, full body written. Reporting back to Navid now.  @Nav
