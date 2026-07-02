@@ -1,131 +1,111 @@
-# Subturtle Blog Content Workflow
+# blog-content workflow playbook
 
-## Goal
+One workflow for every blog post on blog.subturtle.app. Aso runs this end-to-end. Navid reviews and approves; he does not pick dates.
 
-SEO traffic to subturtle.app, ending in a free Chrome extension install. Every post is one step toward a paid user.
+## Task shape (what every blog task must contain)
 
-## The list
+Task description is short — NOT the draft:
+- Topic (one line)
+- Target keyword (long-tail, e.g. 'how to learn english from netflix')
+- Angle (one line — what makes this post different)
+- The 4-step checklist below
 
-ClickUp list 901809890244, called 'Subturtle Content Marketing'. Existing status flow:
+Every blog task MUST have this ClickUp checklist, checked off in order:
+- [ ] 1. Draft the blog in WordPress (create WP draft, fill Preview URL field)
+- [ ] 2. Generate the 2 images and place them in the post (both inline, top one as hero)
+- [ ] 3. Set up SEO in Yoast (see spec below)
+- [ ] 4. Schedule the blog
 
-- inactive: parked, ignore
-- todo: outline ready, draft not started
-- writing: I am drafting now
-- approval: draft ready, waiting for Navid's review
-- rejected: Navid sent it back, read comments and rewrite
-- for publish: approved, ready to publish on blog.subturtle.app
-- Closed: published
+Custom fields on every blog task: Preview URL, Blog URL.
 
-Workspace context: there are 3 existing posts on blog.subturtle.app (Hello World, How to Actually Learn English from Your Favorite Shows, 10 Common English Grammar Mistakes). Match their voice: friendly, practical, second person, motivational, no AI disclosure.
+## Step 1 — Draft in WordPress
 
-## Two custom fields on every task
+The DRAFT LIVES IN WORDPRESS, not in the task description. Do not paste the full draft into ClickUp.
 
-Every task in this list has two custom fields I MUST keep in sync with reality:
+1. Create the WP post as DRAFT via mcp__claude_ai_WordPress_com__ (site 246426138):
+   - Title, slug (SEO slug, matches the target keyword)
+   - Category set at creation time — pick the closest existing WP category, do NOT invent new ones. If the closest is not obvious, flag it in the approval comment so Navid can rename.
+   - Body: start with the scaffold (intro, 2-3 H2 sections, closing with real Chrome Web Store button + inline subturtle.app + dashboard.subturtle.app link where the AI Coach / flashcards / review is mentioned).
+2. Write the actual body in WordPress. Voice = IELTS 6-7 plain English, short sentences, common words, one idea per sentence, contractions OK. NO em-dashes anywhere — use commas, full stops, 'and', 'but' instead. Line-by-line voice check against blog post #65 'How to Actually Learn English from Your Favorite Shows'.
+3. Kill AI-isms: 'Welcome to the world of', 'secret weapon', 'is where X shines', 'we're here to give you'.
+4. CTA check (mandatory): the closing lines link to REAL destinations. Real Chrome Web Store button (https://chromewebstore.google.com/detail/gaplicnpaiidofkoeonioomcnadoofkf), inline subturtle.app link on first Subturtle mention, dashboard.subturtle.app link wherever AI Coach/flashcards/review is mentioned.
+5. Once the WP draft has real body content, fill the task's Preview URL field with the returned URL. Check off step 1.
 
-- **Preview URL** — the WordPress draft preview URL for this post. Filled the moment I push the draft to WordPress as a DRAFT. Updated if the slug changes mid-review. Stays as the truth source for what Navid reviews, until the post is live.
-- **Blog URL** — the live published URL on blog.subturtle.app. Empty while the post is still in draft/approval/rejected/for-publish. Filled the moment the WP MCP confirms publish. Never edited by hand.
+## Step 2 — Two images, both inline, top one as hero
 
-If a field is missing on a task (older tasks may not have them), set the value anyway through the ClickUp API; the workspace already has the fields configured.
+Every post has EXACTLY 2 images. Both go INSIDE the post body. The top one is also set as the WordPress featured image.
 
-## What each run does (cron)
+1. Image 1 (top / hero): sits right after the intro paragraph. This is the featured image too.
+2. Image 2 (mid-article): sits at a natural section break between two H2 sections.
+3. Generate them ONE AT A TIME via mcp__gemini__generate_image (default flash, use pro only if quality demands it). Getting them both in one call has blown timeouts twice.
+4. For each image: mcp__wordpress__upload_media with the local file path (do NOT use base64 via claude.ai WP MCP — it times out on hero-sized images). Get the media URL back.
+5. Embed both image URLs into the WordPress body as image blocks at their positions.
+6. Set the featured image with mcp__wordpress__set_featured_image using the top image's file_path and the post_id.
+7. Alt-text on both images uses the target keyword or a natural variation.
+8. Check off step 2.
 
-Read every task in the list. Then in this order, pick ONE:
+## Step 3 — SEO in Yoast
 
-1. If any task is in 'rejected' status, rewrite it first. Read the comments for the feedback. Update the description in place, push the update to the existing WordPress draft (do NOT create a new WP post), refresh the Preview URL field if the slug changed. Move to 'approval'. Comment Navid.
-2. Else if any task is in 'todo' status, pick the one with the earliest due date (use number prefix as tiebreaker). Move status to 'writing'. Draft the full post in the task description. Generate hero image via Gemini and attach. Run the humanize check (below). Push to WordPress as a DRAFT, upload the hero as the featured image on that draft, capture the preview URL, fill the task's Preview URL field. Move to 'approval'. Top-level comment to Navid with a one-line summary + the Preview URL.
-3. Else if todo + rejected are both empty AND fewer than 6 posts sit in 'approval'+'for publish' combined, create one fresh SEO-driven topic (new task in 'todo' with full outline in the description, follows the 4 pillars below). Do NOT write it the same run, that comes next run. Preview URL + Blog URL fields stay empty at this stage.
-4. Else, do nothing, queue is full. Log and exit.
+The blog runs Yoast SEO Premium. Every draft is graded through the Yoast sidebar in the WordPress block editor before it can leave 'approval'.
 
-Only ONE post per run. Never two.
+Mandatory fields and checks:
 
-## How to write a draft
+1. Open the WP draft in the block editor and open the Yoast sidebar.
+2. **Focus keyphrase**: set to the target long-tail keyword from the task. Do NOT set 'Add related keyphrase' — it's Premium and our traffic is too small to matter yet.
+3. **Search appearance** panel — fill all three by hand, do NOT use the AI Generate buttons:
+   - **SEO title**: 55-60 characters, keyword near the front, benefit-led.
+   - **Meta description**: 140-160 characters, keyword included, benefit-led. The green colour bar under the field must show green.
+   - **Slug**: matches the target keyword, no filler words.
+4. **Do NOT insert or use the Yoast AI Summarize block or the AI title/meta generate buttons.** They are off-limits until Navid clears the cost side.
+5. **Alt text on both images**: uses the target keyword or a natural variation. Yoast reads these back in step 7.
+6. **Links**: confirm one internal link (subturtle.app or dashboard.subturtle.app) and one external link to a real source (research paper, credible outlet) are in the body.
+7. **Premium SEO analysis** panel — score must be GREEN with 0 or at most 1 improvement. All of these individual checks MUST be green:
+   - Keyphrase in SEO title
+   - Keyphrase in introduction
+   - Keyphrase in subheading
+   - Keyphrase in slug
+   - Keyphrase in meta description
+   - Keyphrase in image alt attributes
+   - Meta description length
+   - Internal links
+   - Outbound links
+   If any of the above is orange or red, fix the copy and re-run until they go green.
+8. **Readability analysis** panel — score must be GREEN. Flesch reading ease target above 70 (visible in Insights). Fix long sentences, passive voice, subheading distribution as flagged.
+9. **Schema** panel — leave defaults (Web Page + Article). Only switch Article type to 'How-to' if the post is a real step-by-step guide.
+10. **Advanced** panel — leave everything default. No noindex, no nofollow, no canonical override.
+11. **Skip these sections entirely** (do not touch): Add related keyphrase, Track SEO performance / Wincher, Internal linking suggestions, Social media appearance, Cornerstone content, Yoast Content Blocks (unless the post genuinely has a FAQ or a step-by-step how-to — then FAQ/How-to blocks only).
+12. Only when Premium SEO analysis is green AND Readability is green, check off step 3.
 
-- Length: 1,000 to 1,400 words.
-- Voice: friendly, practical, second person ('you'), matches the 3 existing posts.
-- SEO: long-tail keyword in title and in the first 100 words. If the title is vague, rewrite for search.
-- Structure: short intro hook, 4 to 6 H2 sections, conclusion plus CTA.
-- Real examples only. No fabricated stats, no fake customer quotes, no AI disclosure.
-- CTA at the end: one strong call to install the Chrome extension (https://chromewebstore.google.com/detail/gaplicnpaiidofkoeonioomcnadoofkf) and try the dashboard (https://dashboard.subturtle.app/). Not a list, one clear ask.
+## Step 4 — Schedule the blog (I pick the date, Navid does not approve slots)
 
-## Push to WordPress as a DRAFT and fill Preview URL
+After Navid approves the draft, I pick the publish date on my own using this rule:
 
-After the draft passes the humanize check and the hero image is attached to the ClickUp task, push it to WordPress BEFORE moving the task to 'approval':
+- Next open weekday 09:00 Europe/Vilnius.
+- Minimum 2 days gap between consecutive posts.
+- Target 3 days between posts when the backlog allows.
+- Skip weekends by default.
+- Overflow rule: if 5 or more approved drafts are waiting in the queue, use Saturday 09:00 as an extra slot.
 
-1. Create the post on blog.subturtle.app via `mcp__claude_ai_WordPress_com__*` with status 'draft' (NOT 'publish'). Pass `user_confirmed: true`. Include title, body (clean blocks from the draft), and the SEO slug.
-2. Upload the hero image as the featured image via the local `mcp__wordpress__set_featured_image` tool with the file_path on disk, the post_id, and alt_text. Do NOT use the claude.ai `media.create` (base64 — times out).
-3. Capture the post_id and the preview URL the MCP returns. The preview URL is what Navid uses to review.
-4. Fill the task's **Preview URL** custom field with that URL.
-5. Move task to 'approval' and tag Navid with a one-line summary + the Preview URL in the top-level comment.
+Process:
+1. Check the WP scheduled queue to see the last scheduled post date.
+2. Pick the next slot per the rule above.
+3. Schedule the WP post to that date/time via mcp__claude_ai_WordPress_com__ (status: future, date: chosen slot).
+4. Fill the task's Blog URL field with the scheduled URL (the WP URL is already known at scheduling time).
+5. Post a comment on the task: 'Scheduled for <date> at 09:00 Vilnius. Reply here to override.'
+6. Check off step 4.
+7. Close the task.
 
-If the WP draft push fails, do NOT move the task to 'approval'. Leave it in 'writing' and comment the error on the task so we see it.
+Navid can override a slot with one reply. If he does, reschedule to the new slot and re-comment.
 
-## Humanize check (must pass before pushing to WordPress)
+## Iterate (comment on an existing task)
 
-1. No em-dashes ('—') anywhere in the draft. Use a comma, a full stop, or 'and'/'but'.
-2. Plain English around IELTS 6 to 7. Common words, short sentences, one idea per sentence.
-3. Kill AI-isms. Banned phrases include: 'Welcome to the world of', 'secret weapon', 'is where X shines', 'we are here to give you', 'innovative', 'future-oriented', 'in today fast-paced world', 'elevate your', 'harness the power of', 'unlock', 'game-changer'.
-4. Use contractions ('don't', 'can't', 'it's'). Formal English reads stiff and bot-like.
-5. First-person and second-person are fine: one human talking to one learner, not a brand voice.
-6. Voice-match check: read line-by-line against the published reference post 'How to Actually Learn English from Your Favorite Shows' on blog.subturtle.app. If a sentence does not sound like that post, rewrite it.
-7. Final pass: read the draft out loud (or mentally). If it reads like a brochure, fix it.
+When someone comments on a task in this list and wakes me: do NOT create a new WP post. Find the existing WP draft by slug (Preview URL on the task) and UPDATE it in place so the Preview URL stays stable. If the slug must change, update the field and note it in the reply comment.
 
-## Hero and inline images
+## Never do
 
-- Generate the hero via mcp__gemini__generate_image (flash by default; pro only for flagship posts). Prompt a clean, friendly, modern, on-brand visual. Do not generate fake screenshots.
-- For posts over 1,200 words with 2 or more natural section breaks, add up to 2 inline images the same way. One per major section. Maximum 3 images total per post.
-- Generate and attach images ONE AT A TIME, not in a batch. Batching has timed out and lost work twice before.
-- Do NOT embed image URLs into the markdown draft. The hero image stays attached to the ClickUp task and is set as the post's featured image at draft-push time (via `mcp__wordpress__set_featured_image`).
-- Write a brief alt-text in a task comment for each attached image, and use it as the image alt-text when you push to WordPress.
-
-## 4 content pillars (for net-new topic generation)
-
-1. Learn-X-with-Y lists: 'Learn English with Friends', '10 Netflix shows to improve your German'.
-2. Subturtle vs alternatives: comparisons, when to use which.
-3. Practical tips with screenshots: single-feature deep dives.
-4. The method: why subtitle-based learning works.
-
-Skip topics drafted in this list or already on the blog in the last 30 days.
-
-## When a comment on a task wakes me to iterate
-
-- Read the full thread, the current draft, the image, the current Preview URL on the task.
-- Find the existing WordPress draft for this task. Prefer looking it up by slug (or by parsing the post_id from the Preview URL). NEVER create a new WP post on iterate — always UPDATE the existing draft in place. This keeps the Preview URL stable across rounds.
-- Rewrite as asked. Keep length, voice, and humanize rules.
-- If feedback is on the image, regenerate with the new direction, re-upload via `mcp__wordpress__set_featured_image` against the same post_id.
-- Re-run the humanize check on any rewrites before saving.
-- Update the ClickUp task description in place.
-- Push the changes to the existing WordPress draft (title, body, slug if the title changed). Status stays 'draft'.
-- If the slug changed and the preview URL is therefore different, update the Preview URL field on the task and call it out in the iterate reply.
-- If status was 'rejected' or 'writing', move to 'approval'. If already 'approval', leave it.
-- If Navid approves it or asks me to publish/apply (e.g. 'publish', 'apply the image and category', 'ship it'), publish it. See 'Publishing' below.
-- Reply in-thread to the comment confirming what changed (and link the Preview URL if it changed).
-
-## Publishing (via the WordPress.com MCP)
-
-The blog at blog.subturtle.app runs on WordPress.com (site blog_id 246426138). Publish through the WordPress.com MCP (`mcp__claude_ai_WordPress_com__*`). NEVER use the browser for WordPress, the MCP is the supported path, needs no one's laptop, and won't time out.
-
-**WP MCP mechanics (do this right or you will time out):**
-
-- **Confirmation:** every create/update/delete on the WP MCP requires `user_confirmed: true` in `params`. Navid has pre-authorised blog publishing in the contract, so pass `user_confirmed: true` yourself, there is no interactive human to confirm in a wake.
-- **Featured image upload:** use the local **`mcp__wordpress__set_featured_image`** tool, pass the hero's `file_path` (e.g. the Gemini hero in `data/images/`), the `post_id`, and `alt_text`. It uploads the image binary straight to WordPress and sets it as the featured image. Do NOT shrink it, do NOT base64-encode it, and do NOT use the claude.ai `media.create` tool: that one only takes inline base64, which is ~260K tokens for a normal hero and blows the time/token budget every time. For an inline (non-featured) image, `mcp__wordpress__upload_media` returns a media id + URL the same way.
-
-When a post is approved (status 'for publish', or Navid says publish/apply/ship):
-
-1. The post already exists in WordPress as a draft (we pushed it on draft creation and kept it in sync on iterate). UPDATE it via the MCP: confirm title, body, slug, and that the featured image is still set. (`user_confirmed: true`.)
-2. Set the category Navid named (or the closest existing one; do not invent new categories without asking).
-3. Set each inline image's alt-text from the alt-text comments on the task.
-4. Publish (`posts.update` status 'publish', `user_confirmed: true`).
-5. Fill the task's **Blog URL** custom field with the live URL the MCP returned.
-6. Move the ClickUp task to 'Closed' and reply in-thread with the live URL.
-
-If any single step is taking long, post a short progress comment on the task before continuing, so you never go silent.
-
-## Hard rules
-
-- Publish only through the WordPress.com MCP (site blog_id 246426138), never the browser.
-- Only claim a post is live after the MCP has actually published it, and always include the live URL it returned + the Blog URL field filled.
-- Preview URL field MUST be filled before a task moves to 'approval'. Blog URL field MUST be filled the moment a post goes live.
-- No AI disclosure in post body.
-- No fabricated metrics, customer quotes, or partnerships.
-- No pricing claims that do not match the live dashboard.
-- One post per run, maximum.
+- Never publish a post live. Only schedule.
+- Never invent new WordPress categories.
+- Never paste the full draft into the ClickUp task description — the draft lives in WordPress.
+- Never use em-dashes in body copy.
+- Never skip the CTA check or the 2-image rule.
+- Never use Yoast AI Summarize, AI Generate SEO title, or AI Generate meta description.

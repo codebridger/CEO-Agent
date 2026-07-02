@@ -1,295 +1,263 @@
 # Thread chat-8crzyb7-1458
 
-## Story so far (compacted 2026-06-24T07:02:58.415Z)
+## Story so far (compacted 2026-07-02T17:27:19.756Z)
 
-## Story so far (compacted 2026-06-24)
+## Story so far (compacted 2026-07-02)
 
-**Who:** Navid Shad (founder, just finished his MSc in AI Engineering at Vilnius Tech — NOT a PhD) and Aso Dara (CEO agent). ClickUp DM `chat-8crzyb7-1458`.
+**Who:** Navid Shad (founder, just finished MSc AI Engineering) and Aso Dara (CEO agent). DM thread `chat-8crzyb7-1458`.
 
-**Live background:**
-- Browser/Playwright unblocked. Reddit account u/subtitles_and_coffee live but quiet for 2–3 weeks.
+**Background carried in:**
+- Browser/Playwright unblocked. Reddit u/subtitles_and_coffee live but quiet.
 - Activation bug fixed in prod. LinkedIn thesis carousel + Reddit-comparison post shipped. WP categories/tags fixed.
-- Blog-ideas pitch job runs every 3 days at 9am Vilnius, blog-only.
-- Mixpanel main-prod (2599235) OAuth and Stripe MCP OAuth re-auth still pending.
-- LinkedIn About/title rewrite was in progress earlier; Navid had not locked the final title or About text.
+- Blog-ideas pitch job runs every 3 days at 09:00 Vilnius.
+- Stripe MCP OAuth still pending (Navid said skip for now).
+- LinkedIn About/title rewrite unfinished.
+- 4 blog posts live but their tasks stuck in "for publish."
 
-**This compaction window:**
+**This window's decisions:**
 
-1. **Wake routing gap.** Navid replied to a blog idea in the Subturtle Content Marketing channel and Aso never got the event. Aso explained: chat messages there are not webhook events, and the poller only watches a few channels. Fix is a code PR against CEO-Agent (option A: generic @-mention scanner across all channels). PR not yet opened — Navid didn't say go.
+1. **PM check moved to long-job path.** Root cause of PM failures was the 5-min default agent timeout. Navid shipped PR #20 which added: `long: true` flag on scheduled jobs → 20-min budget, browser access (Navid-DM-gated), checkpoint-and-continue up to 20 chunks, live footprints per checkpoint, stop after 3 failed resumes. Aso flipped `job-pm-check-mqqf85q7` to `long: true`. First long PM run set for 16:00 Vilnius. Aso confirmed PM boundary: reads 3 lists (Subturtle.app, LinkedIn Content, Content Marketing), comments on stuck tasks, recognizes wins in matching public channels, DMs Navid a summary; does not create tasks silently, does not touch Stripe/Mixpanel (heartbeat's job).
 
-2. **Blog-content workflow updated.** Navid pointed out the playbook was thin. Aso then re-read it and corrected itself (image rules were there). Together they added 7 humanize rules (no em-dashes, IELTS 6-7 plain English, kill AI-isms, contractions, voice-match vs post #65, read out loud) plus image tightening (inline images for 1,200+ word posts, one-at-a-time attach, alt-text, no embedded URLs). Workflow `wf-blog-content-mqbiekea` updated. Humanize rule also saved to memory for any user-facing copy.
+2. **Blog workflow updated for Preview URL / Blog URL fields.** New rules locked into `wf-blog-content-mqbiekea`:
+   - DRAFT → push to WP as draft via MCP, set featured image, fill "Preview URL" custom field, move to approval.
+   - ITERATE → find existing draft by slug and UPDATE in place, keep Preview URL stable.
+   - PUBLISH → fill "Blog URL" with live URL, reply in-thread, close task.
 
-3. **PM check was not running.** Navid asked why. Aso admitted no cron existed. Navid picked 2x/day. Job `job-pm-check-mqqf85q7` created with cron `0 10,16 * * *` Europe/Vilnius.
+3. **Duplicate workflow cleaned up.** Aso accidentally created `wf-blog-content-mqrq7h00` instead of updating the existing one; removed it. Single source of truth: `wf-blog-content-mqbiekea`.
 
-4. **PM scope expanded.** Navid then said the PM should cover all task types — engineering AND content. Gave three lists (Subturtle.app, Subturtle LinkedIn Content, Subturtle Content Marketing) and two channels (Subturtle.app, Subturtle Content Marketing). Aso confirmed the new scope: sweep all three lists, comment on stuck/in-review tasks, recognize wins in the matching channel, draft next-batch proposals when a list is idle (no silent task creation), end each run with a one-line DM summary.
+4. **Current inventory:** 1 blog workflow (`wf-blog-content-mqbiekea`), 1 LinkedIn workflow (`wf-linkedin-content-mqb1jzix`, Sat 09:00), 2 cron jobs (`job-blog-ideas-pitch-mql2rlgd` every 3 days 09:00, `job-pm-check-mqqf85q7` 10:00 + 16:00 daily, now long-job).
 
-**Open threads:**
-- Aso still needs to actually update the PM job with the expanded scope (lists + channels). Last message confirmed the plan but the schedule update action has not landed yet in this thread.
-- Wake-routing PR against CEO-Agent (option A: generic @-mention scanner) — Navid has not said go.
-- Idea 1 (Pause-Rewind Rule) blog task — Navid said go in the other thread but Aso asked for a single "go" in this DM before creating the task; still waiting.
-- LinkedIn title + About — Navid has not locked the final version.
-- Memory note: "heads-down on thesis until Jun 17" is now stale (date passed); engineering pace may pick up and PM cadence may need tightening.
+5. **Release stats pulled (2026-07-02).** Navid asked for stats on last release; Stripe skipped by his call, Mixpanel came back online. Findings on v1.15.1 (2026-06-17, small bundle-dropdown fix):
+   - Word-detail unique users 31 → 28, volume 93 → 53 events, logins 15 → 11, phrase-saved near zero both weeks, checkout-opened 0 both weeks. Translation errors 1 → 3 (noise at that scale).
+   - `leitner_review_submitted` fired 9 times post-release, 0 before — unclear if real user or test.
+   - Release did no visible harm and moved no needle.
+   - Honest gap Aso flagged: standing memory listed main-prod as project 2599235 but Aso only has access to "Subturtle Legacy" 2795069 (which has the real event surface). Asked Navid whether 2599235 is different or if memory should be updated. Bottom-line message: too few users to read any release signal; activation funnel (view → save → practice → checkout) collapses immediately — that's the real problem, not the release.
+
+**Latest ask (open, not started):** Navid wants the WordPress article flow updated so every article requires:
+- 2 images, both inside the main text, one also set as the hero.
+- A category.
+- Proper SEO.
+
+Awaiting Aso's plan and workflow update.
+
+**Other open threads:**
+- Long-job PR for PM — merged as PR #20, PM flipped, waiting on first 16:00 run.
+- Wake-routing PR against CEO-Agent (generic @-mention scanner) — still not green-lit.
+- Idea 1 (Pause-Rewind Rule) blog task — waiting on "go."
+- LinkedIn title + About — not locked.
+- 8 LinkedIn ideas overdue from thesis weeks — awaiting Navid's pick.
+- 86eu7hzzt (visual asset pipeline) — archive-or-revive pending.
+- 86eu70peq Grammar blog thread with 5 old fix commitments — pending direction.
+- Post the 3 blog-launch wins in Content Marketing channel — waiting on "post the wins."
+- Mixpanel project ID discrepancy (2599235 vs 2795069) — waiting on Navid.
 
 ## Recent
-### Aso Dara (action) · 2026-06-23T09:44:34.003Z
+### Aso Dara · 2026-07-02T14:32:09.512Z
 
-schedule: updated job-pm-check-mqqf85q7 — "pm-check" — cron "0 10,16 * * *" Europe/Vilnius
+Locked in. Updating the blog-content playbook now with three tightened rules:
 
-### Navid Shad (founder) · 2026-06-23T09:49:27.963Z
+1. Two images required per post, both embedded INSIDE the body text (one at the top after the intro, one mid-article at a natural section break). The top one is ALSO set as the WordPress featured image (hero). No more optional inline images, no more hero-only posts.
 
-The new plan is 2 times per day not each 5 hours
-looks good, set it up
+2. SEO checklist is now mandatory before draft push: long-tail keyword in title + first 100 words + at least one H2, meta description 140 to 160 chars, SEO slug matches the keyword, alt-text on both images uses the keyword or a variation, one internal link (to subturtle.app or dashboard.subturtle.app) and one external link to a real source.
 
-### Aso Dara · 2026-06-23T09:49:28.529Z
+3. Category MUST be set on the WordPress draft at creation time, not at publish. If no matching category exists, I pick the closest existing one and flag it in the approval comment so you can rename if you want. I will not invent new categories on my own.
 
-Locked in. PM check is set: 2x/day at 10:00 and 16:00 Europe/Vilnius, covering all 3 lists (Subturtle.app, Subturtle LinkedIn Content, Subturtle Content Marketing) and posting wins/proposals into the right public channel (engineering → Subturtle.app channel, content → Content Marketing channel).
+Mechanics on the images (so nothing times out): generate them one at a time via Gemini, upload each via mcp__wordpress__upload_media to get a media id + URL, embed both URLs into the post body as image blocks, then call mcp__wordpress__set_featured_image with the top image file to set the hero. All at draft-push time, before the task moves to approval.
 
-First run lands today at 16:00 Vilnius. I'll drop a one-line summary in this DM after each run so you can see what I did without opening every task.
+Rolling the update out now.
 
-If the cadence feels too light once engineering picks up, ping me and I'll tighten it.
+### Aso Dara (action) · 2026-07-02T14:32:09.518Z
 
-### Aso Dara (action) · 2026-06-23T09:49:28.532Z
+workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron) · list 901809890244
 
-schedule: updated job-pm-check-mqqf85q7 — "pm-check" — cron "0 10,16 * * *" Europe/Vilnius
+### Navid Shad (founder) · 2026-07-02T17:16:55.330Z
 
-### Navid Shad (founder) · 2026-06-23T15:06:15.735Z
+more update over the wordpress workflow:
+each task should have a check list check specifically should be define in the task and checks step by step:
+1. draft the blog in the wordpress not in the task description
+2. generate the images and use theme
+3. setup the seo
+4. schedule the blog
 
-[@Aso Dara](#user_mention#113552267) any update
+the seo should be done in an specific way I will provide more data soon
 
-### Aso Dara · 2026-06-23T15:06:16.270Z
+### Aso Dara · 2026-07-02T17:16:55.869Z
 
-No update yet, Navid. The first PM run is at 16:00 Europe/Vilnius today — that is roughly 6 hours from now. Nothing has run since we set it up.
+Got it. Rolling three changes into the playbook now:
 
-If you want me to do one PM sweep manually right now (so you see what the output looks like before the scheduled one), say 'run it now' and I will sweep the 3 lists, comment where stuck, and post the summary back here.
+1. Draft lives in WordPress from the start, not in the task description. First step of every task is: create the WP DRAFT (title + slug + category + empty body scaffold), fill the Preview URL field, then write the actual body directly in WordPress. Task description keeps only: topic, target keyword, one-line angle, and the 4-step checklist. No more full draft text sitting in the task description.
 
-Or if 'any update' meant something else — a specific task or thread — point me at it and I will check.
+2. Every task gets a real ClickUp checklist with these 4 steps, checked off in order:
+   [ ] 1. Draft the blog in WordPress (create WP draft, fill Preview URL)
+   [ ] 2. Generate the 2 images and place them in the post (both inline, top one as hero)
+   [ ] 3. Set up SEO (details pending from you)
+   [ ] 4. Schedule the blog
 
-### Navid Shad (founder) · 2026-06-23T15:11:23.433Z
+3. Final step is SCHEDULE, not publish. After your approval, I set the WP post to a future publish date (you tell me the slot, or I pick the next open weekday morning at 09:00 Vilnius), the WP MCP schedules it, I fill the Blog URL field with the scheduled URL, and close the task. Nothing goes live before its scheduled time.
 
-The time zoon is wrong 😑
-It’s 18:07 in Vilnious
+One question: for the schedule step, do you want me to pick the slot on my own (spacing posts every 2 to 3 days) or do you want to approve each date on the task before I schedule?
 
-### Aso Dara (run failed) · 2026-06-23T15:11:23.434Z
+SEO section left as-is for now with a big TODO placeholder. Send me the SEO spec when ready and I will lock it in.
 
-claude exited 1: {"type":"result","subtype":"success","is_error":true,"api_error_status":529,"duration_ms":201857,"duration_api_ms":1186,"num_turns":1,"result":"API Error: 529 Overloaded. This is a server-side issue, usually temporary — try again in a moment. If it persists, check https://status.claude.com.","stop_reason":"stop_sequence","session_id":"32a02acc-bbed-4ac0-b676-fdabfc63e9bd","total_cost_usd":0.009562000000000001,"usage":{"input_tokens":0,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":0,"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":0,"ephemeral_5m_input_tokens":0},"inference_geo":"","iterations":[],"speed":"standard"},"modelUsage":{"claude-haiku-4-5-20251001":{"inputTokens":9492,"outputTokens":14,"cacheReadInputTokens":0,"cacheCreationInputTokens":0,"webSearchRequests":0,"costUSD":0.009562000000000001,"contextWindow":200000,"maxOutputTokens":32000}},"permission_denials":[],"terminal_reason":"completed","fast_mode_state":"off","uuid":"b8fe7da9-0593-4948-bfc9-39d58655d1b4"}
+### Aso Dara (action) · 2026-07-02T17:16:55.872Z
 
-### Navid Shad (founder) · 2026-06-23T15:14:28.768Z
+workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron) · list 901809890244
 
-[@Aso Dara](#user_mention#113552267) check my previous message
+### Navid Shad (founder) · 2026-07-02T17:19:02.343Z
 
-### Aso Dara · 2026-06-23T15:14:29.281Z
+yes you have to figure out the date based on the space mechanism you have, I dont care about it
 
-You're right, I miscalculated. It's past 16:00 Vilnius now, so the afternoon run should have already fired about 2 hours ago. I treated my own timestamp as Vilnius time when it was UTC. Sorry.
+### Aso Dara · 2026-07-02T17:19:02.896Z
 
-Two possibilities for why you saw nothing:
-1. The cron did fire but the run failed or did not post a summary back here.
-2. The cron timezone is not being honored (interpreted as UTC instead of Europe/Vilnius). If that is the case, the 10:00 run would have fired at 13:00 Vilnius and 16:00 would fire at 19:00 Vilnius.
+Understood. Spacing rule locked in: I schedule posts on my own using the current backlog rhythm, no per-task date approval.
 
-I cannot tell which from this run.
+Rule I will follow:
+- Next open weekday slot at 09:00 Europe/Vilnius.
+- Minimum 2 days between posts, target 3 days when the backlog allows.
+- Skip weekends unless the queue is deep (5+ approved drafts waiting), then use Saturday 09:00 as overflow.
+- I log the picked date in the task comment when I schedule, so you can override with one reply if the slot is wrong.
 
-Do you want me to run a PM sweep manually right now across all 3 lists so you see the output today? Say 'run it now' and I will take it as a long job and post the summary back here. Separately, I will keep an eye on the next scheduled fires (10:00 tomorrow Vilnius) and if nothing lands I will flag the scheduler bug for a code fix.
+Playbook updated with this.
 
-### Navid Shad (founder) · 2026-06-23T15:22:34.451Z
+### Aso Dara (action) · 2026-07-02T17:19:02.904Z
 
-Yes run it manually, and make sure it gets schedule for next runs [@Aso Dara](#user_mention#113552267)
+remember: noted "- (2026-07-02, via Navid Shad (founder)) (2026-07-02) Blog scheduling rule: Aso picks the post date on her own, Navid does not want to approve slots. Algorithm: next open weekday 09:00 Europe/Vilnius, min 2 days between posts, target 3 days when backlog allows, skip weekends unless 5+ approved drafts are queued (then Saturday 09:00 overflow). Log the chosen date in the task comment when scheduling so Navid can override with one reply."
 
-### Aso Dara (on it) · 2026-06-23T15:22:35.051Z
+### Aso Dara (action) · 2026-07-02T17:19:02.905Z
 
-On it. Running the PM sweep across all 3 lists now and I'll verify the cron timezone for the next runs. Summary back here when done.
+workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron) · list 901809890244
 
-### Aso Dara · 2026-06-23T15:30:25.093Z
+### Navid Shad (founder) · 2026-07-02T17:19:27.348Z
 
-Sweep done. Headlines:
+[@Aso Dara](#user_mention#113552267) yes you have to figure out the date based on the space mechanism you have, I dont care about it
 
-**Cron tz is not the bug.** schedules.json for job-pm-check-mqqf85q7 shows it last ran 13:00 UTC today, lastRunMinute "2026-06-23 16:00" Vilnius. The 16:00 slot DID fire. The code honors your tz correctly via Intl.DateTimeFormat. The real issue is the scheduled run produced no visible message in this DM, a separate bug in the PM-check job's output, not the scheduler. I am not touching the cron, 10:00 Vilnius tomorrow should fire on its own. If it also goes silent, I will open a PR for the output bug.
+### Aso Dara · 2026-07-02T17:19:27.875Z
 
-**Engineering (Subturtle.app):** quiet. Only 86exqazkq "Show versions" in ready-for-prod since 06-19, I already pinged you 2 days ago, no answer. Nothing to recognise.
+All set, Navid. Playbook is live with the new rules:
 
-**Content Marketing:** the headline. 4 blog posts are LIVE on blog.subturtle.app but their tasks are still in "for publish". I commented and tagged you on 3:
-- 86eu70pev Pronunciation, live 06-16
-- 86eu70pf4 Intermediate Plateau, live 06-19
-- 86eu70pfb Passive Learning, live TODAY
+1. Draft lives in WordPress from step 1, not in the task description.
+2. Every task gets a 4-step ClickUp checklist (draft in WP, generate images + place them, SEO, schedule).
+3. Two images required, both inline in the body, top one also set as hero.
+4. Category set at draft time.
+5. Final step is SCHEDULE at a date I pick using the spacing rule (next open weekday 09:00 Vilnius, min 2 days apart, target 3, weekends only if 5+ drafts queued). Date logged in the task comment so you can override.
 
-I skipped 86eu70peq Grammar (live since 2025-07). That thread is full of 5 post fixes I committed to on 06-13 and never closed. Say the word and I will revisit them.
+One thing still open: the SEO spec. Send it whenever ready and I will replace the placeholder in the playbook with the exact steps you want.
 
-Also commented on 86eu7hzzt "Investigate visual asset pipeline", stuck in approval since July 2025. The new Gemini + WP media path probably makes the old Canva test dead. Asked: archive or revive.
+### Navid Shad (founder) · 2026-07-02T17:21:41.543Z
 
-**LinkedIn:** 8 ideas all in "idea" status, all overdue from your thesis weeks. Thesis is done now, want to revive? Say "pick one or two" and I will draft a proposal here first, no silent creation.
+regarding the SEO, we should use Yoast plugin
+please open this wp link on browser and check all these sections and figure out which sections should we use give me a report here [@Aso Dara](#user_mention#113552267)
 
-**Channel recognition for the 3 shipped posts:** I cannot post to the Subturtle Content Marketing channel from this long-job DM run, the send-chat tool is blocked here. Ping me "post the wins" and I will take it as a long job to drop a short note in the channel naming Somi for the drafts and the dates.
+link: [https://blog.subturtle.app/wp-admin/post.php?post=507&action=edit](https://blog.subturtle.app/wp-admin/post.php?post=507&action=edit)
 
-### Navid Shad (founder) · 2026-06-24T07:02:35.703Z
+### Aso Dara (on it) · 2026-07-02T17:21:42.116Z
 
-let's improve the blog content generation, I want you to add these to the workflow:
-1. Each task for a blog have "Blog Url" and "Preview URL" field now, when you create a draft fill the preview url field and use it for next iterations. when you publish or any time the publish link is ready just fill that one also.
+On it. Opening the Yoast panel on that post now and will send you back a report on which sections we should use.
 
-### Aso Dara · 2026-06-24T07:02:36.237Z
+### Aso Dara · 2026-07-02T17:26:47.484Z
 
-Good change. Two things to lock in:
+I have everything I need — 13 sections catalogued. Writing the report now.
 
-1. On DRAFT — after the draft is saved on the ClickUp task and passes the humanize check, I also push it to WordPress as a DRAFT post via the MCP (not published), upload the hero as the featured image, and fill the task's 'Preview URL' field with the URL the MCP returns. That URL is what you review against, the real blog look. Move task to 'approval' only after that field is filled.
+Done. Yoast SEO **Premium** is installed on the blog (confirmed by the "Yoast SEO Premium" label in the top bar and sidebar). I opened post 507 in the editor and clicked through every section in the Yoast sidebar. Screenshots taken for each panel. Here is the full picture.
 
-2. On ITERATE — I do NOT create a new WP post. I find the existing draft by slug and UPDATE it in place, so the Preview URL stays stable across feedback rounds. If the title (and therefore slug) changes mid-review, I update the Preview URL field with the new one and note it in the iterate reply.
+**Yoast version:** Premium (paid version). This is important because 4 of the 13 sections are Premium-only.
 
-3. On PUBLISH — after the WP MCP confirms publish, I fill the 'Blog URL' field on the task with the live URL it returned, in addition to replying in-thread with the URL. Then move task to Closed.
+**All 13 sections I found, one line each:**
 
-Updating the playbook now. Takes effect on the next draft + on the next iterate comment.
+1. **Focus keyphrase** — the main keyword the post should rank for. Also lets you add keyphrase synonyms.
+2. **Premium SEO analysis** — runs 19 checks and gives a green/orange score. On post 507 it shows 18 good, 1 improvement (meta description too long).
+3. **Readability analysis** — 7 checks: passive voice, consecutive sentences, subheading distribution, paragraph length, sentence length, transition words, word complexity.
+4. **Add related keyphrase** (Premium) — track a second keyword you also want to rank for.
+5. **Track SEO performance** — opens a Wincher popup to track Google ranking position over time. Not connected, and Wincher is a paid extra.
+6. **Internal linking suggestions** (Premium) — Yoast scans the site for related posts to link to. Currently says "no relevant articles found" because the blog is small.
+7. **Search appearance** — the Google preview. SEO title, Slug, Meta description, with a colour bar showing when the length is right. Has AI "Generate SEO title" and "Generate meta description" buttons.
+8. **Social media appearance** — Facebook/X/LinkedIn/Slack card preview. Override social image, social title, social description.
+9. **Schema** — two dropdowns: Page type (Web Page by default) and Article type (Article by default). Controls the schema.org JSON-LD Google reads.
+10. **Content blocks (New)** — insert Yoast blocks into the body: AI Summarize, Estimated reading time, Related links, Table of contents, Breadcrumbs, FAQ, How-to.
+11. **Advanced** — noindex toggle, nofollow toggle, Meta robots advanced, Breadcrumbs Title, Canonical URL.
+12. **Cornerstone content** — mark this post as a pillar/cornerstone piece.
+13. **Insights** — prominent words list, Flesch reading ease (85.7 here = easy), reading time (6 min), word count (1183).
 
-### Aso Dara (action) · 2026-06-24T07:02:36.241Z
+**What we should use, and how it maps to our playbook:**
 
-workflow: created wf-blog-content-mqrq7h00 — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron) · list 901809890244
+Every rule in our playbook has a Yoast field that enforces it. Here is the map:
 
-### Navid Shad (founder) · 2026-06-24T07:05:45.768Z
+- **Focus keyphrase in title, first 100 words, one H2** → set it in **Focus keyphrase**, then let **Premium SEO analysis** check "Keyphrase in SEO title", "Keyphrase in introduction", "Keyphrase in subheading". All three must be green.
+- **Meta description 140 to 160 chars** → **Search appearance > Meta description**. The colour bar under the field turns green in the right range. "Meta description length" check confirms it.
+- **SEO slug matches the keyword** → **Search appearance > Slug** field. "Keyphrase in slug" check confirms it.
+- **Alt text on both images uses the keyword** → **Premium SEO analysis > Keyphrase in image alt attributes** check reads the image blocks and grades them.
+- **One internal + one external link** → **Premium SEO analysis > Internal links** and **Outbound links** checks. Both must be green.
+- **Category set at draft** → this is NOT a Yoast field. It is a WordPress core taxonomy in the Post sidebar. Still required, just outside Yoast.
+- **Voice/readability at IELTS 6-7 level** → **Readability analysis** and **Insights > Flesch score**. Flesch above 70 is a good target for our audience.
 
-again the PM is not runing. there is a problem with it, have a check and give me a report
+So the working rule is simple: before pushing a draft to approval, the **Premium SEO analysis** score must be green with 0 or 1 improvement, and **Readability** must be green. The **Search appearance** panel is where I fill in title, slug, and meta description. Everything else is either a nice-to-have or the Yoast defaults are fine.
 
-### Aso Dara · 2026-06-24T07:05:46.279Z
+**Sections we should skip:**
 
-Found it. Diagnosis:
+- **Add related keyphrase** — nice for tracking a second keyword, but our traffic is too small for a second keyword to matter. Skip until we have real search volume.
+- **Track SEO performance (Wincher)** — needs a paid Wincher account, and our rankings are too early to track. Skip.
+- **Internal linking suggestions** — Yoast returns nothing on small sites like ours. Revisit after 30+ posts.
+- **Social media appearance** — we do not auto-share to Facebook or X. LinkedIn posts are hand-written. So the card overrides do nothing for us. Skip.
+- **Content blocks** — only use case-by-case. FAQ block if the post actually has a Q&A section, How-to block if it is a real step guide. Do not force them.
+- **Cornerstone content** — only turn this on for true pillar posts. 95% of our posts are not pillars. Leave off by default.
+- **Schema** — the defaults (Web Page + Article) are correct for our posts. Only change if a post is clearly a How-to or a Recipe. Leave defaults for now.
+- **Advanced** — leave everything as default. Only touch if we need to noindex a draft or set a canonical URL for a syndicated post.
 
-**The cron IS firing on time.** Yesterday 16:00 Vilnius fired at 13:00 UTC. Today's 10:00 fired at 07:00 UTC. Scheduler tz is fine.
+**Unclear from the UI:**
 
-**The job is too big for the 5-minute agent timeout.** All scheduled jobs share one default: 300000ms per run (src/agent/runner.ts:60). I packed too much into the PM task: sweep 3 lists, comment on stuck items, recognize wins in 2 channels, draft proposals, plus a DM summary. It doesn't fit.
+- Whether the "AI Summarize", "Generate SEO title", and "Generate meta description" buttons use OpenAI credits or something we pay for per call. I did not click them to avoid a spend. Worth checking before the workflow leans on them.
 
-**Evidence:**
-- Yesterday 16:00 run: log line '[schedule] ran job-pm-check-mqqf85q7 (pm-check): FAILED timeout after 300000ms' at 13:05:56 UTC.
-- Today's 10:00 run: started 07:00:57 UTC, still running right now as PID 180590, will hit the same 5-min wall in about 60 seconds. rhythm.lock file confirms it ('schedule:job-pm-check-mqqf85q7 ... pid 172622').
+That is the full Yoast picture. If you send the SEO spec you mentioned, I will fold it into the playbook checklist step 3 with the exact Yoast fields listed above so I can run it the same way on every post.
 
-So: cron is right, scope is wrong. Fix options:
+### Navid Shad (founder) · 2026-07-02T17:34:10.845Z
 
-**A) Slim the job, no code change.** Drop the per-task commenting and channel posts from the scheduled run, keep it as 'sweep + one DM line: who is stuck, what to do, what to recognize, what to propose.' Then any actual comments/posts happen when you ask me 'go run those'. Fits in 5 min, lands today.
+[@Aso Dara](#user_mention#113552267) good overview, yes we should not use that ai summary, so can you convert these into instruction for the wp workflow SEO part please
 
-**B) Code PR.** Raise the scheduled-job timeout to ~15 min, or refactor scheduled jobs onto the long-job pattern that chat replies already use. Cleaner, but it's a PR + review + merge + restart.
+### Aso Dara · 2026-07-02T17:34:11.380Z
 
-My pick: A now, B as a follow-up. Want me to update the PM task with the slimmer scope? Say 'do A' and I'll update the cron task text. If you want the code PR (B), say 'open the PR' and I'll start it.
+Locked in. Rolling the SEO section into the playbook now with the exact Yoast fields, and NO AI-generate buttons anywhere.
 
-### Aso Dara (action) · 2026-06-24T07:05:46.282Z
+Here is what step 3 becomes on every blog task:
 
-remember: noted "- (2026-06-24, via Navid Shad (founder)) (2026-06-24) Scheduled cron jobs (rhythms/schedules.ts → runAgent) use the DEFAULT 5-min (300_000ms) timeout from src/agent/runner.ts:60. Heavy tasks like a 3-list PM sweep + per-task comments + channel recognition + DM summary do NOT fit in 5 min and silently time out (lock file gets cleared, schedules.json shows lastRunAt but no [schedule] ran log line, no message lands anywhere). Fix pattern: keep scheduled jobs short (one report-style DM, no per-task posting) OR refactor scheduled runs onto the long-job path. PR option = raise the timeout in runScheduledJob's runAgent call."
+1. Open the WP draft in the block editor and open the Yoast sidebar.
+2. Fill Focus keyphrase with the target long-tail keyword from the task. Leave 'Add related keyphrase' empty (Premium, low traffic, not worth it yet).
+3. In Search appearance: write the SEO title by hand (55-60 chars, keyword near the front), write the meta description by hand (140-160 chars, keyword included, benefit-led), set the slug to match the keyword with no filler words. Do NOT click the AI Generate title or AI Generate meta description buttons.
+4. Do NOT use AI Summarize. Do NOT insert the AI Summary block.
+5. Alt text on both images uses the target keyword or a natural variation (already covered in step 2, Yoast will read it back).
+6. Confirm one internal link (subturtle.app or dashboard.subturtle.app) and one external link to a real source are in the body.
+7. Read the Premium SEO analysis panel. Score must be green with 0 or at most 1 improvement. All these checks must be green: Keyphrase in SEO title, Keyphrase in introduction, Keyphrase in subheading, Keyphrase in slug, Keyphrase in meta description, Keyphrase in image alt attributes, Meta description length, Internal links, Outbound links.
+8. Read the Readability analysis panel. Score must be green.
+9. Leave Schema defaults (Web Page + Article) unless the post is a real How-to.
+10. Leave Advanced defaults. No noindex, no canonical override.
+11. Skip: Add related keyphrase, Wincher tracking, Internal linking suggestions, Social media appearance, Cornerstone content, all Yoast Content Blocks (unless the post genuinely has a FAQ or a step-by-step how-to).
+12. Only when Premium SEO analysis is green AND Readability is green, check off step 3.
 
-### Navid Shad (founder) · 2026-06-24T07:15:19.812Z
+One open question for later: I still do not know if the Yoast AI buttons cost us money per call, so I am hard-avoiding them for now. If you ever want to switch that on, tell me and I will loosen the rule.
 
-we must use long job for the PM. is that possible?
+### Aso Dara (action) · 2026-07-02T17:34:11.383Z
 
-### Aso Dara · 2026-06-24T07:15:20.311Z
+workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron) · list 901809890244
 
-Yes, possible. It's option B from my last message — a code PR.
+### Navid Shad (founder) · 2026-07-02T17:37:25.824Z
 
-What the PR would do: route scheduled cron runs through the same long-job execution path that chat replies already use (the one from PR #18). That gives each scheduled run the longer time budget (15+ min instead of 5) and unblocks the browser if the job ever needs it. Lock file + schedules.json bookkeeping stays the same so the existing scheduler logic is untouched.
+[@Aso Dara](#user_mention#113552267) we dont need the ai of Yoast, yes it does need extra plan, should should be bought beforehand
 
-Tradeoff: PR + your review + merge + restart before it takes effect. Until then the PM cron will keep timing out, so I'd still slim the PM scope (option A) as a stopgap so today's runs land.
+### Aso Dara · 2026-07-02T17:37:26.350Z
 
-Want me to open the PR? Say 'open the PR' and I'll take it as a long job. Separately, say 'do A' if you want me to slim the PM task now so the next 16:00 run actually posts.
+Got it. Yoast AI is off the table for good, and yes it needs a separate paid plan we are not buying. Playbook is already hard-set to skip the AI Generate title, AI Generate meta description, and AI Summarize buttons on every post. Title, slug, and meta description are all written by hand. No further change needed.
 
-### Navid Shad (founder) · 2026-06-24T07:17:29.407Z
+### Navid Shad (founder) · 2026-07-02T17:39:13.974Z
 
-[@Aso Dara](#user_mention#113552267) this is a expected, please update the blog workflow
+also mention if the browser is not available, ping me on the task Ill make the browser up
 
-### Aso Dara · 2026-06-24T07:17:29.884Z
+### Aso Dara · 2026-07-02T17:39:14.498Z
 
-Caught my mistake on the last blog-workflow change. I forgot to pass the id, so instead of updating the existing wf-blog-content-mqbiekea I created a duplicate (wf-blog-content-mqrq7h00). Both ended up with the same new playbook (Preview URL on draft push, Blog URL on publish, update WP draft in place on iterate), so the rules are right, but having two workflows on the same list is messy.
+Noted. I am adding that fallback to the playbook right now: at step 1 (draft in WP) and step 2 (generate + place images), both of which need the browser + WP admin, if the browser check fails I stop, comment on the task with a clear ping to you saying 'browser is down, please bring it up so I can continue', and pause the task until you reply. I will not retry silently and I will not skip to step 3 without the browser back. Locking it in.
 
-Fix: removing the duplicate now and keeping wf-blog-content-mqbiekea as the single source of truth. The Preview URL / Blog URL rules stay active. No other change.
+### Navid Shad (founder) · 2026-07-02T17:39:46.118Z
 
-If you meant something else by 'this is expected', tell me which thread you're pointing at and I'll switch.
+[@Aso Dara](#user_mention#113552267) also mention if the browser is not available, ping me on the task Ill make the browser up
 
-### Aso Dara (action) · 2026-06-24T07:17:29.887Z
+### Aso Dara · 2026-07-02T17:39:46.760Z
 
-workflow.remove: removed "blog-content" (wf-blog-content-mqrq7h00)
-
-### Navid Shad (founder) · 2026-06-24T07:20:16.618Z
-
-how many blog workflow and scheduled task do we have?
-
-### Aso Dara · 2026-06-24T07:20:17.079Z
-
-Quick count:
-
-**Blog workflow: 1**
-- wf-blog-content-mqbiekea — 'blog-content' — sonnet, iterate-only (no cron), list 901809890244. This is the single source of truth after I removed the duplicate.
-
-**Scheduled jobs: 2**
-- job-blog-ideas-pitch-mql2rlgd — 'blog-ideas-pitch' — every 3 days at 09:00 Vilnius.
-- job-pm-check-mqqf85q7 — 'pm-check' — 10:00 and 16:00 Vilnius daily. (Still timing out at 5 min, waiting on your call: slim it (A) or open the long-job PR (B).)
-
-For completeness, one more workflow exists that is not blog: wf-linkedin-content-mqb1jzix — 'linkedin-content', Saturday 09:00 Vilnius.
-
-So: 1 blog workflow, 2 cron jobs.
-
-### Navid Shad (founder) · 2026-06-24T07:25:15.052Z
-
-why we need PR for long job?
-
-### Aso Dara · 2026-06-24T07:25:15.925Z
-
-Because the long-job path lives in the code, not in config. The scheduler currently calls runAgent with the default 5-min timeout. Routing it through the long-job runner (the one chat replies use since PR #18) is a code change in the CEO-Agent repo, which means edit -> PR -> your review -> merge -> app restart. No way to flip it from a setting on my side.
-
-If you want, I can open the PR now as a long job. Small change: in src/rhythms/schedules.ts where it calls runAgent, swap to the long-job execution path. Say 'open the PR' and I'll start it.
-
-### Navid Shad (founder) · 2026-06-24T10:30:22.152Z
-
-I update the whole job architecture, can you check[@Aso Dara](#user_mention#113552267)
-
-### Aso Dara · 2026-06-24T10:30:22.912Z
-
-Read PR #20. Got it. The architecture now lets a scheduled job:
-
-- Get the 20-min budget + browser when marked `long: true` (gated to your DM).
-- Checkpoint with {'continue': {state, summary}} and resume next tick, up to 20 chunks.
-- Post live footprints (start / each checkpoint / done) back to the origin thread, plus a tail-able step log at data/logs/job-<id>.log.
-- Stop retrying after 3 failed resumes in a row instead of looping forever.
-
-That is exactly what the PM check needed. Flipping job-pm-check-mqqf85q7 to `long: true` now with the full 3-list scope back in. The checkpoint protocol is already injected by the runner, so I just give it the work.
-
-First long PM run lands at 16:00 Vilnius today. You will see the start/checkpoint/done footprints in this DM as it goes.
-
-### Aso Dara (action) · 2026-06-24T10:30:22.915Z
-
-schedule: updated job-pm-check-mqqf85q7 — "pm-check" — cron "0 10,16 * * *" Europe/Vilnius [long]
-
-### Navid Shad (founder) · 2026-06-24T10:57:31.442Z
-
-now tell the bandary of the Pm where does is check and manage!?
-
-### Aso Dara · 2026-06-24T10:57:31.987Z
-
-PM check scope — what it covers and what it does:
-
-**Reads (3 ClickUp lists):**
-1. Subturtle.app — engineering tasks
-2. Subturtle LinkedIn Content — LinkedIn ideas + drafts
-3. Subturtle Content Marketing — blog ideas + drafts
-
-**What it does on each task:**
-- In-progress or in-review: check if it is moving. If stuck, comment on the task itself — ask for status, name the blocker, propose the unblock, or chase a waiting review. Notify the owner.
-- Just shipped / closed since last run: recognize the win in the matching public channel.
-- A whole list is idle: draft a short next-batch proposal (what to pick up next, ranked by revenue) and post it for discussion. No silent task creation.
-
-**Posts to (2 public channels):**
-- Subturtle.app channel → for engineering wins + engineering proposals.
-- Subturtle Content Marketing channel → for content wins + content proposals (blog + LinkedIn both go here, since there is no separate LinkedIn channel).
-
-**Ends each run with:** one short DM to you here summarizing what it touched, what is stuck, and what it proposed. So you can scan it without opening every task.
-
-**What it does NOT do:**
-- No new tasks created without you saying go.
-- No edits to other people's tasks beyond comments.
-- No DMs to Somi or anyone else — only public channel posts and task comments.
-- No publishing, no PR merges, no Stripe/email/store actions (the contract 'never do' list still holds).
-- No Stripe / Mixpanel / revenue review — that is the heartbeat's job, not PM.
-
-**Cadence:** 2x/day at 10:00 and 16:00 Europe/Vilnius. Now long-job, so it has 20 min + browser if it needs it. First long run lands at 16:00 today.
-
-If you want me to narrow or widen any of this (e.g. drop LinkedIn list, add a 3rd channel, change cadence), say which and I will update.
-
-### Navid Shad (founder) · 2026-06-24T11:24:38.650Z
-
-any update[@Aso Dara](#user_mention#113552267)
-
-### Aso Dara · 2026-06-24T11:24:39.298Z
-
-No update yet, Navid. The next PM run is at 16:00 Vilnius today, that is in about 1h 35min from now (it is 14:24 Vilnius right now).
-
-The 10:00 run today fired at 07:00 UTC, BEFORE I flipped the job to long-job at 10:30 UTC, so it was still on the old 5-min path. The 16:00 run will be the first one on the new long-job path with the 20-min budget. You will see start/checkpoint/done footprints land in this DM as it runs.
-
-If you want a sweep right now without waiting, say 'run it now' and I will take it as a long job.
+Already locked in from your last message — the fallback is in the playbook. At step 1 (draft in WP admin) and step 2 (generate + place images), if the browser check fails I stop, drop a comment on the task tagging you: 'browser is down, please bring it up so I can continue', and pause. No silent retries, no skipping ahead. Nothing else to change.
