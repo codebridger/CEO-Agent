@@ -261,3 +261,38 @@ Noted. I am adding that fallback to the playbook right now: at step 1 (draft in 
 ### Aso Dara · 2026-07-02T17:39:46.760Z
 
 Already locked in from your last message — the fallback is in the playbook. At step 1 (draft in WP admin) and step 2 (generate + place images), if the browser check fails I stop, drop a comment on the task tagging you: 'browser is down, please bring it up so I can continue', and pause. No silent retries, no skipping ahead. Nothing else to change.
+
+### Navid Shad (founder) · 2026-07-02T17:43:25.029Z
+
+[@Aso Dara](#user_mention#113552267) please commit the data I want to check them on git, use aso branch
+
+### Aso Dara · 2026-07-02T17:43:25.689Z
+
+Done. Mirrored the live data into the aso-dara branch and pushed.
+
+Commit: 8f0f8f7 'data 2026-07-02 (manual)' on aso-dara
+Branch: https://github.com/codebridger/CEO-Agent/tree/aso-dara
+
+Changes in this commit:
+- heartbeats/2026-07-02.md (new)
+- threads/chat-8crzyb7-1458.md (this thread, updated)
+- threads/INDEX.md (updated)
+- threads/clickup-task-86eu70pez.md (new)
+- workflows/blog-content.md (all today's playbook updates — 2 images inline, SEO via Yoast Premium fields, browser-down fallback, spacing rule)
+- memory/notes.md (updated with the new blog-scheduling rule)
+
+All set for you to review.
+
+### Navid Shad (founder) · 2026-07-02T17:52:22.166Z
+
+[@Aso Dara](#user_mention#113552267) I tweaked on the workflow and meentioned use browser for the SEO part, can you fetch it from git?
+
+### Aso Dara · 2026-07-02T17:52:22.643Z
+
+Got it. Fetched blog-content.md from the aso-dara branch and diffed against the live playbook. Your tweak was on Step 3 SEO, item 1: 'Open the WP draft in the block editor and open the Yoast sidebar (use browser).' That makes the browser the required tool for the whole SEO step, which is correct — the WordPress.com MCP does not expose Yoast fields (Focus keyphrase, SEO title, meta description, slug, or the SEO/Readability score panels), so those can only be set through WP admin in the block editor.
+
+Rolling that into the live workflow now, and adding the matching browser-down fallback to Step 3 as well (same rule as Steps 1 and 2: if the browser is down I stop, ping you on the task, wait). No other changes.
+
+### Aso Dara (action) · 2026-07-02T17:52:22.647Z
+
+workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no cron) · list 901809890244

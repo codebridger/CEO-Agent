@@ -201,3 +201,70 @@ On it, Navid. I'll fetch the two screenshots you attached, open post 507 in the 
 ### Aso Dara (long job failed) · 2026-07-02T16:37:46.838Z
 
 ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
+
+### Navid Shad (founder) · 2026-07-02T17:54:51.722Z
+
+alright that is fine, lets schedule the blog @Aso Dara
+
+### Aso Dara (on it) · 2026-07-02T17:54:52.292Z
+
+On it, Navid. I'll check the WP scheduled queue, pick the next open weekday slot at 09:00 Vilnius (min 2 days gap, target 3), schedule draft 507, fill the Blog URL field, check off step 4, close the task, and report back with the chosen date.
+
+### Aso Dara · 2026-07-02T17:56:36.511Z
+
+Scheduled, Navid. Draft 507 is now set to publish Friday 2026-07-03 at 09:00 Europe/Vilnius (06:00 UTC).
+
+Why that slot: no other posts are scheduled, and the last one that went live was 2026-06-26 (post 247, the flashcards piece). That's 7 days of gap by tomorrow, well past the 3-day target, so bringing the queue back to life on the next open weekday made sense.
+
+Read-back confirmed on the WP MCP: status=future, date=2026-07-03T09:00:00, slug=small-talk-in-english-guide. Nothing else touched. Category still Language Tips, SEO fields unchanged, both images unchanged, featured image unchanged.
+
+ClickUp side:
+- Blog URL field filled: https://blog.subturtle.app/2026/07/03/small-talk-in-english-guide/
+- Task moved to Closed.
+- No checklist existed on the task, so there was no item 4 to tick off. Flagging it here in case you want future blog tasks pre-loaded with the 4-step checklist from the playbook.
+
+Reply here to override the slot and I'll reschedule.
+
+### Navid Shad (founder) · 2026-07-02T18:01:26.103Z
+
+@Aso Dara the Seo instructin updated in the workflow, please check and apply the seo for this blog.
+
+### Aso Dara (on it) · 2026-07-02T18:01:26.658Z
+
+On it, Navid. I'll pull up the updated Step 3 SEO spec from the workflow, open post 507 in the Aso Dara Chrome, and walk the full Yoast checklist top to bottom — focus keyphrase, Search appearance (SEO title / meta / slug, all hand-written), alt text on both images, Premium SEO analysis (must go all-green), Readability (green + Flesch >70), Schema, and Advanced. I'll fix anything that isn't green via the MCP or in-panel, screenshot the final panel to prove it, and report back with what changed.
+
+### Aso Dara · 2026-07-02T18:11:07.950Z
+
+All green now. Job done.
+
+Done, Navid. Post 507 is fully green in Yoast, and the schedule is untouched.
+
+**When I opened the panel:**
+- Premium SEO analysis: Problems 0, Improvements 1 (orange), Good results 18.
+- The single improvement: "Meta description length — you should reduce the length." Yoast was reading my old 147-char meta as over 156 (something in how it counts — HTML entities, whitespace, or an internal rewrite — differs from a plain `.length` count).
+- Readability: already all green, 7 good results, no problems and no improvements.
+
+**What I changed:**
+Only the meta description. Kept the keyphrase near the front and the benefit-led framing, but shorter.
+
+- Old (147 chars, Yoast-orange): "Small talk in English freezes even advanced learners. Learn the three-beat rhythm, real openers, follow-ups, and easy endings you can use tomorrow."
+- New (131 chars, Yoast-green): "Small talk in English trips up even fluent speakers. Learn the three-beat rhythm, real openers, and easy endings you can use today."
+
+Wrote it via the WordPress.com MCP (`_yoast_wpseo_metadesc`), reloaded the editor so Yoast re-read from the DB. No em-dashes, no AI-isms.
+
+**Final Yoast panel (verified live in the browser):**
+- Premium SEO analysis: Problems 0, Improvements 0, Good results 19. Every workflow-mandatory bullet green: Keyphrase in SEO title, introduction, subheading, slug, meta description, image alt attributes; Meta description length; Internal links; Outbound links. Plus keyphrase density, distribution, length; previously used keyphrase; single title; competing links; text length (1183 words); title; SEO title width; images.
+- Readability: Problems 0, Improvements 0, Good results 7. Passive voice, consecutive sentences, subheading distribution, paragraph length, sentence length, transition words, word complexity — all green.
+
+Schema panel left at defaults (Web Page + Article, not switched to How-to since this isn't a step-by-step). Advanced panel default. All the "skip entirely" sections were left untouched: Add related keyphrase, Track SEO performance, Internal linking suggestions, Social media appearance, Cornerstone content, Content blocks. No Yoast AI Generate buttons touched.
+
+**Mandatory checks I couldn't verify:** none. Every bullet was directly readable in the panel and I screenshotted the final green state.
+
+**Schedule and links — unchanged:**
+- Status: Scheduled
+- Publish: 2026-07-03 09:00 Europe/Vilnius (Tomorrow at 9:00 am)
+- Slug: `small-talk-in-english-guide`
+- Preview URL: https://blog.subturtle.app/?p=507&preview=true
+- Blog URL: https://blog.subturtle.app/2026/07/03/small-talk-in-english-guide/
+
+One small note for next time: since Yoast counted my 147-char meta as >156, I'll aim for ~130-140 chars in future posts so we never touch the orange band. I'll add that to the playbook if you agree. Task left Closed.
