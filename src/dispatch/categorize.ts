@@ -18,7 +18,17 @@ export interface ClickUpWebhookEvent {
   event?: string;
   task_id?: string;
   webhook_id?: string;
-  history_items?: Array<{ user?: { id?: number | string; username?: string } }>;
+  history_items?: Array<{
+    id?: string;
+    /** e.g. "assignee_add" / "assignee_rem" on a taskAssigneeUpdated event. */
+    field?: string;
+    /** Who performed the change (for assignee events: the assigner). */
+    user?: { id?: number | string; username?: string };
+    /** Previous value; for an assignee removal this holds the removed user. */
+    before?: unknown;
+    /** New value; for an assignee addition this holds the added user. */
+    after?: unknown;
+  }>;
 }
 
 export type Categorized =
@@ -44,6 +54,37 @@ function authorLabel(userId: number | undefined): string {
   if (userId === IDENTITY.navidUserId) return "Navid Shad (founder)";
   if (userId === IDENTITY.somiUserId) return "Somayeh Roohani";
   return userId != null ? `teammate ${userId}` : "someone";
+}
+
+/** The numeric user id inside a history-item before/after payload (an assignee object). */
+function payloadUserId(v: unknown): number | undefined {
+  if (v == null || typeof v !== "object") return undefined;
+  const id = (v as { id?: number | string }).id;
+  const n = Number(id);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+/**
+ * If this taskAssigneeUpdated event ADDED the agent as an assignee, return who made
+ * the change (to @mention when asking for a due date) plus the history-item id (for
+ * dedup). Returns undefined for removals, or for assigning anyone but the agent — so
+ * the agent only wakes when it is the one newly put on the task.
+ */
+function agentAddedAsAssignee(
+  ev: ClickUpWebhookEvent,
+): { assigner?: number; itemId?: string } | undefined {
+  for (const item of ev.history_items ?? []) {
+    const field = String(item.field ?? "").toLowerCase();
+    if (!field.includes("assignee")) continue;
+    // An add is either an explicit "assignee_add" field or an item that only has an
+    // `after` (the added user) and no `before`.
+    const isAdd = field.includes("add") || (item.after != null && item.before == null);
+    if (!isAdd) continue;
+    if (payloadUserId(item.after) === IDENTITY.agentUserId) {
+      return { assigner: payloadUserId(item.user), itemId: item.id };
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -167,6 +208,31 @@ export async function categorize(ev: ClickUpWebhookEvent): Promise<Categorized> 
       author,
       summary: `comment by ${authorLabel(latest?.userId ?? author)}: ${(latest?.text ?? "").slice(0, 140)}`,
     };
+  }
+
+  // A task assigned TO the agent wakes it now (Category A): it must read the task's
+  // dates and either start the work or ask the assigner for a due date. An assignee
+  // change that doesn't add the agent stays Category-B activity for the PM check.
+  if (event === "taskAssigneeUpdated" && taskId) {
+    const added = agentAddedAsAssignee(ev);
+    if (added) {
+      const assignerId = added.assigner ?? author;
+      return {
+        category: "A",
+        inbound: {
+          source: "task",
+          threadId: `clickup-task-${taskId}`,
+          text: "(You have just been assigned this task.)",
+          author: authorLabel(assignerId),
+          authorUserId: assignerId,
+          taskId,
+          assigned: true,
+          // No triggering comment — the reply (asking for a due date) posts as a root
+          // comment that @mentions the assigner.
+          eventId: added.itemId ?? `assign:${taskId}:${assignerId ?? "?"}`,
+        },
+      };
+    }
   }
 
   // Any other task event → Category-B activity for the PM check.
