@@ -61,6 +61,12 @@ export interface Inbound {
   authorUserId?: number;
   /** Task id to comment on (source === "task"). */
   taskId?: string;
+  /**
+   * True when this wake is the agent being ASSIGNED the task (not a comment/mention).
+   * It changes the prompt: read the task's dates, then start the work or ask the
+   * assigner for a due date — and own the task from here on.
+   */
+  assigned?: boolean;
   /** The comment that triggered this wake — the agent's reply threads under it. */
   commentId?: string;
   /** Chat channel id to reply in (source === "chat"). */
@@ -121,8 +127,12 @@ function buildWakePrompt(
   workflows: string,
 ): string {
   const uid = inbound.authorUserId;
+  const assigned = inbound.assigned === true && inbound.source === "task";
+  const assignerName = inbound.author.replace(/\s*\([^)]*\)\s*$/, "").trim() || inbound.author;
   const head = [
-    `You have been woken by a new ${inbound.source === "chat" ? "chat message" : "task comment"} addressed to you.`,
+    assigned
+      ? `You have just been ASSIGNED a ClickUp task (id ${inbound.taskId}) by ${inbound.author}. From now on you own it and are fully responsible for getting it done.`
+      : `You have been woken by a new ${inbound.source === "chat" ? "chat message" : "task comment"} addressed to you.`,
     "Answer it now, in your own voice, following your contract (plain English, short, honest, no cheerleading).",
     "",
     playbook.trim()
@@ -140,8 +150,17 @@ function buildWakePrompt(
         "\n---"
       : "",
     "",
-    `New message from ${inbound.author}:`,
-    inbound.text.trim(),
+    assigned ? "" : `New message from ${inbound.author}:`,
+    assigned ? "" : inbound.text.trim(),
+    assigned
+      ? [
+          "The assignment rule you must follow now:",
+          `1) Read the task first — use the ClickUp get_task tool on task ${inbound.taskId}: its name, description, scope, START date and DUE date.`,
+          "2) If the task HAS a due date (or a start date): that is your timeline. Take the work on and drive it to that date — the work itself is almost always a LONG JOB (option 2 below).",
+          `3) If the task has NO due date: do NOT invent a deadline. Reply with a short comment that @mentions ${assignerName} and asks them for the due date (and start date if it matters) before you begin. That question is the whole job on this run.`,
+          "Either way you now OWN this task: keep it moving, flag blockers, and see it through to done. If it turns out to be something only Navid can do, say so plainly — but it stays yours until it's finished or handed back.",
+        ].join("\n")
+      : "",
     "",
     "Read whatever further ClickUp/Stripe context you need first.",
     "If a comment or message includes an attachment or link (a 📎 line above, or a URL in the text) that matters for",
@@ -230,8 +249,11 @@ function buildWakePrompt(
     // tool that can, and posting stays server-side for the guardrails).
     head.push(
       "If you are ANSWERING NOW (option 1): do NOT post anything yourself. Compose your reply and OUTPUT ONLY the exact",
-      `reply text — no preamble, no "I posted…", just the message. The system will post it as a threaded reply under`,
-      `${inbound.author}'s comment and notify them. Address them by name in the text.`,
+      `reply text — no preamble, no "I posted…", just the message. ` +
+        (assigned
+          ? `The system posts it as a comment on the task and @mentions ${assignerName}.`
+          : `The system will post it as a threaded reply under ${inbound.author}'s comment and notify them.`) +
+        " Address them by name in the text.",
       "If instead you are TAKING IT AS A LONG JOB (option 2): output ONLY the longJob JSON and nothing else.",
     );
   }
