@@ -50,7 +50,7 @@ The blog runs Yoast SEO Premium. Every draft is graded through the Yoast sidebar
 
 Mandatory fields and checks:
 
-1. Open the WP draft in the block editor and open the Yoast sidebar.
+1. Open the WP draft in the block editor and open the Yoast sidebar (use browser).
 2. **Focus keyphrase**: set to the target long-tail keyword from the task. Do NOT set 'Add related keyphrase' — it's Premium and our traffic is too small to matter yet.
 3. **Search appearance** panel — fill all three by hand, do NOT use the AI Generate buttons:
    - **SEO title**: 55-60 characters, keyword near the front, benefit-led.
