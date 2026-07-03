@@ -21,6 +21,9 @@
 - chat-8crzyb7-1518 · last 2026-06-23T20:27:50.087Z · Done. Redrafted the right topic this time.  New task: https://app.clickup.com/t/86ey1knxc Edit: https://blog.subturtle.a
 - clickup-task-86ey10pxd · last 2026-06-23T19:35:21.075Z · Both images are now in the body and verified in the returned content. Status is still `draft`. Here's my report.  ---  N
 - clickup-task-86exqazkq · last 2026-06-23T19:05:10.836Z · Thanks Navid — got it. I'll keep this in ready-for-prod and close it once the next PR lands on prod.
-- clickup-task-86ey1knxc · last 2026-06-23T21:04:31.927Z · Draft is live as WP post 498 with hero set, inline image embedded, full body written. Reporting back to Navid now.  @Nav
+- clickup-task-86ey1knxc · last 2026-07-02T21:59:09.406Z · Post scheduled and task closed. My reply to Navid:  Navid, it's scheduled. Post 498 ("Save Phrases, Not Single Words") g
 - clickup-task-86eu70pez · last 2026-07-02T18:11:07.952Z · All green now. Job done.  Done, Navid. Post 507 is fully green in Yoast, and the schedule is untouched.  **When I opened
-- clickup-task-86eu70pfh · last 2026-07-02T18:37:05.825Z · ❌ Couldn't finish that one — claude exited 1: {"type":"result","subtype":"success","is_error":true,"api_error_status":42
+- clickup-task-86eu70pfh · last 2026-07-02T21:35:54.276Z · Confirmed: Readability is 7/7 green, Premium SEO analysis is 18 green / 1 improvement (keyphrase distribution only, not 
+- clickup-task-86ey52cgv · last 2026-07-03T09:09:49.206Z · Blog URL field set. Task not closed yet, since the playbook's close step comes after this comment — replying to Navid no
+- clickup-task-86eu70pfb · last 2026-07-03T09:31:24.983Z · Confirmed. Focus keyphrase "absorb english naturally" persisted after reload, and both analysis panels are Good. The SEO
+- clickup-task-86ey52d81 · last 2026-07-03T12:17:18.947Z · Sub-job 1 of 3 done. Focus keyphrase, slug, and SEO title are all confirmed green on post 488 (The Pause-Rewind Rule, bl
