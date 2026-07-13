@@ -13,12 +13,12 @@
 - clickup-task-86exxgawy · last 2026-06-12T19:46:30.945Z · Navid, sorry — twice in a row you got an empty task. I found why and fixed it.  What went wrong: I was making all 5 impr
 - clickup-task-86exxgax4 · last 2026-06-12T22:21:59.395Z · @Navid Shad Got it. I'm adding a logo rule to the LinkedIn workflow playbook so I don't miss it again. Here's the exact 
 - clickup-task-86exxzaae · last 2026-06-13T14:37:45.867Z · You're right, Navid — Somi's on the team, so it should feel warm and personal, not like a reply to a stranger. Here's a 
-- clickup-task-86eu70pev · last 2026-06-13T21:22:58.986Z · @Navid Shad Navid — good, that was the one thing I couldn't verify from my side. Post is locked in for Tue 16 Jun 09:00 
+- clickup-task-86eu70pev · last 2026-07-13T12:37:51.546Z · Status confirmed still `publish`, same URL and date. Done.  Fixed the SEO on the "Sound More Natural" pronunciation post
 - clickup-task-86eu70peq · last 2026-06-13T21:26:01.912Z · Navid, got it — I'll start on the 5 fixes now in WordPress:  1. Intro CTA line. 2. Rewrite mistake #5 so the Subturtle m
 - clickup-task-86exynjj8 · last 2026-06-15T14:26:21.399Z · @Navid Shad Good, thanks for posting it yourself. Sorry the carousel upload blocked us at the last step.  I've left the 
 - clickup-task-86exzbh61 · last 2026-06-19T10:47:21.532Z · Thanks Navid — good to see it shipped. PRs #36/#37/#38 all in, commit 646094e merged 2026-06-17. Closing the task now.
 - clickup-task-86ey0dhce · last 2026-06-20T23:51:04.038Z · It's live, Navid. The post is on your LinkedIn page:  https://www.linkedin.com/feed/update/urn%3Ali%3Ashare%3A7474247433
-- chat-8crzyb7-1518 · last 2026-06-23T20:27:50.087Z · Done. Redrafted the right topic this time.  New task: https://app.clickup.com/t/86ey1knxc Edit: https://blog.subturtle.a
+- chat-8crzyb7-1518 · last 2026-07-13T10:45:12.029Z · replied
 - clickup-task-86ey10pxd · last 2026-06-23T19:35:21.075Z · Both images are now in the body and verified in the returned content. Status is still `draft`. Here's my report.  ---  N
 - clickup-task-86exqazkq · last 2026-06-23T19:05:10.836Z · Thanks Navid — got it. I'll keep this in ready-for-prod and close it once the next PR lands on prod.
 - clickup-task-86ey1knxc · last 2026-07-02T21:59:09.406Z · Post scheduled and task closed. My reply to Navid:  Navid, it's scheduled. Post 498 ("Save Phrases, Not Single Words") g
@@ -27,3 +27,11 @@
 - clickup-task-86ey52cgv · last 2026-07-03T09:09:49.206Z · Blog URL field set. Task not closed yet, since the playbook's close step comes after this comment — replying to Navid no
 - clickup-task-86eu70pfb · last 2026-07-03T09:31:24.983Z · Confirmed. Focus keyphrase "absorb english naturally" persisted after reload, and both analysis panels are Good. The SEO
 - clickup-task-86ey52d81 · last 2026-07-03T12:17:18.947Z · Sub-job 1 of 3 done. Focus keyphrase, slug, and SEO title are all confirmed green on post 488 (The Pause-Rewind Rule, bl
+- clickup-task-86eu70pfw · last 2026-07-13T10:42:04.489Z · run failed: timeout after 300000ms
+- clickup-task-86eu70pg4 · last 2026-07-13T11:06:32.474Z · Everything's done. Final report for Navid:  Opened the post in the block editor with the Aso Dara browser and let Yoast 
+- clickup-task-86ey99wyj · last 2026-07-13T11:35:11.400Z · Everything is done. Here's my final report to Navid.  Post 494 ("Vocab List: Phrases, Not Words") is fully done and sche
+- clickup-task-86ey99hap · last 2026-07-13T11:55:56.052Z · Navid, quick product check before I write a word of this one.  I read the extension repo directly (`codebridger/subturtl
+- clickup-task-86ey99h9p · last 2026-07-13T12:16:53.850Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
+- clickup-task-86ey99gw6 · last 2026-07-13T12:16:53.913Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
+- clickup-task-86ey99h8x · last 2026-07-13T12:16:53.921Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
+- clickup-task-86eu70pf4 · last 2026-07-13T12:26:57.532Z · SEO is done. Both scores are confirmed via the post meta: SEO score (`_yoast_wpseo_linkdex`) is now 94, readability (`_y

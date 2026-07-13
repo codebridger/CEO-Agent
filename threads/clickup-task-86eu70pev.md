@@ -114,3 +114,29 @@ Say "draft it" and I'll have it ready in the next reply.
 @Navid Shad Navid — good, that was the one thing I couldn't verify from my side. Post is locked in for Tue 16 Jun 09:00 UTC.
 
 Shall I draft the **LinkedIn post** now and queue it to publish at the same hour? Without a social push the blog post will get close to zero traffic on day one. Say "draft it" and I'll have it in the next reply for your review before anything ships.
+
+### Navid Shad (founder) · 2026-07-13T12:29:35.615Z
+
+@Aso Dara the seo of this task need some work
+
+### Aso Dara (on it) · 2026-07-13T12:29:36.023Z
+
+On it, Navid — I'll open post 183 (the pronunciation tips post) in the editor, see what Yoast is flagging, fix it, and confirm both scores are green before reporting back.
+
+### Aso Dara · 2026-07-13T12:37:51.545Z
+
+Status confirmed still `publish`, same URL and date. Done.
+
+Fixed the SEO on the "Sound More Natural" pronunciation post. It had never been through the Yoast gate before, since it predates that step.
+
+**Before:** SEO score not computed (empty), readability 90 (already fine, no changes needed there).
+**After:** SEO score 92, readability 90. Both green.
+
+What I changed:
+- Set the focus keyphrase to "pronunciation tips" and wrote a proper SEO title and meta description for it (title/description were both empty before).
+- Added the keyphrase to the intro paragraph, one more body paragraph, and a subheading (it only appeared twice before, clustered near the end).
+- Added alt text with the keyphrase to two images.
+- Added an outbound link (Wikipedia, on "schwa") and an internal link to our own Pause-Rewind Rule post, since neither existed before, only the Chrome Web Store links.
+- Trimmed the meta description to a cleaner length.
+
+Didn't touch: publish status (still live, same URL), the CTA button, the Subturtle links from the June fix, or the voice/tone. Post stays published at https://blog.subturtle.app/2026/06/16/sound-more-natural-pronunciation-tips/.
