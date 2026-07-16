@@ -182,7 +182,7 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
           outcomes.push(`schedule REJECTED — ${safe.reason}: "${action.cron}"`);
           continue;
         }
-        // A "long" job runs unattended with the browser + a 20-min budget — the same
+        // A "long" job runs unattended with the browser + a 1-hour budget — the same
         // sensitive capability a browser workflow has, so it needs Navid's authority.
         if (action.long && !fromNavidDM(inbound)) {
           outcomes.push("schedule DENIED — a long (browser-enabled) job can only be set up from Navid's private DM");

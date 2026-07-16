@@ -46,7 +46,7 @@ export interface Job {
   task: string;
   enabled: boolean;
   /**
-   * "Long" job: gets the 20-min budget (LONG_JOB_TIMEOUT_MS) and the browser, for heavy
+   * "Long" job: gets the 1-hour budget (LONG_JOB_TIMEOUT_MS) and the browser, for heavy
    * tasks that can't finish in the default 5 min / need to drive Chrome. Browser-enabled,
    * so it's gated to Navid's authority at the action layer. Defaults to false (short, no
    * browser) for normal unattended jobs.
@@ -377,7 +377,7 @@ function makeStepLogger(job: Job): { path: string; onEvent: (ev: StepEvent) => v
  *  - {"continue": {state}} → work remains; save the state so the next tick resumes it.
  *  - {"done"} / plain text  → finished; clear any continuation.
  *
- * Each chunk is BOUNDED (default 5 min; 20 min for a `long` job, which also gets the
+ * Each chunk is BOUNDED (default 5 min; 1 hour for a `long` job, which also gets the
  * browser). Big work spans many bounded chunks instead of one open-ended run, so a chunk
  * never freezes the rhythm system and progress survives a restart. A hard MAX_CONTINUATIONS
  * cap stops a job that never reports done. Nobody is watching, so the prompt still forbids
