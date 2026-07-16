@@ -216,7 +216,7 @@ function buildWakePrompt(
       "      Monday. Standard 5-field cron in your timezone (default " + HEARTBEAT_TZ + "); the minute field must be specific",
       '      (no "*" — so at most ~hourly). A normal job is unattended: NO browser, ~5-min budget, no publishing — use it for',
       "      ClickUp/repo/analysis work (drafting tasks, chasing, summarising). Set \"long\": true for a HEAVY job that needs the",
-      "      browser or longer than ~5 min (it gets a 20-min budget + the browser); a long job runs unattended and can drive",
+      "      browser or longer than ~5 min (it gets a 1-hour budget + the browser); a long job runs unattended and can drive",
       "      Navid's screen, so it is only allowed from Navid's private DM. Normal jobs are safe/additive, allowed anytime. Up to " +
         String(MAX_JOBS) + " jobs.",
       "      A job that is too big for one run can SPAN MULTIPLE runs: when a run nears its time budget, output ONLY",

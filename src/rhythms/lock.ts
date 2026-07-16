@@ -11,8 +11,8 @@ import { DATA_DIR } from "../config.js";
 
 const LOCK = resolve(DATA_DIR, "rhythm.lock");
 // Must exceed the longest run that can hold the lock — a `long` scheduled chunk/workflow
-// runs up to LONG_JOB_TIMEOUT_MS (20 min), so give margin or a live run looks "stale".
-const STALE_MS = 25 * 60 * 1000;
+// runs up to LONG_JOB_TIMEOUT_MS (1 hour), so give margin or a live run looks "stale".
+const STALE_MS = 65 * 60 * 1000;
 
 async function acquire(name: string): Promise<boolean> {
   try {

@@ -113,9 +113,9 @@ export const MODEL = {
  * interactive run. The normal interactive run keeps the 5-min default in
  * runner.ts; a long job's second run (and the unattended workflow generate step)
  * runs up to this so a real browser task isn't SIGKILL'd mid-flight. Finite on
- * purpose — it's a hang backstop, not "run forever". Default 20 min.
+ * purpose — it's a hang backstop, not "run forever". Default 1 hour.
  */
-export const LONG_JOB_TIMEOUT_MS = optionalIntEnv("LONG_JOB_TIMEOUT_MS", 20 * 60 * 1000);
+export const LONG_JOB_TIMEOUT_MS = optionalIntEnv("LONG_JOB_TIMEOUT_MS", 60 * 60 * 1000);
 
 // --- M2: webhook listener + chat poller ----------------------------------
 
