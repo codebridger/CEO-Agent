@@ -1,6 +1,6 @@
 # Thread index
 
-- chat-8crzyb7-1458 · last 2026-07-02T17:52:22.648Z · replied; workflow: updated wf-blog-content-mqbiekea — "blog-content" — sonnet · playbook blog-content · iterate-only (no
+- chat-8crzyb7-1458 · last 2026-07-16T14:17:43.726Z · replied
 - clickup-task-86et9a1x6 · last 2026-06-09T05:24:37.004Z · Yes Navid, I'm here.  On the Google Meet question — noted. I'll park that task and mark the milestone complete. I'll ope
 - clickup-task-86exr424h · last 2026-06-07T08:05:35.184Z · Navid, here is everything I can actually see on this task right now — the full read.  **Task state:** - Name: "Implement
 - clickup-task-86exw6kme · last 2026-06-08T18:10:25.415Z · Thanks Navid. I can see it working already — the activity tail for this task shows the full comment thread plus the two 
@@ -33,5 +33,5 @@
 - clickup-task-86ey99hap · last 2026-07-13T11:55:56.052Z · Navid, quick product check before I write a word of this one.  I read the extension repo directly (`codebridger/subturtl
 - clickup-task-86ey99h9p · last 2026-07-13T12:16:53.850Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
 - clickup-task-86ey99gw6 · last 2026-07-13T12:16:53.913Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
-- clickup-task-86ey99h8x · last 2026-07-13T12:16:53.921Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
+- clickup-task-86ey99h8x · last 2026-07-16T16:47:52.185Z · Navid, I just re-pulled post 614 straight from WordPress (not a cached view) to check this myself. The content on the se
 - clickup-task-86eu70pf4 · last 2026-07-13T12:26:57.532Z · SEO is done. Both scores are confirmed via the post meta: SEO score (`_yoast_wpseo_linkdex`) is now 94, readability (`_y
