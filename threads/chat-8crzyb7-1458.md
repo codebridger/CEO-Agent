@@ -245,3 +245,33 @@ Thanks, confirmed. Both draft tasks now carry the 'reddit-comment' tag (86eybchj
 ### Aso Dara (action) · 2026-07-19T16:01:03.093Z
 
 remember: noted "- (2026-07-19, via Navid Shad (founder)) ClickUp tag 'reddit-comment' now exists in the Subturtle space (Navid added it manually 2026-07-19). Every reddit-content draft task Aso creates going forward should be tagged 'reddit-comment' at creation (tags param on clickup_create_task) so they're distinguishable from blog tasks in the shared Subturtle Content Marketing list."
+
+### Navid Shad (founder) · 2026-07-20T08:16:53.023Z
+
+[@Aso Dara](#user_mention#113552267) I ran the browser you can use it
+
+### Aso Dara (on it) · 2026-07-20T08:16:53.558Z
+
+Browser confirmed up. Nothing was actually stuck waiting on it right now (checked: no browser-down flags today, the two reddit drafts are just waiting on your explicit approved). Since it is up, I will run today's reddit-content scan now.
+
+### Aso Dara · 2026-07-20T08:35:55.317Z
+
+I've completed the scan across all 6 subs with 2 solid drafts found. Compiling the final report now.
+
+Ran today's reddit-content scan. Browser stayed up the whole time, no blockers.
+
+**Drafted (2):**
+
+1. **r/EnglishLearning** — thread asking for methods to remember idioms/collocations (B2 learner, forgets 90% after writing+reviewing once). The 2 existing comments didn't explain why that method fails or offer a concrete fix. Task: https://app.clickup.com/t/86eybn06t
+2. **r/French** — thread asking if a 4-year plan (30 min/day) is realistic for corporate-level French. Every existing comment pushed formal tutoring/paid immersion (one was itself a soft plug for a language school); none mentioned daily native-content exposure as the fix for the listening-speed gap one commenter flagged. Task: https://app.clickup.com/t/86eybn3pq
+
+**Nothing drafted, with reasons:**
+
+- **r/languagelearning** — top candidate ("exhausting to consume content") turned out to be the exact same thread as yesterday's still-pending draft (86eybchj1), so I skipped it to avoid a duplicate. The next-best candidates ("how can I continue learning at work," "should I quit Anki") both already had thorough top comments covering the obvious angles by the time I checked.
+- **r/LearnJapanese** — the one thread that fit the theme well ("reading multiple times as immersion") already had 68 comments, and the other close match ("subs vs audio") was 3 days old, not from today's window.
+- **r/Spanish** — best candidate ("is my method of learning completely flawed?") turned out to be locked by the mods.
+- **r/German** — had at least one reasonable candidate ("what do you watch and how do you find it"), but I stopped there since I'd already hit today's cap of 2.
+
+**r/Korean:** not opened, per the standing rule.
+
+Both drafts are sitting in Subturtle Content Marketing tagged `reddit-comment`, waiting on your "approved."

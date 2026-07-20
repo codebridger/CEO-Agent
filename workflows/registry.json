@@ -40,7 +40,9 @@
       "generate": "Check the Aso Dara browser is up first. If not, skip this run and note it. If up, scan r/languagelearning, r/EnglishLearning, r/LearnJapanese, r/Spanish, r/French, r/German for threads where a genuine helpful comment fits today (value lane, no Subturtle mention) or where a gated Subturtle mention applies (thread directly asks what tools people use, or r/Spanish's open self-promo megathread). Draft 0-2 candidates only when something genuinely fits - never force a quota. For each, create a task in this list with the thread link, the lane, the proposed comment text, and why it fits. Skip r/Korean entirely.",
       "enabled": true,
       "createdAt": "2026-07-19T11:17:58.831Z",
-      "createdBy": "Navid Shad (founder)"
+      "createdBy": "Navid Shad (founder)",
+      "lastRunAt": "2026-07-20T08:00:02.976Z",
+      "lastRunMinute": "2026-07-20 11:00"
     }
   ]
 }
