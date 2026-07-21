@@ -21,7 +21,7 @@
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { LONG_JOB_TIMEOUT_MS, MODEL, NAVID_DM_CHANNEL_ID, WORKFLOWS_DIR, WORKFLOWS_PATH } from "../config.js";
+import { HEARTBEAT_TZ, LONG_JOB_TIMEOUT_MS, MODEL, NAVID_DM_CHANNEL_ID, WORKFLOWS_DIR, WORKFLOWS_PATH } from "../config.js";
 import { runAgent } from "../agent/runner.js";
 import { BROWSER_TOOLS } from "../agent/policy.js";
 import { getTaskListId, sendChatMessage } from "../clickup/rest.js";
@@ -101,14 +101,15 @@ export function modelFor(w: Workflow): string {
 
 export interface UpsertWorkflowInput {
   id?: string;
-  name: string;
+  /** Required to create. On update, only fields that are supplied (not undefined) are changed. */
+  name?: string;
   /** The playbook markdown (the rules). Required to create; optional on update (keeps the existing file). */
   playbookContent?: string;
-  model: ModelTier;
-  allowBrowser: boolean;
+  model?: ModelTier;
+  allowBrowser?: boolean;
   listId?: string;
   cron?: string;
-  tz: string;
+  tz?: string;
   generate?: string;
   enabled?: boolean;
   createdBy?: string;
@@ -137,22 +138,38 @@ export async function upsertWorkflow(
   }
 
   if (existing) {
-    // Keep the existing playbook file/stem; rewrite it only if new content was given.
+    // Partial update: only overwrite a field when the caller actually supplied it, so
+    // changing one dimension (e.g. the list binding or a playbook edit) never blanks an
+    // unchanged field. A full overwrite here was the silent-drop footgun — omitting the
+    // unchanged `generate` text nulled it, and dueWorkflows then skips a no-generate
+    // workflow forever. `undefined` means "leave as-is"; the caller passes explicit values
+    // only for the fields it means to change.
     if (input.playbookContent !== undefined) await writePlaybook(existing.playbook, input.playbookContent);
-    existing.name = input.name;
-    existing.model = input.model;
-    existing.allowBrowser = input.allowBrowser;
-    existing.listId = input.listId;
-    existing.cron = input.cron;
-    existing.tz = input.tz;
-    existing.generate = input.generate;
+    if (input.name !== undefined) existing.name = input.name;
+    if (input.model !== undefined) existing.model = input.model;
+    if (input.allowBrowser !== undefined) existing.allowBrowser = input.allowBrowser;
+    if (input.listId !== undefined) existing.listId = input.listId;
+    if (input.cron !== undefined) existing.cron = input.cron;
+    if (input.tz !== undefined) existing.tz = input.tz;
+    if (input.generate !== undefined) existing.generate = input.generate;
     if (input.enabled !== undefined) existing.enabled = input.enabled;
+    // Invariant checked against the MERGED state, not the incoming partial: a workflow
+    // with a cron must have generate text, else dueWorkflows silently skips it forever.
+    if (existing.cron && !existing.generate) {
+      return { error: 'this workflow has a cron but no "generate" instructions — a recurring workflow needs both' };
+    }
     await write(store);
     return { workflow: existing };
   }
 
+  if (!input.name || !input.name.trim()) {
+    return { error: "a new workflow needs a name" };
+  }
   if (!input.playbookContent || !input.playbookContent.trim()) {
     return { error: "a new workflow needs a playbook (its rules)" };
+  }
+  if (input.cron && !input.generate) {
+    return { error: 'this workflow has a cron but no "generate" instructions — a recurring workflow needs both' };
   }
   const stem = slug(input.name);
   await writePlaybook(stem, input.playbookContent);
@@ -161,11 +178,11 @@ export async function upsertWorkflow(
     id,
     name: input.name,
     playbook: stem,
-    model: input.model,
-    allowBrowser: input.allowBrowser,
+    model: input.model ?? "sonnet",
+    allowBrowser: input.allowBrowser ?? false,
     listId: input.listId,
     cron: input.cron,
-    tz: input.tz,
+    tz: input.tz || HEARTBEAT_TZ,
     generate: input.generate,
     enabled: input.enabled ?? true,
     createdAt: new Date().toISOString(),
