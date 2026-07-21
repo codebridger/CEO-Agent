@@ -93,7 +93,10 @@ export function coerceActions(raw: unknown): Action[] {
     } else if (type === "workflow") {
       const name = String(o["name"] ?? "").trim();
       if (name) {
-        const model = o["model"] === "opus" ? "opus" : "sonnet";
+        // Emit undefined for an unspecified model/allowBrowser so an UPDATE preserves the
+        // existing value instead of silently resetting it (opus→sonnet, or stripping the
+        // browser grant). Create-time defaults are applied in the registry.
+        const model = o["model"] === "opus" ? "opus" : o["model"] === "sonnet" ? "sonnet" : undefined;
         const playbook = String(o["playbook"] ?? "").trim();
         out.push({
           type,
@@ -101,7 +104,7 @@ export function coerceActions(raw: unknown): Action[] {
           name,
           playbook: playbook || undefined,
           model,
-          allowBrowser: o["allowBrowser"] === true,
+          allowBrowser: "allowBrowser" in o ? o["allowBrowser"] === true : undefined,
           listId: o["listId"] ? String(o["listId"]) : undefined,
           cron: o["cron"] ? String(o["cron"]).trim() : undefined,
           tz: o["tz"] ? String(o["tz"]) : undefined,
@@ -226,15 +229,16 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
           outcomes.push("workflow DENIED — a browser-enabled workflow can only be set up from Navid's private DM");
           continue;
         }
-        // A recurring generate step needs both a safe cron and something to generate.
+        // Any cron supplied must be safe. The "cron needs generate" invariant is checked
+        // against the MERGED state inside upsertWorkflow — so an update that only re-points
+        // the list (and relies on the workflow's existing generate text) is not rejected
+        // for omitting it. Pass fields through as-is: undefined means "leave unchanged" on
+        // an update, and create-time defaults (sonnet / no-browser / HEARTBEAT_TZ) are
+        // applied in the registry.
         if (action.cron) {
           const safe = isSafeCron(action.cron);
           if (!safe.ok) {
             outcomes.push(`workflow REJECTED — ${safe.reason}: "${action.cron}"`);
-            continue;
-          }
-          if (!action.generate) {
-            outcomes.push('workflow REJECTED — a cron is set but no "generate" instructions were given');
             continue;
           }
         }
@@ -242,11 +246,11 @@ export async function executeActions(actions: Action[], inbound: Inbound): Promi
           id: action.id,
           name: action.name,
           playbookContent: action.playbook,
-          model: action.model ?? "sonnet",
-          allowBrowser: action.allowBrowser ?? false,
+          model: action.model,
+          allowBrowser: action.allowBrowser,
           listId: action.listId,
           cron: action.cron,
-          tz: action.tz || HEARTBEAT_TZ,
+          tz: action.tz,
           generate: action.generate,
           enabled: action.enabled,
           createdBy: inbound.author,
