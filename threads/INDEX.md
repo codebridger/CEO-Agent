@@ -1,6 +1,6 @@
 # Thread index
 
-- chat-8crzyb7-1458 · last 2026-07-20T08:35:55.318Z · I've completed the scan across all 6 subs with 2 solid drafts found. Compiling the final report now.  Ran today's reddit
+- chat-8crzyb7-1458 · last 2026-07-21T17:56:18.824Z · Both confirmed live: status Closed, Publish Url field set correctly on both. Everything checks out. Task complete.  Repo
 - clickup-task-86et9a1x6 · last 2026-06-09T05:24:37.004Z · Yes Navid, I'm here.  On the Google Meet question — noted. I'll park that task and mark the milestone complete. I'll ope
 - clickup-task-86exr424h · last 2026-06-07T08:05:35.184Z · Navid, here is everything I can actually see on this task right now — the full read.  **Task state:** - Name: "Implement
 - clickup-task-86exw6kme · last 2026-06-08T18:10:25.415Z · Thanks Navid. I can see it working already — the activity tail for this task shows the full comment thread plus the two 
@@ -35,3 +35,7 @@
 - clickup-task-86ey99gw6 · last 2026-07-13T12:16:53.913Z · ❌ Couldn't finish that one — timeout after 1200000ms. Want me to retry, or take a different approach?
 - clickup-task-86ey99h8x · last 2026-07-16T16:47:52.185Z · Navid, I just re-pulled post 614 straight from WordPress (not a cached view) to check this myself. The content on the se
 - clickup-task-86eu70pf4 · last 2026-07-13T12:26:57.532Z · SEO is done. Both scores are confirmed via the post meta: SEO score (`_yoast_wpseo_linkdex`) is now 94, readability (`_y
+- clickup-task-86eybn3pq · last 2026-07-21T11:45:49.104Z · Aso Dara, Navid, your call is due tomorrow (2026-07-22, 01:00 UTC) and there's no reply yet on the r/French draft I post
+- clickup-task-86eybchj1 · last 2026-07-21T11:46:19.760Z · Navid, this task landed on me with a due date of Jul 22, 01:00 UTC, tomorrow. I still don't have your go-ahead on the dr
+- clickup-task-86eybn06t · last 2026-07-21T11:46:31.021Z · Navid, this one has a due date: **2026-07-22, ~04:00 Vilnius time** (tomorrow). No due date was set before, so I'm not i
+- clickup-task-86eybchk6 · last 2026-07-21T11:46:55.742Z · Navid, this one's got a due date of tomorrow (Jul 22), so I'm flagging it now rather than waiting.  I asked for your OK 

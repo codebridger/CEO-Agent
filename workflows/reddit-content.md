@@ -1,27 +1,27 @@
-# Reddit content playbook
+# Reddit content workflow
 
-Account: u/subtitles_and_coffee, logged into the Aso Dara Chrome profile. Joined subs: r/languagelearning, r/EnglishLearning, r/Korean, r/LearnJapanese, r/Spanish, r/French, r/German.
+Purpose: grow awareness for Subturtle through genuinely helpful Reddit comments, never forced posting.
 
-All Reddit drafts live in the shared 'Subturtle Content Marketing' list (same list as blog-content and linkedin-content) - do NOT create or ask for a separate Reddit list.
+## Scope
+- Subs: r/languagelearning, r/EnglishLearning, r/LearnJapanese, r/Spanish, r/French, r/German.
+- r/Korean is fully off-limits - never open it, never draft from it. That sub bans all AI-written content, no exceptions.
 
 ## Two lanes
-1. Value comments (the main lane): a genuine, helpful, non-branded comment on a thread that fits. No Subturtle mention, no link.
-2. Subturtle mentions (rare, gated): only when a thread directly asks something like 'what tools do you use', or inside r/Spanish's official self-promotion megathread.
+- Value comment (default): no Subturtle mention, no link, purely helpful.
+- Gated mention: only when a thread directly asks what tools/apps people use, or inside r/Spanish's official self-promo megathread - check first whether that megathread needs mod approval before assuming it is open.
 
-## Hard rules
-- r/Korean: fully hands-off, forever. Zero AI-drafted content there. If Navid or Somi want activity there, it must be typed by them, not me.
-- r/languagelearning: comment only, no link drops, no naming Subturtle unless the thread explicitly asks.
-- r/Spanish: self-promo only inside the official megathread, nowhere else in that sub.
-- Every other sub: read the sticky/announcements before drafting anything there.
-- Volume: up to 1-2 comment drafts a day, only on threads that genuinely fit. Zero on days nothing fits - never force a quota just to post something.
-- Nothing goes to Reddit without Navid's explicit approval on the task first (a comment like 'approved' or 'go'). This is the human gate; loosen only if Navid says to.
+## Task creation rules (every draft)
+- List: Subturtle Content Marketing (901809890244).
+- Tag: reddit-comment.
+- Status: to do (not the list default inactive).
+- Assignee: Aso (self).
+- Due date: day of creation + 1.
+- Body: which sub, thread link, the lane, the drafted comment text.
 
-## Generate step (cron, browser required)
-Before scanning, check the Aso Dara browser is up (check_local_status, notify true). If it is not reachable, do not draft anything this run - note the skip in the checkpoint/done summary so it surfaces in the thread, and wait for Navid to bring the browser up.
-If the browser is up: scan the 6 non-Korean subs for threads where a real, helpful comment fits today, and check whether r/Spanish's self-promo megathread is open. Draft 0-2 candidates (never force it) as separate tasks in the shared list, each with: the thread link, the lane (value or gated mention), the proposed comment text, and a one-line reason it fits.
-
-## Iterate step (someone comments on a Reddit draft task)
-Revise the proposed comment per the feedback. Do not post to Reddit until the task comment clearly approves it.
-
-## Posting (manual gate, for now)
-Only after a task comment approves a draft: check the browser is up (same check as above; if not, stop and ping Navid on the task rather than retrying), open the thread, post the approved comment as u/subtitles_and_coffee, then update the task with the live comment link and close it.
+## Posting (iterate step, triggered by a comment saying 'approved')
+1. Confirm the Aso Dara browser is up first. If not, stop and ping Navid directly - do not retry or guess.
+2. Run as a long job (browser + multi-step).
+3. Open the thread, post the drafted comment. On old.reddit.com the SAVE button can silently eat the first click - verify the comment actually posted (screenshot or reload) before trusting it, retry the click if needed.
+4. Grab the live permalink.
+5. Set BOTH the task's Publish Url custom field to the live permalink AND add a 'Posted: <permalink>' task comment.
+6. Set the task to Closed.
