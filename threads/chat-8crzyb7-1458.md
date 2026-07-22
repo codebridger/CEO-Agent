@@ -240,3 +240,16 @@ Dates follow the weekly Saturday cadence the linkedin-content workflow runs on, 
 2. **Subturtle (org page)** — "You don't forget words because your memory is bad" → https://www.linkedin.com/feed/update/urn%3Ali%3Ashare%3A7485392109076803585/ — task 86exxza99 set to Closed, Publish Url field filled.
 
 Both picked because they were the oldest/most finished drafts on each page (the founder one had been queued longest at `approval`; the company one was the oldest-created and already flagged high priority). Both re-verified live after the update — no repeat of today's silent-rejection bug.
+
+### Navid Shad (founder) · 2026-07-21T20:08:00.541Z
+
+[@Aso Dara](#user_mention#113552267) menton this point in the linkedin workflow also
+after posting each content put the content link into the \`🔗 Publish Url\` field of the task
+
+### Aso Dara · 2026-07-21T20:08:01.252Z
+
+Done. Updated the linkedin-content workflow playbook: the Publish step now explicitly says to put the live post URL into the task's Publish Url custom field (not just 'attach the URL' as it said before) every time a post goes live, same as the Reddit workflow already does.
+
+### Aso Dara (action) · 2026-07-21T20:08:01.255Z
+
+workflow: updated wf-linkedin-content-mqb1jzix — "linkedin-content" — opus · playbook linkedin-content · cron "0 9 * * 6" Europe/Vilnius · list 901809890244

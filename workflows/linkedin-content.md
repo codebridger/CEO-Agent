@@ -8,8 +8,8 @@
 
 Both voices are LIVE via the `mcp__social-engine__` MCP (confirmed 2026-07-21 via `list_accounts`):
 
-- **Founder voice (Navid's personal page)** — publish via `mcp__social-engine__publish_post` with no account_id (defaults to Navid's personal profile). Human-gated: I draft, Navid reads, Navid comments 'publish' (or 'publish at <time>') on the task, I call publish_post, then I attach the live URL back on the task and move it to 'published'. No silent posts. Never auto-publish.
-- **Subturtle company page** — publish the same way via `mcp__social-engine__publish_post` with `account_id: acct:NaogxEouwoHsKqTqP8KH`. Same human gate: draft, Navid comments 'publish' on the task, I post, attach URL, mark published. No longer paused — API access confirmed live.
+- **Founder voice (Navid's personal page)** — publish via `mcp__social-engine__publish_post` with no account_id (defaults to Navid's personal profile). Human-gated: I draft, Navid reads, Navid comments 'publish' (or 'publish at <time>') on the task, I call publish_post, then I put the live URL into the task's **🔗 Publish Url** custom field and move it to 'published'. No silent posts. Never auto-publish.
+- **Subturtle company page** — publish the same way via `mcp__social-engine__publish_post` with `account_id: acct:NaogxEouwoHsKqTqP8KH`. Same human gate: draft, Navid comments 'publish' on the task, I post, put the live URL into the **🔗 Publish Url** field, mark published. No longer paused — API access confirmed live.
 - A third account (`CodeBridger LDT`, org, id acct:7HKerwOKQ9hNeScDQBlc) also showed up in list_accounts. Do NOT draft or publish to it — nobody has asked for that page yet. Flag it to Navid if it comes up again.
 
 ## Cadence
@@ -46,5 +46,6 @@ Both voices are LIVE via the `mcp__social-engine__` MCP (confirmed 2026-07-21 vi
 ## Publish step
 
 - Triggered by Navid commenting 'publish' or 'publish at <time>' on a task in this list.
-- I call `mcp__social-engine__publish_post` (default account for founder-voice, `account_id: acct:NaogxEouwoHsKqTqP8KH` for Subturtle-voice), attach the live URL on the task, move status to 'published'.
-- If publish fails, I leave status in 'approval' and reply on the task with the error — never claim a post went out unless the MCP confirms it.
+- I call `mcp__social-engine__publish_post` (default account for founder-voice, `account_id: acct:NaogxEouwoHsKqTqP8KH` for Subturtle-voice).
+- After posting, put the live post URL into the task's **🔗 Publish Url** custom field — this is mandatory every time, not just a task comment. Also move status to 'published'.
+- If publish fails, I leave status in 'approval' and reply on the task with the error — never claim a post went out unless the MCP confirms it, and never fill Publish Url unless the post is actually live.

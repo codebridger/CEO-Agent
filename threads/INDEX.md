@@ -1,6 +1,6 @@
 # Thread index
 
-- chat-8crzyb7-1458 · last 2026-07-21T17:56:18.824Z · Both confirmed live: status Closed, Publish Url field set correctly on both. Everything checks out. Task complete.  Repo
+- chat-8crzyb7-1458 · last 2026-07-21T20:08:01.257Z · replied; workflow: updated wf-linkedin-content-mqb1jzix — "linkedin-content" — opus · playbook linkedin-content · cron "
 - clickup-task-86et9a1x6 · last 2026-06-09T05:24:37.004Z · Yes Navid, I'm here.  On the Google Meet question — noted. I'll park that task and mark the milestone complete. I'll ope
 - clickup-task-86exr424h · last 2026-06-07T08:05:35.184Z · Navid, here is everything I can actually see on this task right now — the full read.  **Task state:** - Name: "Implement
 - clickup-task-86exw6kme · last 2026-06-08T18:10:25.415Z · Thanks Navid. I can see it working already — the activity tail for this task shows the full comment thread plus the two 
