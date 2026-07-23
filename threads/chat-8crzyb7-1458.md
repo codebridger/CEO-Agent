@@ -253,3 +253,33 @@ Done. Updated the linkedin-content workflow playbook: the Publish step now expli
 ### Aso Dara (action) · 2026-07-21T20:08:01.255Z
 
 workflow: updated wf-linkedin-content-mqb1jzix — "linkedin-content" — opus · playbook linkedin-content · cron "0 9 * * 6" Europe/Vilnius · list 901809890244
+
+### Navid Shad (founder) · 2026-07-23T09:06:22.716Z
+
+[@Aso Dara](#user_mention#113552267) browser is up, try again
+
+### Aso Dara (on it) · 2026-07-23T09:06:23.277Z
+
+Browser's confirmed up. Running the Reddit content scan now to catch up on the two days it was blocked (07-22 and 07-23) — will report back with what got drafted.
+
+### Aso Dara · 2026-07-23T09:13:18.523Z
+
+Scan and drafting done. Here's the report for Navid.
+
+Ran the catch-up scan today (2026-07-23) with the browser confirmed up. Scanned all 6 subs: r/languagelearning, r/EnglishLearning, r/LearnJapanese, r/Spanish, r/French, r/German. r/Korean untouched, as always.
+
+**2 drafts created**, both value-only comments, no Subturtle mention or link:
+
+1. **86eyczj5u** — r/languagelearning, reply to the "Netflix has done so much for language content access" thread. A subthread there was about people giving up on target-language subtitles because reading word-by-word is too hard. Draft shares a middle-path tip (only translate the words that block you, don't switch the whole track).
+2. **86eyczj7e** — r/EnglishLearning, reply to "I think looking words up while watching does more harm than good." OP's exact complaint was pausing to look up words but never reviewing the list later. Draft answers that directly: don't stop the video, review the list same day.
+
+Both tasks are in the Subturtle Content Marketing list, status `todo`, assigned to me, due 2026-07-24. Nothing posts until you comment "approved."
+
+**Tag problem again:** `reddit-comment` did not stick on either task — tried the add-tag call twice per task, both times it reported "could not be verified" and a re-fetch confirmed the tag list came back empty. Same flaky connector behavior as the two tasks you fixed manually on 07-19. Can you add `reddit-comment` to 86eyczj5u and 86eyczj7e by hand?
+
+**Skipped, with reasons:**
+- r/languagelearning "Do you have a language learning resource that is actually worth it?" — 91 comments, already saturated with other people dropping resource links.
+- r/LearnJapanese "Can you recommend me an app to learn vocabulary (NOT Anki)" — directly asks for tool recs, but it's about kanji/vocab SRS, not subtitle-based content learning, so a Subturtle mention would be a mismatch. Also "watching Dramas/Anime" thread was oversaturated (138 comments).
+- r/German "Translate apps are paraphrasing" — 57 comments, about translation-app accuracy, not subtitle lookup; tangential and already saturated.
+- r/Spanish and r/French each had a low-traffic "looking for shows to watch" thread that could be worth a value comment tomorrow, held back since today's 2-comment target was already met.
+- r/Spanish megathread for gated mentions is still not requested from mods — still open, unchanged from before.
