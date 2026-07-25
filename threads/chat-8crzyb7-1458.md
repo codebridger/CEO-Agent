@@ -119,3 +119,28 @@ So 'activate all permissions over the mcp' did not change anything on this speci
 This is now outside what I can debug from my side - I don't have visibility into which permission or scope gate is blocking tag writes specifically (other writes like status, assignee, due date, custom fields all work fine on these same tasks). If you want to dig further, the difference between 'tag write' and every other write type on this connector is the next thing to check.
 
 For now the 4 that still need the tag by hand: 86eydc912, 86eydc929, 86eydcd2x, 86eyczj7e.
+
+### Navid Shad (founder) · 2026-07-25T09:15:02.485Z
+
+[@Aso Dara](#user_mention#113552267) browser in runing you can work on reddit
+
+### Aso Dara (on it) · 2026-07-25T09:15:03.060Z
+
+On it, Navid. Browser's up, I'll run a Reddit pass now: check inbox/notifications across the 6 non-Korean subs for real replies needing answers, and check on the pending drafts. I won't post anything you haven't explicitly said 'approved' on. Report back shortly.
+
+### Aso Dara · 2026-07-25T09:16:32.544Z
+
+Ran the daily Reddit scan on u/subtitles_and_coffee, browser confirmed up throughout.
+
+**Reply check:** No new real replies since yesterday. Checked old.reddit.com/message/inbox, /message/unread (empty), and www.reddit.com/notifications directly. Same 3 items as before: 3 upvotes (no action), PandaImaginary's agreement-only reply in r/French (no question, skipped), and alevsk12's collocations question in r/EnglishLearning, which was already drafted into task 86eydcd2x yesterday. Nothing new to draft.
+
+**Pending drafts — none posted.** Checked all 5 both in this thread's history and directly on each ClickUp task's own comments. No "approved" anywhere:
+- 86eydc912 (r/languagelearning, active recall) — still todo, awaiting approval
+- 86eydc929 (r/EnglishLearning, passive watching vocab gap) — still todo, awaiting approval
+- 86eydcd2x (r/EnglishLearning, collocations examples for alevsk12) — still todo, awaiting approval
+- 86eyczj5u (r/languagelearning, subtitle word-lookup) — still todo, awaiting approval
+- 86eyczj7e (r/EnglishLearning, spaced-review) — still todo, awaiting approval
+
+**Tag bug:** tried once each on the 4 missing the `reddit-comment` tag (86eydc912, 86eydc929, 86eydcd2x, 86eyczj7e), same "could not be verified" failure, and I re-fetched all 4 to confirm — tags are still empty and date_updated didn't move, so it's a real write failure again, not just a bad error message. 86eyczj5u already has the tag (you fixed that one by hand earlier). Same root cause as before: your "activate all permissions" change didn't touch this write path. These 4 still need the tag by hand: 86eydc912, 86eydc929, 86eydcd2x, 86eyczj7e.
+
+Nothing was posted to Reddit this run. All 5 drafts are sitting ready, just waiting on your "approved" on each task.
