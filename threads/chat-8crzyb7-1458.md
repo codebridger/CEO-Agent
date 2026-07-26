@@ -144,3 +144,30 @@ Ran the daily Reddit scan on u/subtitles_and_coffee, browser confirmed up throug
 **Tag bug:** tried once each on the 4 missing the `reddit-comment` tag (86eydc912, 86eydc929, 86eydcd2x, 86eyczj7e), same "could not be verified" failure, and I re-fetched all 4 to confirm — tags are still empty and date_updated didn't move, so it's a real write failure again, not just a bad error message. 86eyczj5u already has the tag (you fixed that one by hand earlier). Same root cause as before: your "activate all permissions" change didn't touch this write path. These 4 still need the tag by hand: 86eydc912, 86eydc929, 86eydcd2x, 86eyczj7e.
 
 Nothing was posted to Reddit this run. All 5 drafts are sitting ready, just waiting on your "approved" on each task.
+
+### Navid Shad (founder) · 2026-07-26T08:22:13.415Z
+
+[@Aso Dara](#user_mention#113552267) browser is up
+
+### Aso Dara (on it) · 2026-07-26T08:22:13.991Z
+
+On it, Navid. Browser's confirmed up, running the Reddit pass now: reply-check across the 6 subs, and a scan for a fresh candidate thread for today. Nothing goes live without your approved, and none of the 5 pending drafts have that yet, so I won't post them. Report back shortly.
+
+### Aso Dara · 2026-07-26T08:25:50.326Z
+
+Reddit pass is done, Navid.
+
+**Reply-check:** nothing new. Checked old.reddit.com/message/unread (empty), /message/inbox, and www.reddit.com/notifications directly — still just the same 3 old items (3 upvotes, PandaImaginary's agreement-only reply, alevsk12's question already drafted into 86eydcd2x). No new question worth a task.
+
+**Scan — 1 new draft.** Found it in r/languagelearning: a post called "Expanding vocabulary with music," where the OP (learning Greek) said listening to songs helps but they only look up the one word that happens to jump out, then said themselves "I think I would've learned more Greek" if they'd done that for the whole song instead. I read all 12 comments — everyone agrees music helps, nobody addressed that specific gap. Drafted a value-only reply (no Subturtle mention, thread never asked about tools) suggesting they log every new word from a song, not just the standout one, and revisit the list over the next week or two instead of letting it fade. Task 86eydtqw2, due today, status todo, assigned to me.
+
+One thing worth flagging: when I first created it, ClickUp silently defaulted the status to "inactive" and dropped the assignee even though I set both — caught it by re-fetching, then fixed both by hand and re-verified. Worth keeping an eye on, this connector seems to drop fields on create sometimes, not just on the tag-write bug. Speaking of which, the tag write failed again on this task too, same as before.
+
+**Still waiting on you — 5 drafts, none approved yet:**
+- 86eydc912 — r/languagelearning, active recall for the 700-phrases OP
+- 86eydc929 — r/EnglishLearning, passive watching / vocab-doesn't-transfer
+- 86eydcd2x — r/EnglishLearning, collocation examples for alevsk12
+- 86eyczj5u — r/languagelearning, subtitle word-lookup
+- 86eyczj7e — r/EnglishLearning, spaced-review
+
+Reply "approved" on any (or all) and I'll post them.
