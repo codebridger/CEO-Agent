@@ -171,3 +171,34 @@ One thing worth flagging: when I first created it, ClickUp silently defaulted th
 - 86eyczj7e — r/EnglishLearning, spaced-review
 
 Reply "approved" on any (or all) and I'll post them.
+
+### Navid Shad (founder) · 2026-07-27T09:28:51.695Z
+
+the aget browser is up [@Aso Dara](#user_mention#113552267)
+
+### Aso Dara (on it) · 2026-07-27T09:28:52.205Z
+
+On it, Navid. Browser's up, running the daily Reddit pass now: reply-check across the 6 subs for real questions needing answers, and a scan for a fresh candidate thread. Nothing posts without your 'approved' on a task. Report back shortly.
+
+### Aso Dara · 2026-07-27T09:33:33.506Z
+
+Reddit pass for u/subtitles_and_coffee is done, browser confirmed up the whole time.
+
+**Reply-check:** nothing new. Checked message/unread (empty), message/inbox, and notifications directly. Still just the same 3 old items: 3 upvotes, PandaImaginary's agreement-only reply in r/French (no question), and alevsk12's question, already answered in draft 86eydcd2x. No new replies needing an answer, nothing drafted here.
+
+**New candidate scan:** checked all 6 subs, nothing forced. Closest calls, both skipped with reason:
+- r/languagelearning, "How do you actually retain advanced vocabulary from the books you read?" (56 comments) — top comments already fully cover "capture now, batch-review later" and Anki. Nothing left to add.
+- r/French, "Which shows have actually moved your language level in French?" — one comment already gave almost exactly the subtitle + active-recall + reuse tip I'd have written.
+r/EnglishLearning, r/German, r/Spanish, r/LearnJapanese had nothing that was both fresh and a clean fit (mostly grammar Qs, exam anxiety, app/tutor requests, translation asks). So: 0 new drafts today, on purpose.
+
+**Status of all 6 pending drafts — still todo, none approved:**
+- 86eydc912 — r/languagelearning, phrase recall
+- 86eydc929 — r/EnglishLearning, vocab doesn't transfer from watching
+- 86eydcd2x — r/EnglishLearning, collocation examples for alevsk12
+- 86eyczj5u — r/languagelearning, subtitle word-lookup (this one does have the reddit-comment tag, fixed by hand earlier)
+- 86eyczj7e — r/EnglishLearning, spaced review
+- 86eydtqw2 — r/languagelearning, music vocabulary
+
+I checked every task's comments directly — each has an "@Navid, reply approved to post" ask sitting there, none has an "approved" reply yet. So nothing was posted to Reddit this run.
+
+Nothing to flag on tagging this time since no new tasks were created. Whenever you're ready, just reply "approved" on any of the 6 and I'll post it and confirm the live permalink.
