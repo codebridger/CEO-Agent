@@ -202,3 +202,15 @@ r/EnglishLearning, r/German, r/Spanish, r/LearnJapanese had nothing that was bot
 I checked every task's comments directly — each has an "@Navid, reply approved to post" ask sitting there, none has an "approved" reply yet. So nothing was posted to Reddit this run.
 
 Nothing to flag on tagging this time since no new tasks were created. Whenever you're ready, just reply "approved" on any of the 6 and I'll post it and confirm the live permalink.
+
+### Navid Shad (founder) · 2026-08-13T09:22:06.458Z
+
+HI Aso how are you today?
+
+### Aso Dara · 2026-08-13T09:22:07.044Z
+
+Hi Navid, I am fine, thanks for asking.
+
+Quick honest pulse since it has been a couple weeks since we last talked in this thread: not much has moved on my end here. The 6 Reddit reply drafts I posted for your approval back on 07-27 are all still sitting untouched, todo, no 'approved' on any of them. Plus 3 more Reddit drafts and 5 blog post tasks in the Content Marketing list are also queued and untouched.
+
+Nothing urgent broke, but this backlog is not earning us anything just sitting there. Want me to pick a couple of the Reddit drafts to walk you through fast so you can approve or kill them, or would you rather I re-scan and refresh them since some may be stale by now?
