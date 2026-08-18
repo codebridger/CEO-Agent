@@ -38,8 +38,8 @@
       "enabled": true,
       "createdAt": "2026-07-19T11:17:58.831Z",
       "createdBy": "Navid Shad (founder)",
-      "lastRunAt": "2026-08-17T08:00:34.320Z",
-      "lastRunMinute": "2026-08-17 11:00",
+      "lastRunAt": "2026-08-18T08:00:34.951Z",
+      "lastRunMinute": "2026-08-18 11:00",
       "listId": "901809890244",
       "cron": "0 11 * * *",
       "generate": "Daily Reddit scan: draft value-only comments on fitting threads and answer real replies on posted comments, gated for approval. Scan the 6 non-Korean subs (languagelearning, EnglishLearning, LearnJapanese, Spanish, French, German) once a day. Check each sub's current self-promo/AI rules first. Draft 0-2 new top-level comment tasks total, only on threads where existing comments genuinely miss an angle Subturtle's approach would add - never force a draft to hit a quota. Also check the account's notifications/inbox (both old.reddit.com/message/inbox and www.reddit.com/notifications) for real replies-with-questions on previously posted comments, and draft an answer for each one that needs it - skip pure upvotes/agreement. Skip duplicates of pending drafts, already-well-covered threads, locked threads, or threads whose rules argue against the angle."
